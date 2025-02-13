@@ -185,160 +185,136 @@ const UserDashboard = () => {
   return (
     <>
       <Toaster />
-      <div className="flex justify-center items-center bg-gradient-to-br from-[#ECECEC] to-[#F9F9F9] min-h-[84svh] overflow-hidden py-2 pl-8 pr-8 max-lg:flex-col max-lg:overflow-y-scroll max-lg:gap-5 max-lg:py-5">
-        {showDoctorAlert && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-center items-center"
-          >
-            <motion.div
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              className="bg-white p-4 rounded-lg shadow-xl w-3/4 max-w-md"
-            >
-              <Alert>
-                <Terminal className="h-4 w-4" />
-                <AlertTitle>Heads up!</AlertTitle>
-                <AlertDescription>
-                  A doctor has been assigned to you.
-                </AlertDescription>
-              </Alert>
-              <button
-                className="mt-4 w-full py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-md hover:bg-red-600 transition-all"
-                onClick={() => {
-                  setShowDoctorAlert(false);
-                  localStorage.setItem("doctorAlertShow", "true");
-                }}
-              >
-                Close
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-
-        {/* User Profile Section */}
+      <div className="min-h-screen bg-gradient-to-br from-[#F0F4F8] to-[#D9E2EC] p-8">
+        {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="w-full flex justify-center items-center"
+          transition={{ duration: 0.5 }}
+          className="text-center mb-8"
         >
-          <div className="w-full bg-white/80 backdrop-blur-md space-y-4 p-8 rounded-lg flex items-center justify-center flex-col shadow-lg border border-white/20 hover:shadow-xl transition-shadow duration-300">
-            <div className="bg-white/90 border border-white/20 rounded-md shadow-lg">
+          <h1 className="text-4xl font-bold text-[#2E3A48]">Welcome Back, {userDetails.name}</h1>
+          <p className="text-lg text-[#6C757D]">Your Health, Our Priority</p>
+        </motion.div>
+
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* User Profile Card */}
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white rounded-xl shadow-lg p-6"
+          >
+            <div className="flex flex-col items-center">
               <img
                 src={
                   userDetails.imageUrl
                     ? `http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/${userDetails.imageUrl}`
                     : "/default-user.jpg"
                 }
-                className="w-64 h-64 object-cover border-2 border-white/30 rounded-md"
                 alt="User Profile"
+                className="w-32 h-32 rounded-full border-4 border-[#1F60C0] object-cover"
               />
+              <h2 className="mt-4 text-2xl font-bold text-[#2E3A48]">{userDetails.name}</h2>
+              <p className="text-[#6C757D]">{userDetails.email}</p>
+              <div className="mt-4 space-y-2 text-center">
+                <p className="text-[#6C757D]">
+                  <span className="font-semibold">DOB:</span>{" "}
+                  {new Date(userDetails.dateOfBirth).toLocaleDateString("en-GB")}
+                </p>
+                <p className="text-[#6C757D]">
+                  <span className="font-semibold">Contact:</span> {userDetails.phoneNumber}
+                </p>
+                <p className="text-[#6C757D]">
+                  <span className="font-semibold">Blood Group:</span> {userDetails.bloodGroup}
+                </p>
+                <p className="text-[#6C757D]">
+                  <span className="font-semibold">Token No:</span> {status.tokenNo}
+                </p>
+              </div>
             </div>
-            <div className="text-center space-y-2 text-[#545555] font-semibold">
-              <p className="text-xl font-bold">{userDetails.name}</p>
-              <p className="text-gray-600">{userDetails.email}</p>
-              <p className="text-gray-600">
-                DOB -{" "}
-                {new Date(userDetails.dateOfBirth).toLocaleDateString("en-GB")}
-              </p>
-              <p className="text-gray-600">Contact - {userDetails.phoneNumber}</p>
-              <p className="text-gray-600">Blood Group - {userDetails.bloodGroup}</p>
-              <p className="text-gray-600">Token Number - {status.tokenNo}</p>
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
 
-        {/* Dashboard Actions Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="w-full flex items-center justify-center"
-        >
-          <div className="w-full flex flex-col px-10 space-y-8 max-lg:px-0">
+          {/* Appointment and Doctor Status */}
+          <div className="lg:col-span-2 space-y-8">
             {/* Appointment Status */}
             <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="shadow-xl bg-gradient-to-r from-[#1F60C0] to-[#0D4493] p-4 rounded-lg flex flex-col items-center justify-center backdrop-blur-md bg-white/80 border border-white/20"
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-white rounded-xl shadow-lg p-6"
             >
-              <p className="text-white font-semibold text-lg text-center mb-2">
-                Appointment Status
-              </p>
-              <div className="shadow-md bg-white/90 flex items-center text-gray-700 font-semibold rounded-lg w-full">
+              <h3 className="text-xl font-bold text-[#2E3A48] mb-4">Appointment Status</h3>
+              <div className="flex gap-4">
                 <div
-                  className={`px-8 py-3 w-full text-center ${
+                  className={`flex-1 p-4 rounded-lg text-center ${
                     status.appointmentStatus === "NA"
-                      ? "bg-[#1F60C0] text-white rounded-lg"
-                      : "bg-gray-100"
+                      ? "bg-[#1F60C0] text-white"
+                      : "bg-[#E9ECEF] text-[#6C757D]"
                   }`}
                 >
-                  NA
+                  <p className="font-semibold">NA</p>
                 </div>
                 <div
-                  className={`px-8 py-3 w-full text-center ${
+                  className={`flex-1 p-4 rounded-lg text-center ${
                     status.appointmentStatus === "Queued"
-                      ? "bg-gradient-to-r from-green-600 to-green-500 text-white rounded-lg"
-                      : "bg-gray-100"
+                      ? "bg-[#28A745] text-white"
+                      : "bg-[#E9ECEF] text-[#6C757D]"
                   }`}
                 >
-                  Queued
+                  <p className="font-semibold">Queued</p>
                 </div>
               </div>
             </motion.div>
 
             {/* Doctor Status */}
             <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="shadow-xl bg-gradient-to-r from-[#1F60C0] to-[#0D4493] p-4 rounded-lg flex flex-col items-center justify-center backdrop-blur-md bg-white/80 border border-white/20"
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="bg-white rounded-xl shadow-lg p-6"
             >
-              <p className="text-white font-semibold text-lg text-center mb-2">
-                Doctor Status
-              </p>
-              <div className="shadow-md bg-white/90 flex justify-center items-center text-gray-700 font-semibold rounded-lg w-full">
-                {status.doctorName !== "Not Appointed" ? (
-                  <div className="p-4 bg-white/90 text-gray-700 font-bold text-lg w-full rounded-lg text-center shadow-sm">
-                    {status.doctorName}
-                  </div>
-                ) : (
-                  <div className="p-4 bg-gray-100 text-gray-700 w-full rounded-lg text-center shadow-sm">
-                    {status.doctorName}
-                  </div>
-                )}
+              <h3 className="text-xl font-bold text-[#2E3A48] mb-4">Doctor Status</h3>
+              <div
+                className={`p-4 rounded-lg text-center ${
+                  status.doctorName !== "Not Appointed"
+                    ? "bg-[#1F60C0] text-white"
+                    : "bg-[#E9ECEF] text-[#6C757D]"
+                }`}
+              >
+                <p className="font-semibold">{status.doctorName}</p>
               </div>
             </motion.div>
 
             {/* Action Buttons */}
-            <div className="space-y-4">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full shadow-xl hover:-translate-y-1 transition-all ease-in duration-200 px-6 py-3 bg-gradient-to-r from-[#1F60C0] to-[#0D4493] text-white font-semibold text-lg rounded-lg text-center backdrop-blur-md bg-white/80 border border-white/20"
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+            >
+              <button
                 onClick={() => navigateTo("/patient-appointment")}
+                className="bg-[#1F60C0] text-white p-4 rounded-lg hover:bg-[#0D4493] transition-all"
               >
-                Schedule an Appointment
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full shadow-xl hover:-translate-y-1 transition-all ease-in duration-200 px-6 py-3 bg-gradient-to-r from-[#1F60C0] to-[#0D4493] text-white font-semibold text-lg rounded-lg text-center backdrop-blur-md bg-white/80 border border-white/20"
+                Schedule Appointment
+              </button>
+              <button
                 onClick={() => navigateTo("/patient-prescription")}
+                className="bg-[#28A745] text-white p-4 rounded-lg hover:bg-[#218838] transition-all"
               >
                 Prescription History
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full shadow-xl hover:-translate-y-1 transition-all ease-in duration-200 px-6 py-3 bg-gradient-to-r from-[#FF0004] to-[#0D4493] text-white font-semibold text-lg rounded-lg text-center backdrop-blur-md bg-white/80 border border-white/20"
+              </button>
+              <button
                 onClick={() => navigateTo("/emergency")}
+                className="bg-[#DC3545] text-white p-4 rounded-lg hover:bg-[#C82333] transition-all"
               >
-                Emergency Details
-              </motion.button>
-            </div>
+                Emergency Contacts
+              </button>
+            </motion.div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </>
   );
