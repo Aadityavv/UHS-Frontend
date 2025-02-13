@@ -1,0 +1,41 @@
+.admin-dashboard {
+  min-height: 84svh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  grid-template-areas: "left right";
+  overflow: hidden;
+  background-color: #ECECEC;
+
+  &__left {
+    grid-area: left;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &__right {
+    grid-area: right;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 3rem;
+  }
+}
+
+@media only screen and (max-width:1024px){
+  .admin-dashboard{
+    min-height:93svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3rem;
+
+    &__right {
+      width: 100%;
+    }
+  }
+}
