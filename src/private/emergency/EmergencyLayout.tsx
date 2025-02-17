@@ -17,7 +17,7 @@ const EmergencyLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <div className="min-h-[100svh] flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-[79svh] flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Navbar */}
       <Navbar props={navsetting} />
 
@@ -26,13 +26,13 @@ const EmergencyLayout = ({ children }: { children: React.ReactNode }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="flex-1 p-6"
+        className="flex-1 p-3"
       >
         {children}
       </motion.main>
 
       {/* Footer */}
-      <motion.footer
+      {/* <motion.footer
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
@@ -51,7 +51,15 @@ const EmergencyLayout = ({ children }: { children: React.ReactNode }) => {
             <span>+91-8171979021, +91-7060111775</span>
           </div>
         </div>
-      </motion.footer>
+      </motion.footer> */}
+
+
+
+<div className="flex items-center justify-center w-full border-t border-black bg-white text-black min-h-[8svh] max-lg:hidden">
+        <b>Energy Acres, Bidholi : </b>&nbsp;+91-7500201816, +91-8171323285
+        &nbsp; | &nbsp; <b>Knowledge Acres, Kandoli : </b>
+        &nbsp;+91-8171979021, +91-7060111775
+      </div>
     </div>
   );
 };

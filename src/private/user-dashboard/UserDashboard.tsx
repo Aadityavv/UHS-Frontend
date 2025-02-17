@@ -74,7 +74,7 @@ const UserDashboard = () => {
   }, []);
 
   return (
-    <div className="min-s-screen bg-gray-50">
+    <div className="min-h-[79vh] overflow-x-hidden bg-gray-50">
       <Toaster />
       
       {/* Main Content */}
@@ -85,7 +85,7 @@ const UserDashboard = () => {
           className="flex flex-col lg:flex-row gap-8"
         >
           {/* Left Sidebar */}
-          <div className="w-full lg:w-1/4 space-y-6">
+          <div className="hidden lg:block w-full lg:w-1/4 space-y-6">
             {/* Profile Card */}
             <motion.div 
               whileHover={{ scale: 1.02 }}

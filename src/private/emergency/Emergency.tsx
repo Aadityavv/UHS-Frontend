@@ -40,7 +40,7 @@ const Emergency = () => {
   ];
 
   return (
-    <div className="min-h-[84svh] flex flex-col items-center justify-center gap-8 max-lg:min-h-[93svh] bg-gradient-to-br from-gray-50 to-gray-100 p-8">
+    <div className="min-h-[81svh] flex flex-col items-center justify-center gap-8 max-lg:min-h-[93svh] bg-gradient-to-br from-gray-50 to-gray-100 p-8">
       {/* Hero Section */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}

@@ -1,66 +1,28 @@
-import "./UserAppointment.scss";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
-import { ToastAction } from "@/components/ui/toast";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
-import { RadioButton } from "primereact/radiobutton";
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { motion } from "framer-motion";
-import { Calendar, Stethoscope, User } from "lucide-react";
-import Skeleton from "@mui/material/Skeleton";
+import { 
+  Calendar,
+  Stethoscope,
+  User,
+  ClipboardList,
+  AlertCircle
+} from "lucide-react";
+import Skeleton from '@mui/material/Skeleton';
+import { ToastAction } from "@radix-ui/react-toast";
 
 const UserAppointment = () => {
-  const navigate = useNavigate();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [doctors, setDoctors] = useState<{ id: string; name: string }[]>([]);
   const [lastAppointmentDate, setLastAppointmentDate] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const formSchema = z.object({
-    reason: z.string().min(1, "Reason is required"),
-    followUp: z.enum(["Yes", "No"]),
-    lastAppointmentDate: z.string().optional(),
-    preferredDoctor: z.string().optional(),
-    reasonForPreference: z.string().optional(),
-  });
-
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      lastAppointmentDate: "",
-      followUp: "No",
-      preferredDoctor: undefined,
-      reasonForPreference: undefined,
-      reason: undefined,
-    },
-  });
-
   const [userDetails, setUserDetails] = useState({
-    email: "",
     name: "",
+    email: "",
     dateOfBirth: "",
     phoneNumber: "",
     bloodGroup: "",
@@ -68,44 +30,36 @@ const UserAppointment = () => {
   });
 
   useEffect(() => {
-    const fetchDoctors = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/");
+      return;
+    }
+
+    const fetchData = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          navigate("/");
-          return;
-        }
-
-        if (!localStorage.getItem("latitude") || !localStorage.getItem("longitude")) {
-          toast({
-            title: "Location Required",
-            description: "Select a location to proceed.",
-            variant: "destructive",
-            action: <ToastAction altText="Try again">Try again</ToastAction>,
-          });
-          return;
-        }
-
-        const response = await axios.get(
-          "http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/api/patient/getAvailableDoctors",
-          {
+        const [userRes, doctorsRes] = await Promise.all([
+          axios.get("http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/api/patient/", {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get("http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/api/patient/getAvailableDoctors", {
             headers: {
-              Authorization: "Bearer " + token,
+              Authorization: `Bearer ${token}`,
               "X-Latitude": localStorage.getItem("latitude"),
               "X-Longitude": localStorage.getItem("longitude"),
-            },
-          }
-        );
-        const doctorList = response.data.map((doctor: any) => ({
+            }
+          })
+        ]);
+
+        setUserDetails(userRes.data);
+        setDoctors(doctorsRes.data.map((doctor: any) => ({
           id: doctor.doctorId.toString(),
           name: doctor.name,
-        }));
-        setDoctors(doctorList);
-      } catch (error) {
-        console.error("Error fetching doctors: ", error);
+        })));
+      } catch (error: any) {
         toast({
           title: "Error",
-          description: "Could not fetch available doctors",
+          description: error.response?.data?.message || "Something went wrong!",
           variant: "destructive",
           action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
@@ -114,34 +68,7 @@ const UserAppointment = () => {
       }
     };
 
-    const getUser = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        navigate("/");
-        return;
-      }
-      try {
-        const res = await axios.get("http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/api/patient/", {
-          headers: {
-            Authorization: "Bearer " + token,
-          },
-        });
-
-        const data = await res.data;
-        setUserDetails(data);
-      } catch (error: any) {
-        console.log(error);
-        toast({
-          title: "Error",
-          description: error.response?.data?.message || "Error fetching patient details.",
-          variant: "destructive",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
-        });
-      }
-    };
-
-    fetchDoctors();
-    getUser();
+    fetchData();
   }, []);
 
   const fetchLastAppointmentDate = async () => {
@@ -149,16 +76,10 @@ const UserAppointment = () => {
       const token = localStorage.getItem("token");
       const response = await axios.get(
         "http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/api/patient/lastAppointmentDate",
-        {
-          headers: {
-            Authorization: "Bearer " + token,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setLastAppointmentDate(response.data || null);
-      form.setValue("lastAppointmentDate", response.data);
     } catch (error) {
-      console.error("Error fetching last appointment date:", error);
       toast({
         title: "Error",
         description: "Couldn't get last appointment date",
@@ -168,292 +89,215 @@ const UserAppointment = () => {
     }
   };
 
-  const { isValid } = form.formState;
-  const onSubmit = async (data: any) => {
-    if (data.preferredDoctor && data.preferredDoctor !== "none" && !data.reasonForPreference?.trim()) {
-      form.setError("reasonForPreference", {
-        type: "manual",
-        message: "Reason for preference is required when a preferred doctor is selected.",
-      });
-      return;
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    
+    try {
+      const token = localStorage.getItem("token");
+      const appointmentData = {
+        reason: formData.get("reason"),
+        isFollowUp: formData.get("followUp") === "Yes",
+        preferredDoctor: formData.get("preferredDoctor") || null,
+        reasonPrefDoctor: formData.get("reasonForPreference") || null,
+      };
 
-    if (isValid) {
-      try {
-        const token = localStorage.getItem("token");
-        const appointmentData = {
-          reason: data.reason,
-          isFollowUp: data.followUp === "Yes",
-          preferredDoctor: data.preferredDoctor || null,
-          reasonPrefDoctor: data.reasonForPreference || null,
-        };
-
-        if (!localStorage.getItem("latitude") || !localStorage.getItem("longitude")) {
-          toast({
-            title: "Location Required",
-            description: "Select a location to proceed.",
-            variant: "destructive",
-            action: <ToastAction altText="Try again">Try again</ToastAction>,
-          });
-          return;
-        }
-
-        const response = await axios.post(
-          "http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/api/patient/submitAppointment",
-          appointmentData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "X-Latitude": localStorage.getItem("latitude"),
-              "X-Longitude": localStorage.getItem("longitude"),
-            },
+      await axios.post(
+        "http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/api/patient/submitAppointment",
+        appointmentData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "X-Latitude": localStorage.getItem("latitude"),
+            "X-Longitude": localStorage.getItem("longitude"),
           }
-        );
-
-        if (response.status === 200) {
-          toast({
-            title: "Success",
-            description: "Appointment submitted successfully.",
-          });
-          setTimeout(() => {
-            navigate("/patient-dashboard");
-          }, 1000);
-        } else {
-          toast({
-            title: "Error",
-            description: "Failed to submit appointment",
-            variant: "destructive",
-            action: <ToastAction altText="Try again">Try again</ToastAction>,
-          });
         }
-      } catch (error: any) {
-        toast({
-          title: "Error",
-          description: error.response?.data?.message || "An error occurred.",
-          variant: "destructive",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
-        });
-      }
-    } else {
+      );
+
+      toast({
+        title: "Success",
+        description: "Appointment submitted successfully.",
+      });
+      setTimeout(() => navigate("/patient-dashboard"), 1000);
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Form is not valid",
+        description: error.response?.data?.message || "An error occurred.",
         variant: "destructive",
         action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };
 
-  const handleCancel = () => {
-    navigate("/patient-dashboard");
-  };
-
   return (
-    <>
+    <div className="min-h-[79vh] overflow-x-hidden bg-gray-50">
       <Toaster />
-      <div className="min-h-screen bg-gradient-to-br from-[#F0F4F8] to-[#D9E2EC] p-8">
-        {/* Header */}
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-8"
+          className="flex flex-col lg:flex-row gap-8"
         >
-          <h1 className="text-4xl font-bold text-[#2E3A48]">Schedule an Appointment</h1>
-          <p className="text-lg text-[#6C757D]">Fill out the form to book your appointment</p>
-        </motion.div>
-
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* User Profile Card */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center lg:col-span-1"
-          >
-            {loading ? (
-              <div className="space-y-4">
-                <Skeleton variant="circular" width={128} height={128} className="mx-auto" />
-                <Skeleton variant="text" width={150} height={24} className="mx-auto" />
-                <Skeleton variant="text" width={200} height={16} className="mx-auto" />
-                <div className="mt-6 space-y-3">
-                  <Skeleton variant="text" width={180} height={16} />
-                  <Skeleton variant="text" width={180} height={16} />
-                  <Skeleton variant="text" width={180} height={16} />
+          {/* Left Sidebar - Profile Card */}
+          <div className="hidden lg:block w-full lg:w-1/4 space-y-6">
+          <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
+            >
+              {loading ? (
+                <div className="space-y-4">
+                  <Skeleton variant="circular" width={96} height={96} className="mx-auto" />
+                  <Skeleton variant="text" width={150} height={24} className="mx-auto" />
+                  <Skeleton variant="text" width={200} height={16} className="mx-auto" />
+                  <div className="mt-6 space-y-3">
+                    <Skeleton variant="text" width={180} height={16} />
+                    <Skeleton variant="text" width={180} height={16} />
+                    <Skeleton variant="text" width={180} height={16} />
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <>
-                <img
-                  src={userDetails.imageUrl || "/default-user.jpg"}
-                  alt="Profile"
-                  className="w-32 h-32 rounded-full border-4 border-[#1F60C0] object-cover"
-                />
-                <h2 className="mt-4 text-xl font-bold text-[#2E3A48]">
-                  {userDetails.name}
-                </h2>
-                <p className="text-[#6C757D]">{userDetails.email}</p>
-                <div className="mt-4 space-y-2 text-center text-[#6C757D] text-sm">
-                  <p>
-                    <span className="font-semibold">DOB:</span>{" "}
-                    {new Date(userDetails.dateOfBirth).toLocaleDateString()}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Contact:</span>{" "}
-                    {userDetails.phoneNumber}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Blood Group:</span>{" "}
-                    {userDetails.bloodGroup}
-                  </p>
-                </div>
-              </>
-            )}
-          </motion.div>
-
-          {/* Appointment Form */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="lg:col-span-2 bg-white rounded-xl shadow-lg p-6"
-          >
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="reason"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="font-semibold">Reason for Appointment</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter reason for appointment" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="followUp"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="font-semibold">Is this a follow-up?</FormLabel>
-                      <div className="flex gap-4">
-                        <div className="flex items-center">
-                          <RadioButton
-                            inputId="followUpYes"
-                            name="followUp"
-                            value="Yes"
-                            onChange={(e) => {
-                              field.onChange(e.value);
-                              fetchLastAppointmentDate();
-                            }}
-                            checked={field.value === "Yes"}
-                          />
-                          <label htmlFor="followUpYes" className="ml-2">
-                            Yes
-                          </label>
-                        </div>
-                        <div className="flex items-center">
-                          <RadioButton
-                            inputId="followUpNo"
-                            name="followUp"
-                            value="No"
-                            onChange={(e) => {
-                              field.onChange(e.value);
-                              setLastAppointmentDate(null);
-                            }}
-                            checked={field.value === "No"}
-                          />
-                          <label htmlFor="followUpNo" className="ml-2">
-                            No
-                          </label>
-                        </div>
+              ) : (
+                <>
+                  <div className="flex flex-col items-center">
+                    <div className="relative">
+                      <img
+                        src={userDetails.imageUrl || "/default-user.jpg"}
+                        alt="Profile"
+                        className="w-24 h-24 rounded-2xl object-cover border-4 border-white shadow-lg"
+                      />
+                      <div className="absolute -bottom-2 -right-2 bg-indigo-600 p-1.5 rounded-full">
+                        <User className="h-5 w-5 text-white" />
                       </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="lastAppointmentDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="font-semibold">Last appointment date?</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          value={lastAppointmentDate || ""}
-                          disabled
-                          placeholder="Last appointment date"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="preferredDoctor"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="font-semibold">Preferred doctor (if any)</FormLabel>
-                      <FormControl>
-                        <Select
-                          {...field}
-                          onValueChange={(value) => field.onChange(value === "none" ? undefined : value)}
-                          disabled={doctors.length === 0}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder={doctors.length === 0 ? "No doctors available" : "Select a doctor"} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectItem value="none">None</SelectItem>
-                              {doctors.map((doctor) => (
-                                <SelectItem key={doctor.id} value={doctor.id}>
-                                  {doctor.name}
-                                </SelectItem>
-                              ))}
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="reasonForPreference"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="font-semibold">Reason for Preference?</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Enter reason for preference (if preferred)"
-                          {...field}
-                          disabled={!form.getValues("preferredDoctor")}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="flex justify-end gap-4">
-                  <Button type="button" onClick={handleCancel} variant="outline">
+                    </div>
+                    <h2 className="mt-4 text-xl font-bold text-gray-900">
+                      {userDetails.name}
+                    </h2>
+                    <p className="text-sm text-gray-500">{userDetails.email}</p>
+                  </div>
+
+                  <div className="mt-6 space-y-3">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Calendar className="h-4 w-4 mr-2 text-indigo-600" />
+                      <span>
+                        {new Date(userDetails.dateOfBirth).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <ClipboardList className="h-4 w-4 mr-2 text-indigo-600" />
+                      <span>{userDetails.phoneNumber}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <AlertCircle className="h-4 w-4 mr-2 text-indigo-600" />
+                      <span>{userDetails.bloodGroup || 'N/A'}</span>
+                    </div>
+                  </div>
+                </>
+              )}
+            </motion.div>
+          </div>
+
+          {/* Main Content - Appointment Form */}
+          <div className="flex-1">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
+            >
+              <h3 className="text-lg font-semibold text-gray-900 mb-6">Schedule Appointment</h3>
+              
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Reason for Appointment</label>
+                  <input
+                    name="reason"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+                    placeholder="Describe your reason"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Follow-up Appointment?</label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        name="followUp"
+                        value="Yes"
+                        onChange={fetchLastAppointmentDate}
+                        className="text-indigo-600 focus:ring-indigo-600"
+                      />
+                      <span>Yes</span>
+                    </label>
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        name="followUp"
+                        value="No"
+                        className="text-indigo-600 focus:ring-indigo-600"
+                      />
+                      <span>No</span>
+                    </label>
+                  </div>
+                </div>
+
+                {lastAppointmentDate && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Last Appointment Date</label>
+                    <input
+                      value={lastAppointmentDate}
+                      disabled
+                      className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200"
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Preferred Doctor</label>
+                  <select
+                    name="preferredDoctor"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-600"
+                  >
+                    <option value="">Select a doctor</option>
+                    {doctors.map(doctor => (
+                      <option key={doctor.id} value={doctor.id}>
+                        {doctor.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Reason for Preference</label>
+                  <textarea
+                    name="reasonForPreference"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-600"
+                    placeholder="Explain your preference (optional)"
+                    rows={3}
+                  />
+                </div>
+
+                <div className="flex justify-end gap-4 mt-8">
+                  <button
+                    type="button"
+                    onClick={() => navigate("/patient-dashboard")}
+                    className="px-6 py-2 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
                     Cancel
-                  </Button>
-                  <Button type="submit">Submit</Button>
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+                  >
+                    Schedule Appointment
+                  </button>
                 </div>
               </form>
-            </Form>
-          </motion.div>
-        </div>
+            </motion.div>
+          </div>
+        </motion.div>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -237,7 +237,8 @@ const UserProfile = () => {
                 <div className="flex flex-col items-center">
                   <div className="relative">
                     <img
-                      src={img || "/default-user.jpg"}
+                      // src={img || "/default-user.jpg"}
+                      src="/default-user.jpg"
                       alt="Profile"
                       className="w-24 h-24 rounded-2xl object-cover border-4 border-white shadow-lg"
                     />
@@ -262,7 +263,7 @@ const UserProfile = () => {
                 onClick={handleCancel}
                 className="w-full flex items-center justify-between p-4 rounded-xl bg-indigo-50 hover:bg-indigo-100 transition-colors"
               >
-                <span className="text-indigo-700 font-medium">Cancel</span>
+                <span className="text-indigo-700 font-medium">Go Back</span>
                 <AlertCircle className="h-5 w-5 text-indigo-700" />
               </button>
             </motion.div>
