@@ -130,21 +130,35 @@ const SignIn = () => {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const resp = await axios.get(
-          "http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/api/location/"
-        );
-        if (resp.status === 200) setLocations(resp.data);
+        const resp = await axios.get("http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/api/location/");
+        
+        if (resp.status === 200 && resp.data.length > 0) {
+          console.log("Fetched locations:", resp.data);
+          setLocations(resp.data); // ✅ Use API data if available
+        } else {
+          throw new Error("No locations found"); // ✅ Trigger fallback if empty response
+        }
       } catch (err) {
+        console.error("Error fetching locations, using fallback:", err);
+        
+        // ✅ Fallback locations if API fails
+        setLocations([
+          { locationName: "UPES Bidholi Campus", latitude: "12.9716", longitude: "77.5946" },
+          { locationName: "UPES Kandoli Campus", latitude: "28.7041", longitude: "77.1025" },
+        ]);
+  
         toast({
           variant: "destructive",
           title: "Network Error",
-          description: "Error fetching locations. Please try again.",
+          description: "Using default locations due to error fetching data.",
           action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     };
+  
     fetchLocations();
   }, []);
+  
 
   return (
     <div 
