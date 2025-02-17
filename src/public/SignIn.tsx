@@ -178,7 +178,7 @@ const SignIn = () => {
           <img
             src="/upes-logo.jpg"
             alt="UPES Logo"
-            className="w-12 bg-white rounded-lg p-1 shadow-sm"
+            className="w-20 bg-white rounded-xl p-1 shadow-md"
           />
           <h2 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
             UHS Portal
