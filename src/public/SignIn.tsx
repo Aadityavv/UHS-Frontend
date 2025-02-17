@@ -157,6 +157,22 @@ const SignIn = () => {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-4xl bg-white/90 backdrop-blur-md rounded-2xl shadow-xl grid grid-cols-1 lg:grid-cols-[45%_55%]"
       >
+
+         {/* Mobile Header */}
+      <div className="lg:hidden p-4 border-b border-gray-100">
+        <div className="flex items-center justify-center gap-3">
+          <img
+            src="/upes-logo.jpg"
+            alt="UPES Logo"
+            className="w-12 bg-white rounded-lg p-1 shadow-sm"
+          />
+          <h2 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            UHS Portal
+          </h2>
+        </div>
+      </div>
+
+
         {/* Animated Branding Section */}
         <div className="hidden lg:flex flex-col items-center justify-center p-6 bg-gradient-to-br from-indigo-900/20 to-purple-900/20 relative overflow-hidden">
           <motion.div
@@ -224,6 +240,7 @@ const SignIn = () => {
 
         {/* Compact Form Section */}
         <div className="p-6 lg:p-8">
+        <div className="lg:hidden mb-4"></div>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -268,7 +285,7 @@ const SignIn = () => {
                   <Input
                     type="email"
                     id="email"
-                    placeholder="student@upes.edu.in"
+                    placeholder="name.SapID@upes.ac.in"
                     value={input.email}
                     onChange={onInputChange}
                     className="mt-1 h-9 rounded-lg text-sm"
