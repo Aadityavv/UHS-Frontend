@@ -29,12 +29,15 @@ import { RadioButton } from "primereact/radiobutton";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
+import { Calendar, Stethoscope, User } from "lucide-react";
+import Skeleton from "@mui/material/Skeleton";
 
 const UserAppointment = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [doctors, setDoctors] = useState<{ id: string; name: string }[]>([]);
   const [lastAppointmentDate, setLastAppointmentDate] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const formSchema = z.object({
     reason: z.string().min(1, "Reason is required"),
@@ -58,14 +61,10 @@ const UserAppointment = () => {
   const [userDetails, setUserDetails] = useState({
     email: "",
     name: "",
-    school: "",
     dateOfBirth: "",
-    program: "",
     phoneNumber: "",
-    emergencyContact: "",
     bloodGroup: "",
     imageUrl: "",
-    password: "",
   });
 
   useEffect(() => {
@@ -110,6 +109,8 @@ const UserAppointment = () => {
           variant: "destructive",
           action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -268,34 +269,47 @@ const UserAppointment = () => {
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white rounded-xl shadow-lg p-6"
+            transition={{ delay: 0.3 }}
+            className="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center lg:col-span-1"
           >
-            <div className="flex flex-col items-center">
-              <img
-                src={
-                  userDetails.imageUrl
-                    ? `http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/${userDetails.imageUrl}`
-                    : "/default-user.jpg"
-                }
-                alt="User Profile"
-                className="w-32 h-32 rounded-full border-4 border-[#1F60C0] object-cover"
-              />
-              <h2 className="mt-4 text-2xl font-bold text-[#2E3A48]">{userDetails.name}</h2>
-              <p className="text-[#6C757D]">{userDetails.email}</p>
-              <div className="mt-4 space-y-2 text-center">
-                <p className="text-[#6C757D]">
-                  <span className="font-semibold">DOB:</span>{" "}
-                  {new Date(userDetails.dateOfBirth).toLocaleDateString("en-GB")}
-                </p>
-                <p className="text-[#6C757D]">
-                  <span className="font-semibold">Contact:</span> {userDetails.phoneNumber}
-                </p>
-                <p className="text-[#6C757D]">
-                  <span className="font-semibold">Blood Group:</span> {userDetails.bloodGroup}
-                </p>
+            {loading ? (
+              <div className="space-y-4">
+                <Skeleton variant="circular" width={128} height={128} className="mx-auto" />
+                <Skeleton variant="text" width={150} height={24} className="mx-auto" />
+                <Skeleton variant="text" width={200} height={16} className="mx-auto" />
+                <div className="mt-6 space-y-3">
+                  <Skeleton variant="text" width={180} height={16} />
+                  <Skeleton variant="text" width={180} height={16} />
+                  <Skeleton variant="text" width={180} height={16} />
+                </div>
               </div>
-            </div>
+            ) : (
+              <>
+                <img
+                  src={userDetails.imageUrl || "/default-user.jpg"}
+                  alt="Profile"
+                  className="w-32 h-32 rounded-full border-4 border-[#1F60C0] object-cover"
+                />
+                <h2 className="mt-4 text-xl font-bold text-[#2E3A48]">
+                  {userDetails.name}
+                </h2>
+                <p className="text-[#6C757D]">{userDetails.email}</p>
+                <div className="mt-4 space-y-2 text-center text-[#6C757D] text-sm">
+                  <p>
+                    <span className="font-semibold">DOB:</span>{" "}
+                    {new Date(userDetails.dateOfBirth).toLocaleDateString()}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Contact:</span>{" "}
+                    {userDetails.phoneNumber}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Blood Group:</span>{" "}
+                    {userDetails.bloodGroup}
+                  </p>
+                </div>
+              </>
+            )}
           </motion.div>
 
           {/* Appointment Form */}

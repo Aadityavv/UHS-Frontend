@@ -24,14 +24,11 @@ const UserDashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
       {/* Footer */}
       <footer className="flex items-center justify-center w-full border-t border-gray-200 bg-white text-black min-h-[8svh] max-lg:hidden">
-        <div className="text-center text-sm text-gray-600">
-          <p>
-            <b>Energy Acres, Bidholi:</b> +91-7500201816, +91-8171323285
-          </p>
-          <p>
-            <b>Knowledge Acres, Kandoli:</b> +91-8171979021, +91-7060111775
-          </p>
-        </div>
+      <div className="flex items-center justify-center w-full border-t border-black bg-white text-black min-h-[8svh] max-lg:hidden">
+        <b>Energy Acres, Bidholi : </b>&nbsp;+91-7500201816, +91-8171323285
+        &nbsp; | &nbsp; <b>Knowledge Acres, Kandoli : </b>
+        &nbsp;+91-8171979021, +91-7060111775
+      </div>
       </footer>
     </div>
   );
