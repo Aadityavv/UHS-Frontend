@@ -2,8 +2,8 @@ import Navbar from "@/components/Navbar";
 import Shared from "@/Shared";
 import React from "react";
 import { motion } from "framer-motion";
-import { Phone } from "lucide-react";
-import { title } from "process";
+// import { Phone } from "lucide-react";
+// import { title } from "process";
 
 const EmergencyLayout = ({ children }: { children: React.ReactNode }) => {
   const navsetting = {

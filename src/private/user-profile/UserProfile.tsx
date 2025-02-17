@@ -52,7 +52,7 @@ const UserProfile = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [img, setImg] = useState<string>("");
+  const [img, setImg] = useState<string>("/default-user.jpg");
   const {
     register,
     handleSubmit,
@@ -237,8 +237,8 @@ const UserProfile = () => {
                 <div className="flex flex-col items-center">
                   <div className="relative">
                     <img
-                      // src={img || "/default-user.jpg"}
-                      src="/default-user.jpg"
+                      src={img || "/default-user.jpg"}
+                      // src="/default-user.jpg"
                       alt="Profile"
                       className="w-24 h-24 rounded-2xl object-cover border-4 border-white shadow-lg"
                     />
@@ -295,7 +295,7 @@ const UserProfile = () => {
                             disabled={loading || field.disabled}
                           >
                             <option value="">Select {field.label}</option>
-                            {field.options.map((option) => (
+                            {field.options?.map((option) => (
                               <option key={option} value={option}>
                                 {option}
                               </option>
