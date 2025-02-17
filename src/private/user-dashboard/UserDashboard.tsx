@@ -74,7 +74,7 @@ const UserDashboard = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-s-screen bg-gray-50">
       <Toaster />
       
       {/* Main Content */}
@@ -142,7 +142,7 @@ const UserDashboard = () => {
             </motion.div>
 
             {/* Quick Actions */}
-            <motion.div 
+            {/* <motion.div 
               className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -168,13 +168,13 @@ const UserDashboard = () => {
                 <span className="text-rose-700 font-medium">Emergency</span>
                 <AlertCircle className="h-5 w-5 text-rose-700" />
               </button>
-            </motion.div>
+            </motion.div> */}
           </div>
 
           {/* Main Content */}
           <div className="flex-1">
             {/* Status Cards */}
-            <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <div className="grid md:grid-cols-3 gap-3 mb-8">
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 className="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-2xl p-6 text-white"
@@ -209,6 +209,34 @@ const UserDashboard = () => {
                   </>
                 )}
               </motion.div>
+
+              <motion.div 
+              className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <button
+                onClick={() => navigate("/patient-appointment")}
+                className="w-full flex items-center justify-between p-4 rounded-xl bg-indigo-50 hover:bg-indigo-100 transition-colors"
+              >
+                <span className="text-indigo-700 font-medium">New Appointment</span>
+                <Stethoscope className="h-5 w-5 text-indigo-700" />
+              </button>
+              <button
+                onClick={() => navigate("/patient-prescription")}
+                className="w-full flex items-center justify-between p-4 rounded-xl bg-emerald-50 hover:bg-emerald-100 transition-colors"
+              >
+                <span className="text-emerald-700 font-medium">Prescriptions</span>
+                <Pill className="h-5 w-5 text-emerald-700" />
+              </button>
+              <button
+                onClick={() => navigate("/emergency")}
+                className="w-full flex items-center justify-between p-4 rounded-xl bg-rose-50 hover:bg-rose-100 transition-colors"
+              >
+                <span className="text-rose-700 font-medium">Emergency</span>
+                <AlertCircle className="h-5 w-5 text-rose-700" />
+              </button>
+            </motion.div>
 
               <motion.div
                 whileHover={{ scale: 1.02 }}
