@@ -57,7 +57,6 @@ const UserProfile = () => {
     register,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(formSchema),
