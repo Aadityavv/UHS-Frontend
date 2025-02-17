@@ -15,15 +15,15 @@ import {
 import axios from "axios";
 import { ChangeEventHandler, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "./SignIn.scss";
-import Shared from "@/Shared";
-import { Dialog } from "@radix-ui/react-dialog";
 import {
+  Dialog,
   DialogContent,
   DialogDescription,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Eye, EyeOff, MapPin, Stethoscope, User, HeartPulse } from "lucide-react";
+import { motion } from "framer-motion";
 
 const API_URLS = {
   patient: "http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/api/auth/patient/signin",
@@ -38,9 +38,9 @@ const DASHBOARD_ROUTES = {
 };
 
 const ROLES = [
-  { value: "doctor", label: "Doctor" },
-  { value: "patient", label: "Patient" },
-  { value: "nursing_assistant", label: "Nursing Assistant" },
+  { value: "doctor", label: "Doctor", icon: Stethoscope },
+  { value: "patient", label: "Patient", icon: User },
+  { value: "nursing_assistant", label: "Nursing Assistant", icon: HeartPulse },
 ];
 
 const SignIn = () => {
@@ -49,43 +49,17 @@ const SignIn = () => {
   const [input, setInput] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<string>("patient");
-  const [location, setLocation] = useState<{
-    latitude: string;
-    longitude: string;
-  }>({
+  const [location, setLocation] = useState({
     latitude: "-1",
     longitude: "-1",
   });
   const [locations, setLocations] = useState<
     Array<{ locationName: string; latitude: string; longitude: string }>
   >([]);
-  const [passRole, setPassRole] = useState<string>("patient");
-  const [process, setProcess] = useState<string>("Submit");
-
-  // const getRoleDisplayName = (role: string) => {
-  //   const roleMapping: { [key: string]: string } = {
-  //     doctor: "Doctor",
-  //     patient: "Patient",
-  //     assistant_doctor: "Nursing Assistant",
-  //   };
-  //   return roleMapping[role] || role.replace("_", " ");
-  // };
 
   const onInputChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     const { id, value } = e.target;
     setInput((prev) => ({ ...prev, [id]: value }));
-  };
-
-  const handleRoleChangePass: ChangeEventHandler<HTMLInputElement> = async (
-    e
-  ) => {
-    const selectedRole = e.target.value;
-    setPassRole(selectedRole);
-  };
-
-  const handleRoleChange: ChangeEventHandler<HTMLInputElement> = async (e) => {
-    const selectedRole = e.target.value;
-    setRole(selectedRole);
   };
 
   const handleLocationChange = (value: string) => {
@@ -96,46 +70,6 @@ const SignIn = () => {
       setLocation({
         latitude: selectedLocation.latitude,
         longitude: selectedLocation.longitude,
-      });
-    }
-  };
-
-  const handlePassChange = async (data: any) => {
-    data.preventDefault();
-
-    setProcess("Loading...");
-    const email = data.target.email.value;
-    const emailSent =
-      email.substring(0, email.indexOf("@")) +
-      email.substring(email.indexOf("@")).replaceAll(".", ",");
-    try {
-      const response = await axios.get(
-        `http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/api/auth/passwordChangeRequest?email=${emailSent}&role=${passRole}`
-      );
-
-      if (response.status === 200) {
-        setProcess("Submit");
-        return toast({
-          variant: "default",
-          title: "Request Successfull",
-          description: response.data,
-        });
-      } else {
-        setProcess("Submit");
-        return toast({
-          variant: "destructive",
-          title: "Request Unsuccessfull",
-          description: response.data.message,
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
-        });
-      }
-    } catch (err: any) {
-      setProcess("Submit");
-      return toast({
-        variant: "destructive",
-        title: "Request Unsuccessfull",
-        description: err.response.data.message,
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };
@@ -151,8 +85,7 @@ const SignIn = () => {
     }
 
     const apiUrl = API_URLS[role as keyof typeof API_URLS];
-    const dashboardRoute =
-      DASHBOARD_ROUTES[role as keyof typeof DASHBOARD_ROUTES];
+    const dashboardRoute = DASHBOARD_ROUTES[role as keyof typeof DASHBOARD_ROUTES];
 
     try {
       const headers =
@@ -168,10 +101,7 @@ const SignIn = () => {
 
       localStorage.setItem("token", token);
       localStorage.setItem("email", email);
-      localStorage.setItem(
-        "roles",
-        roles[0].replace("ROLE_", "").toLowerCase()
-      );
+      localStorage.setItem("roles", roles[0].replace("ROLE_", "").toLowerCase());
       localStorage.setItem("longitude", location.longitude);
       localStorage.setItem("latitude", location.latitude);
 
@@ -181,9 +111,7 @@ const SignIn = () => {
         description: `Welcome back, ${role.replace("_", " ")}!`,
       });
 
-      setTimeout(() => {
-        navigate(dashboardRoute);
-      }, 1000);
+      setTimeout(() => navigate(dashboardRoute), 1000);
     } catch (error: any) {
       const message =
         error.response?.status === 401
@@ -202,23 +130,15 @@ const SignIn = () => {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const resp = await axios.get("http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/api/location/");
-        if (resp.status === 200) {
-          const data = resp.data;
-          setLocations(data);
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Fetch Error",
-            description: resp.data.message,
-            action: <ToastAction altText="Try again">Try again</ToastAction>,
-          });
-        }
+        const resp = await axios.get(
+          "http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/api/location/"
+        );
+        if (resp.status === 200) setLocations(resp.data);
       } catch (err) {
         toast({
           variant: "destructive",
           title: "Network Error",
-          description: "Error in fetching locations. Please try again.",
+          description: "Error fetching locations. Please try again.",
           action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
@@ -227,184 +147,243 @@ const SignIn = () => {
   }, []);
 
   return (
-    <>
+    <div 
+      className="min-h-screen flex items-center justify-center p-4 lg:p-8"
+      style={{ background: "linear-gradient(to right, #24186c, #530962)" }}
+    >
       <Toaster />
-      <div className="sign-container">
-        <div className="sign-container__left"></div>
-        <div className="sign-container__right">
-          <div className="sign-container__right-content">
-            <img src="/upes-logo.jpg" alt="UPES Logo" />
-            <h1 className="text-[2.1rem] font-medium pb-4 whitespace-nowrap">
-              Welcome to UHS Portal
-            </h1>
-            <div className="sign-container__right-header">
-              <p className="font-medium pb-1">Login as:</p>
-              <div className="flex w-full pb-4">
-                {ROLES.map(({ value, label }) => (
-                  <label
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-4xl bg-white/90 backdrop-blur-md rounded-2xl shadow-xl grid grid-cols-1 lg:grid-cols-[45%_55%]"
+      >
+        {/* Animated Branding Section */}
+        <div className="hidden lg:flex flex-col items-center justify-center p-6 bg-gradient-to-br from-indigo-900/20 to-purple-900/20 relative overflow-hidden">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="absolute -top-32 -left-32 w-64 h-64 bg-indigo-200/10 rounded-full blur-xl"
+          />
+          <motion.div
+            initial={{ x: -100 }}
+            animate={{ x: 0 }}
+            className="absolute bottom-20 right-20 w-48 h-48 bg-purple-200/10 rounded-full blur-lg"
+          />
+
+          <div className="relative z-10 text-center space-y-6">
+            <motion.div
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 100 }}
+            >
+              <img
+                src="/upes-logo.jpg"
+                alt="UPES Logo"
+                className="w-28 mx-auto bg-white rounded-xl p-2 shadow-2xl hover:rotate-3 transition-transform duration-300"
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                UHS Portal
+              </h2>
+              <p className="text-gray-600 mt-2 text-sm font-medium">
+                Integrated Healthcare Management System
+              </p>
+            </motion.div>
+
+            <motion.div
+              className="flex justify-center gap-4 mt-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              {[
+                { icon: Stethoscope, label: "Medical Experts", color: "text-indigo-600" },
+                { icon: HeartPulse, label: "24/7 Support", color: "text-purple-600" },
+                { icon: MapPin, label: "Campus Wide", color: "text-pink-600" },
+              ].map((item, index) => (
+                <motion.div
+                  key={item.label}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.6 + index * 0.1, type: "spring" }}
+                  className="text-center"
+                >
+                  <item.icon className={`h-6 w-6 mb-2 ${item.color}`} />
+                  <p className="text-xs text-gray-600">{item.label}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Compact Form Section */}
+        <div className="p-6 lg:p-8">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="space-y-6"
+          >
+            <div className="space-y-4">
+              <div className="text-center">
+                <h1 className="text-2xl font-bold text-gray-900">Sign In</h1>
+                <p className="text-gray-600 text-sm mt-1">Access your health services</p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                {ROLES.map(({ value, label, icon: Icon }) => (
+                  <motion.div
                     key={value}
-                    className={`flex items-center whitespace-nowrap ${
-                      value === "doctor"
-                        ? "justify-start"
-                        : value === "nursing_assistant"
-                        ? "justify-end"
-                        : "justify-center"
-                    } w-full`}
+                    whileHover={{ scale: 1.02 }}
+                    className={`flex flex-col items-center p-2 rounded-md cursor-pointer transition-all ${
+                      role === value
+                        ? "bg-indigo-50 border border-indigo-200"
+                        : "bg-gray-50 hover:bg-gray-100 border border-transparent"
+                    }`}
+                    onClick={() => setRole(value)}
                   >
-                    <input
-                      type="radio"
-                      name="role"
-                      value={value}
-                      checked={role === value}
-                      onChange={handleRoleChange}
-                      className="mr-2"
+                    <Icon
+                      className={`h-5 w-5 ${
+                        role === value ? "text-indigo-600" : "text-gray-500"
+                      } mb-1`}
                     />
-                    {label}
-                  </label>
+                    <span className={`text-xs font-medium ${
+                      role === value ? "text-indigo-700" : "text-gray-700"
+                    }`}>
+                      {label}
+                    </span>
+                  </motion.div>
                 ))}
               </div>
-              <h1>
-                <span className="capitalize">{role.replace("_", " ")}</span>{" "}
-                Sign in
-              </h1>
-            </div>
-            <form>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  type="email"
-                  id="email"
-                  placeholder="Email"
-                  value={input.email}
-                  onChange={onInputChange}
-                  className="bg-white text-black"
-                />
-              </div>
 
-              <div>
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-gray-700 text-sm">Email</Label>
                   <Input
-                    type={showPassword ? "text" : "password"}
-                    id="password"
-                    placeholder="Password"
-                    value={input.password}
+                    type="email"
+                    id="email"
+                    placeholder="student@upes.edu.in"
+                    value={input.email}
                     onChange={onInputChange}
-                    className="bg-white text-black pr-10"
+                    className="mt-1 h-9 rounded-lg text-sm"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-600"
-                    aria-label="Toggle password visibility"
-                  >
-                    {showPassword ? Shared.Eye : Shared.SlashEye}
-                  </button>
                 </div>
-              </div>
-              <div>
-                <Label>Location</Label>
-                <Select onValueChange={handleLocationChange}>
-                  <SelectTrigger className="bg-white text-black">
-                    <SelectValue placeholder="Select a location" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white text-black">
-                    <SelectGroup className="h-[4rem] overflow-y-scroll">
-                      {locations.map((loc) => (
-                        <SelectItem
-                          key={loc.locationName}
-                          value={loc.locationName}
-                        >
-                          {loc.locationName}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-            </form>
 
-            <div className="gap-2 flex flex-col w-full">
-              <Button className="sign-in-btn" onClick={handleSignIn}>
-                Sign In
-              </Button>
-
-              {role === "patient" && (
-                <div className="flex flex-col items-center">
-                  <div className="flex w-full justify-center items-center">
-                    <span className="w-[40%] flex items-center justify-center whitespace-nowrap">
-                      Need an account?&nbsp;&nbsp;
-                      <Link to="/register" className="text-blue-500">
-                        Register
-                      </Link>
-                    </span>
+                <div>
+                  <Label className="text-gray-700 text-sm">Password</Label>
+                  <div className="relative mt-1">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      id="password"
+                      placeholder="••••••••"
+                      value={input.password}
+                      onChange={onInputChange}
+                      className="h-9 rounded-lg text-sm pr-8"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-2 top-2 text-gray-500 hover:text-indigo-600"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
                 </div>
+
+                <div>
+                  <Label className="text-gray-700 text-sm">Campus</Label>
+                  <Select onValueChange={handleLocationChange}>
+                    <SelectTrigger className="mt-1 h-9 rounded-lg text-sm">
+                      <div className="flex items-center">
+                        <MapPin className="h-4 w-4 text-gray-500 mr-2" />
+                        <SelectValue placeholder="Select location" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent className="rounded-lg text-sm">
+                      <SelectGroup>
+                        {locations.map((loc) => (
+                          <SelectItem
+                            key={loc.locationName}
+                            value={loc.locationName}
+                          >
+                            {loc.locationName}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Button
+                  onClick={handleSignIn}
+                  className="w-full h-9 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-sm"
+                >
+                  Sign In
+                </Button>
+              </div>
+            </div>
+
+            <div className="text-center space-y-2">
+              {role === "patient" && (
+                <p className="text-xs text-gray-600">
+                  New student?{" "}
+                  <Link
+                    to="/register"
+                    className="text-indigo-600 hover:underline font-medium"
+                  >
+                    Create account
+                  </Link>
+                </p>
               )}
               <Dialog>
-                <DialogTrigger>
-                  <span className="text-blue-500">Forgot Password?</span>
+                <DialogTrigger asChild>
+                  <button className="text-xs text-indigo-600 hover:underline font-medium">
+                    Forgot password?
+                  </button>
                 </DialogTrigger>
-                <DialogContent>
-                  <DialogTitle className="font-medium text-center">
-                    Forgot Password
-                  </DialogTitle>
+                <DialogContent className="rounded-lg">
+                  <DialogTitle className="text-lg">Password Recovery</DialogTitle>
                   <DialogDescription>
-                    <label className="font-medium text-black">You are:</label>
-                    <div className="flex w-full pb-4">
-                      {ROLES.map(({ value, label }) => (
-                        <label
-                          key={value}
-                          className={`flex items-center text-black whitespace-nowrap ${
-                            value === "doctor"
-                              ? "justify-start"
-                              : value === "nursing_assistant"
-                              ? "justify-end"
-                              : "justify-center"
-                          } w-full`}
-                        >
-                          <input
-                            type="radio"
-                            name="passRole"
-                            value={value}
-                            checked={passRole === value}
-                            onChange={handleRoleChangePass}
-                            className="mr-2"
-                          />
-                          {label}
-                        </label>
-                      ))}
-                    </div>
-                    <form onSubmit={handlePassChange}>
-                      <div className="form-group">
-                        <label
-                          htmlFor="Forgot Email"
-                          className="text-black font-medium"
-                        >
-                          Enter your email ID:
-                        </label>
-                        <input name="email" type="email" />
+                    <form className="space-y-3">
+                      <div>
+                        <Label className="text-sm">Account Type</Label>
+                        <div className="grid grid-cols-3 gap-2 mt-1">
+                          {ROLES.map(({ value, label }) => (
+                            <Button
+                              key={value}
+                              variant={role === value ? "default" : "outline"}
+                              onClick={() => setRole(value)}
+                              className="h-8 text-xs"
+                            >
+                              {label}
+                            </Button>
+                          ))}
+                        </div>
                       </div>
-                      <button
-                        type={process === "Submit" ? "submit" : "button"}
-                        className="submit-button"
-                      >
-                        {process}
-                      </button>
+                      <div>
+                        <Label className="text-sm">Registered Email</Label>
+                        <Input
+                          type="email"
+                          placeholder="Enter email"
+                          className="mt-1 h-8 text-sm"
+                        />
+                      </div>
+                      <Button className="w-full h-8 text-sm">Reset Password</Button>
                     </form>
                   </DialogDescription>
                 </DialogContent>
               </Dialog>
             </div>
-          </div>
+          </motion.div>
         </div>
-      </div>
-      <div className="flex items-center justify-center w-full border-t border-black bg-white text-black min-h-[8svh] max-lg:hidden">
-        <b>Energy Acres, Bidholi : </b>&nbsp;+91-7500201816, +91-8171323285
-        &nbsp; | &nbsp; <b>Knowledge Acres, Kandoli : </b>
-        &nbsp;+91-8171979021, +91-7060111775
-      </div>
-    </>
+      </motion.div>
+    </div>
   );
 };
 
