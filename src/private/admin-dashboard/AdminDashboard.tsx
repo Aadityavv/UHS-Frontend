@@ -12,7 +12,6 @@ import {
   HeartPulse,
   Server
 } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
 import Skeleton from '@mui/material/Skeleton';
 
 const AdminDashboard = () => {
@@ -85,25 +84,27 @@ const AdminDashboard = () => {
               )}
             </motion.div>
 
-            {/* Calendar */}
+            {/* Date Display */}
             <motion.div
               whileHover={{ scale: 1.02 }}
               className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
             >
               {loading ? (
-                <Skeleton variant="rectangular" width="100%" height={300} />
+                <Skeleton variant="rectangular" width="100%" height={120} />
               ) : (
                 <>
                   <div className="flex items-center mb-4">
                     <CalendarIcon className="h-5 w-5 mr-2 text-indigo-600" />
-                    <h3 className="text-lg font-semibold item">Admin Calendar</h3>
+                    <h3 className="text-lg text-gray-500 font-semibold item">Today's Date</h3>
                   </div>
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    className="border-0"
-                  />
+                  <p className="text-lg font-bold">
+                    {date?.toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </p>
                 </>
               )}
             </motion.div>
