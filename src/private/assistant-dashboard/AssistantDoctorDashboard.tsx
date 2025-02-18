@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
-import { Calendar } from "@/components/ui/calendar";
+import {useState } from "react";
+// import { Calendar } from "@/components/ui/calendar";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
-import { ToastAction } from "@/components/ui/toast";
-import { motion } from "framer-motion";
+// import { ToastAction } from "@/components/ui/toast";
+import { motion, time } from "framer-motion";
 import { 
   Stethoscope,
   Pill,
@@ -20,10 +20,11 @@ import {
   Activity,
   Syringe
 } from "lucide-react";
+// import { date } from "zod";
 
 const AssistantDoctorDashboard = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  useToast();
   const [time, setTime] = useState<Date>(new Date());
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [totalPatients, setTotalPatients] = useState(0);
@@ -89,7 +90,7 @@ const AssistantDoctorDashboard = () => {
                   })}
                 </p>
               </motion.div>
-
+                  
               {/* <motion.div
                 whileHover={{ scale: 1.02 }}
                 className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
