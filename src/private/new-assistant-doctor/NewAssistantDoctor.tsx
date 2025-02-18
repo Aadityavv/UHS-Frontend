@@ -1,23 +1,26 @@
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
-import { ToastAction } from "@/components/ui/toast";
-import { Input } from "@/components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
-import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import { z } from "zod";
-import axios from "axios";
-import Shared from "@/Shared";
 import { useState } from "react";
+import { ToastAction } from "@/components/ui/toast";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
+import { motion } from "framer-motion";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
 const formSchema = z
   .object({
     name: z
@@ -47,7 +50,7 @@ const formSchema = z
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
-    message: "Password do not match",
+    message: "Passwords do not match",
   });
 
 const NewAssistantDoctor = () => {
@@ -59,11 +62,11 @@ const NewAssistantDoctor = () => {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: undefined,
-      password: undefined,
-      confirmPassword: undefined,
-      email: undefined,
-      designation: undefined,
+      name: "",
+      password: "",
+      confirmPassword: "",
+      email: "",
+      designation: "",
     },
   });
 
@@ -78,11 +81,15 @@ const NewAssistantDoctor = () => {
           return;
         }
         const payload = { ...data, status: false };
-        await axios.post("http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/api/admin/AD/signup", payload, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        await axios.post(
+          "http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/api/admin/AD/signup",
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         toast({
           title: "Registration Successful",
           description: "A verification email has been sent to your email.",
@@ -105,134 +112,57 @@ const NewAssistantDoctor = () => {
   const handleCancel = () => {
     navigate("/admin-dashboard");
   };
-  return (
-    <>
-      <Toaster />
-      <div className="min-h-[84svh] p-6 max-lg:min-h-[93svh]">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <div>
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem className="mt-3">
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="Enter your email"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem className="mt-3">
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Enter password"
-                          {...field}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword((prev) => !prev)}
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-600"
-                          aria-label="Toggle password visibility"
-                        >
-                          {showPassword ? Shared.Eye : Shared.SlashEye}
-                        </button>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem className="mt-3">
-                    <FormLabel>Confirm Password</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          type={showConfirmPassword ? "text" : "password"}
-                          placeholder="Confirm password"
-                          {...field}
-                        />
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setShowConfirmPassword((prev) => !prev)
-                          }
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-600"
-                          aria-label="Toggle password visibility"
-                        >
-                          {showConfirmPassword ? Shared.Eye : Shared.SlashEye}
-                        </button>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="designation"
-                render={({ field }) => (
-                  <FormItem className="mt-3">
-                    <FormLabel>Designation</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter designation" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+  return (
+    <div
+      className="min-h-screen flex items-center justify-center p-4 lg:p-8"
+      style={{ background: "linear-gradient(to right, #24186c, #530962)" }}
+    >
+      <Toaster />
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-4xl bg-white/90 backdrop-blur-md rounded-2xl shadow-xl grid grid-cols-1"
+      >
+        <div className="p-6 lg:p-8">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="space-y-6"
+          >
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-gray-900">New Assistant Doctor Registration</h1>
+              <p className="text-gray-600 text-sm mt-1">Register a new assistant doctor</p>
             </div>
+
+            <div className="space-y-3">
+              <Label className="text-gray-700 text-sm">Name</Label>
+              <Input type="text" placeholder="Enter name" {...form.register("name")} className="mt-1 h-9 rounded-lg text-sm" />
+
+              <Label className="text-gray-700 text-sm">Email</Label>
+              <Input type="email" placeholder="Enter email" {...form.register("email")} className="mt-1 h-9 rounded-lg text-sm" />
+
+              <Label className="text-gray-700 text-sm">Password</Label>
+              <div className="relative mt-1">
+                <Input type={showPassword ? "text" : "password"} placeholder="Enter password" {...form.register("password")} className="h-9 rounded-lg text-sm pr-8" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2 top-2 text-gray-500 hover:text-indigo-600">
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+
+              <Label className="text-gray-700 text-sm">Confirm Password</Label>
+              <Input type={showConfirmPassword ? "text" : "password"} placeholder="Confirm password" {...form.register("confirmPassword")} className="h-9 rounded-lg text-sm" />
+            </div>
+
             <div className="flex justify-end items-center gap-4 pt-5">
-              <Button
-                type="button"
-                onClick={handleCancel}
-                variant="secondary"
-                className="text-red-500 bg-white border border-red-500 w-[6rem]"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="bg-gradient-to-r from-blue-500 via-blue-700 to-blue-900 w-[6rem] text-white"
-              >
-                Submit
-              </Button>
+              <Button type="button" onClick={handleCancel} variant="secondary" className="text-red-500 bg-white border border-red-500 w-[6rem]">Cancel</Button>
+              <Button type="submit" onClick={form.handleSubmit(onSubmit)} className="bg-gradient-to-r from-blue-500 via-blue-700 to-blue-900 w-[6rem] text-white">Submit</Button>
             </div>
-          </form>
-        </Form>
-      </div>
-    </>
+          </motion.div>
+        </div>
+      </motion.div>
+    </div>
   );
 };
 

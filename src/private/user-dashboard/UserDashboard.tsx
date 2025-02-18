@@ -177,7 +177,7 @@ const UserDashboard = () => {
             <div className="grid md:grid-cols-3 gap-3 mb-8">
               <motion.div
                 whileHover={{ scale: 1.02 }}
-                className="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-2xl p-6 text-white"
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 text-white"
               >
                 {loading ? (
                   <>
