@@ -10,7 +10,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { motion } from "framer-motion";
+import Shared from "@/Shared";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -19,20 +21,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import axios from "axios";
-import { useEffect, useState } from "react";
+import "./PatientList.css";
 import { useNavigate } from "react-router-dom";
-import {
-  Search,
-  FileText,
-  CheckSquare,
-  XSquare,
-  FilePlus2,
-  RefreshCw,
-  User,
-  Stethoscope,
-  ClipboardList
-} from "lucide-react";
 
 const PatientList = () => {
   const navigate = useNavigate();
@@ -348,163 +338,384 @@ const PatientList = () => {
   return (
     <>
       <Toaster />
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
+      <div className="bg-[#ECECEC] min-h-[84svh] p-8 space-y-8 flex flex-col max-lg:min-h-[93svh] max-lg:p-4 max-lg:py-4">
+        <div className="flex justify-center items-center gap-2">
+          <button
+            onClick={() => setSelectedButton("Pending")}
+            className={`shadow-md px-4 py-2 rounded-md w-40 ${
+              selectedButton === "Pending"
+                ? "bg-gradient-to-r from-[#2061f5] to-[#13398f] text-white"
+                : "bg-gray-100 text-black"
+            }`}
           >
-            {/* Header Section */}
-            <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold text-gray-900">Patient Management</h1>
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <Input
-                    className="pl-10 pr-4 py-2 rounded-lg border-gray-200 focus:ring-indigo-500"
-                    placeholder="Search patients..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Filter Buttons */}
-            <div className="grid grid-cols-3 gap-4">
-              {["Pending", "Assigned", "Appointed"].map((status) => (
-                <motion.button
-                  key={status}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setSelectedButton(status)}
-                  className={`p-4 rounded-xl flex items-center justify-center gap-2 transition-colors ${
-                    selectedButton === status
-                      ? "bg-indigo-600 text-white"
-                      : "bg-white text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  {status === "Pending" && <ClipboardList className="h-6 w-6" />}
-                  {status === "Assigned" && <User className="h-6 w-6" />}
-                  {status === "Appointed" && <Stethoscope className="h-6 w-6" />}
-                  <span className="font-medium">{status}</span>
-                </motion.button>
-              ))}
-            </div>
-
-            {/* Table Section */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
-            >
-              <Table className="border-none">
-                <TableHeader className="bg-gray-50">
-                  <TableRow className="hover:bg-transparent">
-                    {selectedButton !== "Assigned" ? (
-                      <>
-                        <TableHead className="text-gray-600 font-semibold">S.No.</TableHead>
-                        <TableHead className="text-gray-600 font-semibold">Name</TableHead>
-                        <TableHead className="text-gray-600 font-semibold">Email</TableHead>
-                        <TableHead className="text-gray-600 font-semibold">Reason</TableHead>
-                        <TableHead className="text-gray-600 font-semibold">Actions</TableHead>
-                      </>
-                    ) : (
-                      <>
-                        <TableHead className="text-gray-600 font-semibold">Doctor</TableHead>
-                        <TableHead className="text-gray-600 font-semibold">Patient</TableHead>
-                        <TableHead className="text-gray-600 font-semibold">Token</TableHead>
-                      </>
-                    )}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {(selectedButton !== "Assigned" ? filteredPatient : assignedData).length > 0 ? (
-                    (selectedButton !== "Assigned" ? filteredPatient : assignedData).map((item, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                      >
-                        <TableRow className="hover:bg-gray-50">
-                          {selectedButton !== "Assigned" ? (
-                            <>
-                              <TableCell className="text-gray-700">{index + 1}</TableCell>
-                              <TableCell className="text-gray-700">{item.name}</TableCell>
-                              <TableCell className="text-gray-700">{item.email}</TableCell>
-                              <TableCell className="text-gray-700">{item.reason}</TableCell>
-                              <TableCell className="flex items-center gap-2">
-                                {selectedButton === "Pending" ? (
-                                  <Dialog
-                                    onOpenChange={(open) => {
-                                      if (open) {
-                                        getAppointmentDetails(item.email);
+            Pending
+          </button>
+          <button
+            onClick={() => setSelectedButton("Assigned")}
+            className={`shadow-md px-4 py-2 rounded-md w-40 ${
+              selectedButton === "Assigned"
+                ? "bg-gradient-to-r from-[#2061f5] to-[#13398f] text-white"
+                : "bg-gray-100 text-black"
+            }`}
+          >
+            Assigned
+          </button>
+          <button
+            onClick={() => setSelectedButton("Appointed")}
+            className={`shadow-md px-4 py-2 rounded-md w-40 ${
+              selectedButton === "Appointed"
+                ? "bg-gradient-to-r from-[#2061f5] to-[#13398f] text-white"
+                : "bg-gray-100 text-black"
+            }`}
+          >
+            Appointed
+          </button>
+          
+        </div>
+        <div className="flex space-x-2 items-center">
+          {Shared.Search}
+          <Input
+            className="bg-white"
+            placeholder="Search patients..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="h-full overflow-y-scroll">
+          {selectedButton !== "Assigned"?(<Table className="bg-white rounded-md">
+            <TableHeader>
+              <TableRow className="h-20">
+                <TableHead className="border text-black font-bold text-center">
+                  S.No.
+                </TableHead>
+                <TableHead className="border text-black font-bold text-center">
+                  Name
+                </TableHead>
+                <TableHead className="border text-black font-bold text-center">
+                  Email Id
+                </TableHead>
+                <TableHead className="border text-black font-bold text-center whitespace-nowrap">
+                  Reason for visit
+                </TableHead>
+                <TableHead className="border text-black font-bold text-center">
+                  Action
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredPatient.length > 0 ? (
+                filteredPatient.map((pat, index) => (
+                  <TableRow className="text-center" key={index}>
+                    <TableCell className="border">{index + 1}</TableCell>
+                    <TableCell className="border whitespace-nowrap">
+                      {pat.name}
+                    </TableCell>
+                    <TableCell className="border whitespace-nowrap">
+                      {pat.email}
+                    </TableCell>
+                    <TableCell className="border">{pat.reason}</TableCell>
+                    <TableCell className="border flex items-center justify-center">
+                      {selectedButton === "Pending" ? (
+                        <Dialog
+                          onOpenChange={(open) => {
+                            if (open) {
+                              getAppointmentDetails(pat.email);
+                            }
+                          }}
+                        >
+                          <DialogTrigger className="text-2xl">
+                            {Shared.Report}
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle className="font-medium text-center pb-3">
+                                Enter following details
+                              </DialogTitle>
+                              <DialogDescription>
+                                <form onSubmit={handleSubmit}>
+                                  <div className="form-group">
+                                    <label htmlFor="preferredDoctor">
+                                      Preferred Doctor
+                                    </label>
+                                    <input
+                                      type="text"
+                                      id="preferredDoctor"
+                                      name="preferredDoctor"
+                                      className="form-input"
+                                      placeholder="Enter preferred doctor's name"
+                                      value={docData?.pref_doc}
+                                      readOnly
+                                    />
+                                  </div>
+                                  <div className="form-group">
+                                    <label htmlFor="reason">
+                                      Reason for preference
+                                    </label>
+                                    <input
+                                      id="reason"
+                                      name="reason"
+                                      className="form-input"
+                                      placeholder="Enter reason"
+                                      value={docData?.doc_reason}
+                                      readOnly
+                                    />
+                                  </div>
+                                  <div className="form-group">
+                                    <label htmlFor="appointment">
+                                      Doctor Assigned*
+                                    </label>
+                                    <select
+                                      id="appointment"
+                                      name="appointment"
+                                      className="form-input"
+                                      value={dialogData.pref_doc}
+                                      onChange={(e) =>
+                                        setDialogData({
+                                          ...dialogData,
+                                          pref_doc: e.target.value,
+                                        })
                                       }
-                                    }}
-                                  >
-                                    <DialogTrigger className="text-indigo-600 hover:text-indigo-700">
-                                      <FilePlus2 className="h-5 w-5" />
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                      <DialogHeader>
-                                        <DialogTitle className="font-medium text-center pb-3">
-                                          Appointment Details
-                                        </DialogTitle>
-                                        <DialogDescription>
-                                          {/* Keep existing form structure */}
-                                        </DialogDescription>
-                                      </DialogHeader>
-                                    </DialogContent>
-                                  </Dialog>
-                                ) : (
-                                  <>
-                                    <button
-                                      onClick={() => navigate(`/appointed-prescription?id=${item.aptId}`)}
-                                      className="text-green-600 hover:text-green-700"
                                     >
-                                      <FileText className="h-5 w-5" />
+                                      <option value="">Select a doctor</option>
+                                      {doctors.map((doctor) => (
+                                        <option
+                                          key={doctor.id}
+                                          value={doctor.id}
+                                        >
+                                          {doctor.name}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+
+                                  <div className="flex justify-between">
+                                    <div className="form-group">
+                                      <label
+                                        htmlFor="temperature"
+                                        className="whitespace-nowrap"
+                                      >
+                                        Current Temperature* (in °F)
+                                      </label>
+                                      <input
+                                        type="number"
+                                        id="temperature"
+                                        name="temperature"
+                                        min={0}
+                                        className="form-input"
+                                        placeholder="Enter temperature"
+                                        value={dialogData.temperature}
+                                        onChange={(e) =>
+                                          setDialogData({
+                                            ...dialogData,
+                                            temperature: e.target.value,
+                                          })
+                                        }
+                                      />
+                                    </div>
+                                    <div className="form-group">
+                                      <label htmlFor="weight">
+                                        Current Weight* (in Kg)
+                                      </label>
+                                      <input
+                                        type="number"
+                                        id="weight"
+                                        name="weight"
+                                        min={0}
+                                        step={0.01}
+                                        className="form-input"
+                                        placeholder="Enter weight"
+                                        value={dialogData.weight}
+                                        onChange={(e) =>
+                                          setDialogData({
+                                            ...dialogData,
+                                            weight: e.target.value,
+                                          })
+                                        }
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <button
+                                      type="button"
+                                      className="reject-button"
+                                      onClick={async () => {
+                                        try {
+                                          const token = localStorage.getItem("token");
+                                          const email = pat.email
+                                          const emailSent = email.substring(0,email.indexOf("@"))+email.substring(email.indexOf("@")).replace(".",",");
+                                          const response = await axios.get(
+                                            `http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/api/AD/rejectAppointment?email=${emailSent}`,
+                                            {
+                                              headers: {
+                                                Authorization: `Bearer ${token}`,
+                                              },
+                                            }
+                                          );
+
+                                          if (response.status === 200) {
+                                            toast({
+                                              title: "Appointment Rejected",
+                                              description: response.data,
+                                            });
+                                            window.location.reload();
+                                          }
+                                        } catch (error) {
+                                          console.error(
+                                            "Error Rejecting appointment details:",
+                                            error
+                                          );
+                                          handleError(
+                                            error,
+                                            "Failed to reject appointment"
+                                          );
+                                        }
+                                      }}
+                                    >
+                                      Reject
                                     </button>
                                     <button
-                                      onClick={() => handleCompleteAppointment(item.email)}
-                                      className="text-blue-600 hover:text-blue-700"
+                                      type="submit"
+                                      className="submit-button"
                                     >
-                                      <CheckSquare className="h-5 w-5" />
+                                      Submit
                                     </button>
+                                  </div>
+                                </form>
+                              </DialogDescription>
+                            </DialogHeader>
+                          </DialogContent>
+                        </Dialog>
+                      ) : (
+                        <div className="flex items-center gap-5 text-2xl">
+                          <button
+                            onClick={() =>
+                              navigate(`/appointed-prescription?id=${pat.aptId}`)
+                            }
+                          >
+                            {Shared.Prescription}
+                          </button>
+
+                          <button
+                            onClick={() => handleCompleteAppointment(pat.email)}
+                          >
+                            {Shared.SquareCheck}
+                          </button>
+                          <button
+                            onClick={() => handleRejectAppointment(pat.email)}
+                          >
+                            {Shared.SquareCross}
+                          </button>
+                          <Dialog
+                          onOpenChange={(open) => {
+                            if (open) {
+                              fetchAvailableDoctors();
+                              setReassignPat({
+                                ...reassignPat,
+                                patientEmail:pat.email
+                              })
+                            }
+                          }}
+                        >
+                          <DialogTrigger className="text-2xl">
+                            {Shared.Report}
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle className="font-medium text-center pb-3">
+                                Reassign Patient
+                              </DialogTitle>
+                              <DialogDescription>
+                                <form onSubmit={handleReassign}>
+                                  <div className="form-group">
+                                    <label htmlFor="appointment">
+                                      Doctor Assigned*
+                                    </label>
+                                    <select
+                                      id="appointment"
+                                      name="appointment"
+                                      className="form-input"
+                                      value={reassignPat.doctorEmail}
+                                      onChange={(e) =>
+                                        setReassignPat({
+                                          ...reassignPat,
+                                          doctorEmail: e.target.value,
+                                        })
+                                      }
+                                    >
+                                      <option value="">Select a doctor</option>
+                                      {doctors.map((doctor) => (
+                                        <option
+                                          key={doctor.id}
+                                          value={doctor.id}
+                                        >
+                                          {doctor.name}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    
                                     <button
-                                      onClick={() => handleRejectAppointment(item.email)}
-                                      className="text-red-600 hover:text-red-700"
+                                      type="submit"
+                                      className="submit-button"
                                     >
-                                      <XSquare className="h-5 w-5" />
+                                      Submit
                                     </button>
-                                  </>
-                                )}
-                              </TableCell>
-                            </>
-                          ) : (
-                            <>
-                              <TableCell className="text-gray-700">{item.doctorName}</TableCell>
-                              <TableCell className="text-gray-700">{item.patientName}</TableCell>
-                              <TableCell className="text-gray-700">{item.tokenNum}</TableCell>
-                            </>
-                          )}
-                        </TableRow>
-                      </motion.div>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={5} className="py-6 text-center text-gray-500">
-                        <div className="flex flex-col items-center justify-center space-y-2">
-                          <ClipboardList className="h-12 w-12 text-gray-400" />
-                          <p>No patients available</p>
+                                  </div>
+                                </form>
+                              </DialogDescription>
+                            </DialogHeader>
+                          </DialogContent>
+                        </Dialog>
                         </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </motion.div>
-          </motion.div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow className="text-center">
+                  <TableCell colSpan={5} className="border py-5">
+                    No patient available!
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>):(<Table className="bg-white rounded-md">
+            <TableHeader>
+              <TableRow className="h-20">
+                <TableHead className="border text-black font-bold text-center">
+                  Doctor Name
+                </TableHead>
+                <TableHead className="border text-black font-bold text-center">
+                  Patient Name
+                </TableHead>
+                <TableHead className="border text-black font-bold text-center whitespace-nowrap">
+                  Token Number
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {assignedData.length > 0 ? (
+                assignedData.map((pat, index) => (
+                  <TableRow className="text-center" key={index}>
+                    <TableCell className="border whitespace-nowrap">
+                      {pat.doctorName}
+                    </TableCell>
+                    <TableCell className="border whitespace-nowrap">
+                      {pat.patientName}
+                    </TableCell>
+                    <TableCell className="border">{pat.tokenNum}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow className="text-center">
+                  <TableCell colSpan={5} className="border py-5">
+                    No patient available!
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>)}
         </div>
       </div>
     </>
@@ -512,3 +723,11 @@ const PatientList = () => {
 };
 
 export default PatientList;
+
+
+
+
+
+
+
+
