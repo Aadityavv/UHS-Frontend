@@ -1,11 +1,10 @@
-import {useState } from "react";
-// import { Calendar } from "@/components/ui/calendar";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
-// import { ToastAction } from "@/components/ui/toast";
-import { motion, time } from "framer-motion";
-import { 
+import { ToastAction } from "@/components/ui/toast";
+import { motion } from "framer-motion";
+import {
   Stethoscope,
   Pill,
   ClipboardList,
@@ -18,34 +17,101 @@ import {
   List,
   BookOpen,
   Activity,
-  Syringe
+  Syringe,
 } from "lucide-react";
-// import { date } from "zod";
 
 const AssistantDoctorDashboard = () => {
   const navigate = useNavigate();
-  useToast();
+  const { toast } = useToast();
   const [time, setTime] = useState<Date>(new Date());
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [totalPatients, setTotalPatients] = useState(0);
   const [patientsLeft, setPatientsLeft] = useState(0);
   const [inQueue, setInQueue] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Keep existing useEffect hooks and data fetching logic
+  // Update time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTime(new Date());
+    }, 1000);
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: true
-    });
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+
+  // Fetch patient data
+  const fetchPatientData = async () => {
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/");
+        return;
+      }
+
+      const response = await fetch(
+        "http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/api/AD/total-patient-count",
+        {
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setTotalPatients(data.Total_Appointment);
+        setPatientsLeft(data.Patients_left);
+        setInQueue(data.In_Queue);
+      } else {
+        console.error("Failed to fetch patient data.");
+        toast({
+          title: "Fetch Error",
+          description: "Failed to fetch patient data. Please try again later.",
+          variant: "destructive",
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
+        });
+      }
+    } catch (error: any) {
+      console.error("Error fetching patient data:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Network Error",
+        variant: "destructive",
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  // Fetch data on mount and set interval
+  useEffect(() => {
+    fetchPatientData();
+    const interval = setInterval(() => {
+      fetchPatientData();
+    }, 25000);
+
+    return () => clearInterval(interval);
+  }, [toast]); // Add toast to dependencies
+
+  // Format time
+  const formatTime = (date: Date) => {
+    const hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const seconds = date.getSeconds().toString().padStart(2, "0");
+    const period = hours >= 12 ? "PM" : "AM";
+    const formattedHours = (hours % 12 || 12).toString().padStart(2, "0");
+    return `${formattedHours}:${minutes}:${seconds} ${period}`;
+  };
+
+  // Stats data
   const stats = [
     { title: "Total Patients", value: totalPatients, icon: <Users className="h-6 w-6" /> },
     { title: "In Queue", value: inQueue, icon: <List className="h-6 w-6" /> },
-    { title: "Treatments", value: patientsLeft, icon: <Activity className="h-6 w-6" /> }
+    { title: "Treatments", value: patientsLeft, icon: <Activity className="h-6 w-6" /> },
   ];
 
   return (
@@ -60,7 +126,7 @@ const AssistantDoctorDashboard = () => {
           >
             {/* Left Sidebar */}
             <div className="lg:col-span-1 space-y-6">
-              <motion.div 
+              <motion.div
                 whileHover={{ scale: 1.02 }}
                 className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 border border-gray-200"
               >
@@ -82,26 +148,14 @@ const AssistantDoctorDashboard = () => {
                   <h3 className="text-lg text-gray-600 font-semibold">Today's Date</h3>
                 </div>
                 <p className="text-lg font-bold text-gray-800">
-                  {date?.toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
+                  {date?.toLocaleDateString("en-US", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
                   })}
                 </p>
               </motion.div>
-                  
-              {/* <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
-              >
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  className="w-full"
-                />
-              </motion.div> */}
             </div>
 
             {/* Main Content */}
@@ -118,7 +172,9 @@ const AssistantDoctorDashboard = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-gray-600">{stat.title}</p>
-                        <p className="text-2xl font-bold mt-1 text-gray-800">{stat.value}</p>
+                        <p className="text-2xl font-bold mt-1 text-gray-800">
+                          {isLoading ? "..." : stat.value}
+                        </p>
                       </div>
                       <div className="bg-blue-50 p-2 rounded-lg text-blue-600">
                         {stat.icon}
@@ -133,6 +189,7 @@ const AssistantDoctorDashboard = () => {
                 animate={{ opacity: 1 }}
                 className="grid gap-4"
               >
+                {/* Buttons and navigation sections */}
                 <div className="grid md:grid-cols-2 gap-4">
                   <motion.div
                     whileHover={{ scale: 1.02 }}

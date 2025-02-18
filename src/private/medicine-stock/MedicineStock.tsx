@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import Shared from "@/Shared";
+import { motion } from "framer-motion";
 import {
   Select,
   SelectContent,
@@ -21,6 +21,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Plus,
+  Trash2,
+  Pencil,
+  Save,
+  X,
+  Download,
+  Search,
+  Sliders,
+  PackageOpen
+} from "lucide-react";
 
 interface Stock {
   id: string;
@@ -405,394 +416,352 @@ const MedicineStock = () => {
   return (
     <>
       <Toaster />
-      <div className="bg-[#ECECEC] min-h-[84svh] p-8 space-y-8 flex flex-col max-lg:h-[93svh] max-lg:p-4">
-        <div className="flex gap-4">
-          <div className="flex w-full space-x-2 items-center">
-            {Shared.Search}
-            <Input
-              className="bg-white"
-              placeholder="Search Medicine"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <div className="w-64">
-            <Select
-              value={selectedLocationFilter}
-              onValueChange={setSelectedLocationFilter}
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            {/* Header Section */}
+            <div className="flex items-center justify-between">
+              <h1 className="text-3xl font-bold text-gray-900">Medicine Stock Management</h1>
+              <button
+                onClick={handleDownloadExcel}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors"
+              >
+                <Download className="h-5 w-5" />
+                Export Excel
+              </button>
+            </div>
+
+            {/* Filters Section */}
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="bg-white p-2 rounded-lg shadow-sm border border-gray-100 flex items-center">
+                <Search className="h-5 w-5 text-gray-400 ml-2" />
+                <Input
+                  className="border-0 focus-visible:ring-0"
+                  placeholder="Search medicine..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+
+              <Select
+                value={selectedLocationFilter}
+                onValueChange={setSelectedLocationFilter}
+              >
+                <SelectTrigger className="bg-white text-black h-full">
+                  <div className="flex items-center gap-2">
+                    <Sliders className="h-5 w-5 text-gray-400" />
+                    <SelectValue placeholder="Filter by Location" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="bg-white text-black">
+                  <SelectGroup>
+                    <SelectItem value="all">All Locations</SelectItem>
+                    {locations.map((loc) => (
+                      <SelectItem key={loc.locId} value={loc.locationName}>
+                        {loc.locationName}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+
+              <div className="flex items-center gap-2">
+                {selectedStocks.size === 0 && !editStock && !newStock && (
+                  <button
+                    onClick={handleAddNewRow}
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors flex-1"
+                  >
+                    <Plus className="h-5 w-5" />
+                    Add New
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Table Section */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
             >
-              <SelectTrigger className="bg-white text-black">
-                <SelectValue placeholder="Filter by Location" />
-              </SelectTrigger>
-              <SelectContent className="bg-white text-black">
-                <SelectGroup>
-                  <SelectItem value="all">All Locations</SelectItem>
-                  <SelectItem value="UPES Bidholi Campus">
-                    UPES Bidholi Campus
-                  </SelectItem>
-                  <SelectItem value="UPES Kandoli Campus">
-                    UPES Kandoli Campus
-                  </SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <div className="h-full overflow-y-scroll">
-          {stocks.length > 0 || newStock ? (
-            <Table className="bg-white rounded-md">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[5%] border text-black font-bold text-center">
-                    Select
-                  </TableHead>
-                  <TableHead className="w-[8%] border text-black font-bold text-center whitespace-nowrap">
-                    Batch no.
-                  </TableHead>
-                  <TableHead className="w-[15%] border text-black font-bold text-center">
-                    Medicine
-                  </TableHead>
-                  <TableHead className="w-[15%] border text-black font-bold text-center">
-                    Composition
-                  </TableHead>
-                  <TableHead
-                    className="w-[8%] border text-black font-bold text-center cursor-pointer"
-                    onClick={() => handleSort("quantity")}
-                  >
-                    Quantity{" "}
-                    {sortColumn === "quantity" &&
-                      (sortDirection === "asc" ? "↑" : "↓")}
-                  </TableHead>
-                  <TableHead className="w-[10%] border text-black font-bold text-center">
-                    Type
-                  </TableHead>
-                  <TableHead
-                    className="w-[10%] border text-black font-bold text-center cursor-pointer whitespace-nowrap"
-                    onClick={() => handleSort("expirationDate")}
-                  >
-                    Expiration Date{" "}
-                    {sortColumn === "expirationDate" &&
-                      (sortDirection === "asc" ? "↑" : "↓")}
-                  </TableHead>
-                  <TableHead className="w-[14%] border text-black font-bold text-center">
-                    Company
-                  </TableHead>
-                  <TableHead className="w-[15%] border text-black font-bold text-center">
-                    Location
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredStocks.map((stock) => (
-                  <TableRow key={stock.id} className="text-center">
-                    <TableCell className="border whitespace-nowrap">
-                      <input
-                        type="checkbox"
-                        checked={selectedStocks.has(stock.id)}
-                        onChange={() => handleSelectStock(stock.id)}
-                      />
-                    </TableCell>
-                    {editStock && editStock.id === stock.id ? (
-                      <TableCell className="border whitespace-nowrap">
-                        <Input
-                          value={editStock.batchNumber}
-                          type="number"
-                          onChange={(e) =>
-                            setEditStock({
-                              ...editStock,
-                              batchNumber: e.target.value,
-                            })
-                          }
-                        />
-                      </TableCell>
-                    ) : (
-                      <TableCell className="border whitespace-nowrap">
-                        {stock.batchNumber}
-                      </TableCell>
-                    )}
-                    <TableCell className="border whitespace-nowrap">
-                      {editStock && editStock.id === stock.id ? (
-                        <Input
-                          value={editStock.medicineName}
-                          onChange={(e) =>
-                            setEditStock({
-                              ...editStock,
-                              medicineName: e.target.value,
-                            })
-                          }
-                        />
-                      ) : (
-                        stock.medicineName
-                      )}
-                    </TableCell>
-                    <TableCell className="border whitespace-nowrap">
-                      {editStock && editStock.id === stock.id ? (
-                        <Input
-                          value={editStock.composition}
-                          onChange={(e) =>
-                            setEditStock({
-                              ...editStock,
-                              composition: e.target.value,
-                            })
-                          }
-                        />
-                      ) : (
-                        stock.composition
-                      )}
-                    </TableCell>
-                    <TableCell className="border whitespace-nowrap">
-                      {editStock && editStock.id === stock.id ? (
-                        <Input
-                          value={editStock.quantity}
-                          type="number"
-                          onChange={(e) =>
-                            setEditStock({
-                              ...editStock,
-                              quantity: e.target.value,
-                            })
-                          }
-                        />
-                      ) : (
-                        stock.quantity
-                      )}
-                    </TableCell>
-                    <TableCell className="border whitespace-nowrap">
-                      {editStock && editStock.id === stock.id ? (
-                        <Input
-                          value={editStock.medicineType}
-                          onChange={(e) =>
-                            setEditStock({
-                              ...editStock,
-                              medicineType: e.target.value,
-                            })
-                          }
-                        />
-                      ) : (
-                        stock.medicineType
-                      )}
-                    </TableCell>
-                    <TableCell className="border whitespace-nowrap">
-                      {editStock && editStock.id === stock.id ? (
-                        <Input
-                          value={editStock.expirationDate}
-                          type="date"
-                          onChange={(e) =>
-                            setEditStock({
-                              ...editStock,
-                              expirationDate: e.target.value,
-                            })
-                          }
-                        />
-                      ) : (
-                        formatExpirationDateForDisplay(stock.expirationDate)
-                      )}
-                    </TableCell>
-                    <TableCell className="border whitespace-nowrap">
-                      {editStock && editStock.id === stock.id ? (
-                        <Input
-                          value={editStock.company}
-                          onChange={(e) =>
-                            setEditStock({
-                              ...editStock,
-                              company: e.target.value,
-                            })
-                          }
-                        />
-                      ) : (
-                        stock.company
-                      )}
-                    </TableCell>
-
-                    <TableCell className="border whitespace-nowrap">
-                      {editStock && editStock.id === stock.id ? (
-                        <Select
-                          value={editStock.location?.locId || ""}
-                          onValueChange={(value) =>
-                            setEditStock({
-                              ...editStock,
-                              location:
-                                locations.find((loc) => loc.locId === value) ||
-                                editStock.location,
-                            })
-                          }
-                        >
-                          <SelectTrigger className="bg-white text-black">
-                            <SelectValue placeholder="Select a location" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-white text-black">
-                            <SelectGroup>
-                              {locations.map((loc) => (
-                                <SelectItem key={loc.locId} value={loc.locId}>
-                                  {loc.locationName}
-                                </SelectItem>
-                              ))}
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        stock.location.locationName || "N/A"
-                      )}
-                    </TableCell>
+              <Table className="border-none">
+                <TableHeader className="bg-gray-50">
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="w-[5%] text-gray-600 font-semibold">
+                      Select
+                    </TableHead>
+                    <TableHead className="text-gray-600 font-semibold">
+                      Batch No.
+                    </TableHead>
+                    <TableHead className="text-gray-600 font-semibold">
+                      Medicine
+                    </TableHead>
+                    <TableHead className="text-gray-600 font-semibold">
+                      Composition
+                    </TableHead>
+                    <TableHead
+                      className="text-gray-600 font-semibold cursor-pointer"
+                      onClick={() => handleSort("quantity")}
+                    >
+                      Quantity {sortColumn === "quantity" && (sortDirection === "asc" ? "↑" : "↓")}
+                    </TableHead>
+                    <TableHead className="text-gray-600 font-semibold">
+                      Type
+                    </TableHead>
+                    <TableHead
+                      className="text-gray-600 font-semibold cursor-pointer"
+                      onClick={() => handleSort("expirationDate")}
+                    >
+                      Expiry {sortColumn === "expirationDate" && (sortDirection === "asc" ? "↑" : "↓")}
+                    </TableHead>
+                    <TableHead className="text-gray-600 font-semibold">
+                      Company
+                    </TableHead>
+                    <TableHead className="text-gray-600 font-semibold">
+                      Location
+                    </TableHead>
+                    <TableHead className="text-gray-600 font-semibold">
+                      Actions
+                    </TableHead>
                   </TableRow>
-                ))}
+                </TableHeader>
+                <TableBody>
+                  {filteredStocks.map((stock) => (
+                    <TableRow key={stock.id} className="hover:bg-gray-50">
+                      <TableCell>
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                          checked={selectedStocks.has(stock.id)}
+                          onChange={() => handleSelectStock(stock.id)}
+                        />
+                      </TableCell>
+                      <TableCell className="text-gray-700">
+                        {editStock?.id === stock.id ? (
+                          <Input
+                            value={editStock.batchNumber.toString()}
+                            onChange={(e) => setEditStock({
+                              ...editStock,
+                              batchNumber: e.target.value
+                            })}
+                          />
+                        ) : stock.batchNumber}
+                      </TableCell>
+                      <TableCell className="text-gray-700">
+                        {editStock?.id === stock.id ? (
+                          <Input
+                            value={editStock.medicineName}
+                            onChange={(e) => setEditStock({
+                              ...editStock,
+                              medicineName: e.target.value
+                            })}
+                          />
+                        ) : stock.medicineName}
+                      </TableCell>
+                      <TableCell className="text-gray-700">
+                        {editStock?.id === stock.id ? (
+                          <Input
+                            value={editStock.composition}
+                            onChange={(e) => setEditStock({
+                              ...editStock,
+                              composition: e.target.value
+                            })}
+                          />
+                        ) : stock.composition}
+                      </TableCell>
+                      <TableCell className="text-gray-700">
+                        {editStock?.id === stock.id ? (
+                          <Input
+                            value={editStock.quantity.toString()}
+                            onChange={(e) => setEditStock({
+                              ...editStock,
+                              quantity: e.target.value
+                            })}
+                          />
+                        ) : stock.quantity}
+                      </TableCell>
+                      <TableCell className="text-gray-700">
+                        {editStock?.id === stock.id ? (
+                          <Input
+                            value={editStock.medicineType}
+                            onChange={(e) => setEditStock({
+                              ...editStock,
+                              medicineType: e.target.value
+                            })}
+                          />
+                        ) : stock.medicineType}
+                      </TableCell>
+                      <TableCell className="text-gray-700">
+                        {editStock?.id === stock.id ? (
+                          <Input
+                            type="date"
+                            value={editStock.expirationDate}
+                            onChange={(e) => setEditStock({
+                              ...editStock,
+                              expirationDate: e.target.value
+                            })}
+                          />
+                        ) : formatExpirationDateForDisplay(stock.expirationDate)}
+                      </TableCell>
+                      <TableCell className="text-gray-700">
+                        {editStock?.id === stock.id ? (
+                          <Input
+                            value={editStock.company}
+                            onChange={(e) => setEditStock({
+                              ...editStock,
+                              company: e.target.value
+                            })}
+                          />
+                        ) : stock.company}
+                      </TableCell>
+                      <TableCell className="text-gray-700">
+                        {stock.location?.locationName || "N/A"}
+                      </TableCell>
+                      <TableCell className="text-gray-700">
+                        {editStock?.id === stock.id ? (
+                          <div className="flex gap-2">
+                            <Save
+                              className="h-5 w-5 text-green-600 cursor-pointer"
+                              onClick={handleSaveEdit}
+                            />
+                            <X
+                              className="h-5 w-5 text-red-600 cursor-pointer"
+                              onClick={handleCancel}
+                            />
+                          </div>
+                        ) : (
+                          <div className="flex gap-2">
+                            <Pencil
+                              className="h-5 w-5 text-blue-600 cursor-pointer"
+                              onClick={() => handleEdit(stock)}
+                            />
+                          </div>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
 
-                {newStock && (
-                  <TableRow className="text-center">
-                    <TableCell className="border whitespace-nowrap">
-                      <input type="checkbox" disabled />
-                    </TableCell>
-                    <TableCell className="border whitespace-nowrap">
-                      <Input
-                        value={newStock.batchNumber}
-                        type="number"
-                        onChange={(e) => handleInputChange(e, "batchNumber")}
-                      />
-                    </TableCell>
-                    <TableCell className="border whitespace-nowrap">
-                      <Input
-                        value={newStock.medicineName}
-                        onChange={(e) => handleInputChange(e, "medicineName")}
-                      />
-                    </TableCell>
-                    <TableCell className="border whitespace-nowrap">
-                      <Input
-                        value={newStock.composition}
-                        onChange={(e) => handleInputChange(e, "composition")}
-                      />
-                    </TableCell>
-                    <TableCell className="border whitespace-nowrap">
-                      <Input
-                        value={newStock.quantity}
-                        type="number"
-                        onChange={(e) => handleInputChange(e, "quantity")}
-                      />
-                    </TableCell>
-                    <TableCell className="border whitespace-nowrap">
-                      <Input
-                        value={newStock.medicineType}
-                        onChange={(e) => handleInputChange(e, "medicineType")}
-                      />
-                    </TableCell>
-                    <TableCell className="border whitespace-nowrap">
-                      <Input
-                        type="date"
-                        value={newStock.expirationDate}
-                        onChange={(e) => handleInputChange(e, "expirationDate")}
-                      />
-                    </TableCell>
-                    <TableCell className="border whitespace-nowrap">
-                      <Input
-                        value={newStock.company}
-                        onChange={(e) => handleInputChange(e, "company")}
-                      />
-                    </TableCell>
-                    <TableCell className="border whitespace-nowrap">
-                      <Select onValueChange={handleLocationChange}>
-                        <SelectTrigger className="bg-white text-black">
-                          <SelectValue placeholder="Select a location" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white text-black">
-                          <SelectGroup className="h-[4rem] overflow-y-scroll">
+                  {newStock && (
+                    <TableRow className="bg-blue-50">
+                      <TableCell></TableCell>
+                      <TableCell>
+                        <Input
+                          value={newStock.batchNumber.toString()}
+                          onChange={(e) => handleInputChange(e, 'batchNumber')}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          value={newStock.medicineName}
+                          onChange={(e) => handleInputChange(e, 'medicineName')}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          value={newStock.composition}
+                          onChange={(e) => handleInputChange(e, 'composition')}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          value={newStock.quantity.toString()}
+                          onChange={(e) => handleInputChange(e, 'quantity')}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          value={newStock.medicineType}
+                          onChange={(e) => handleInputChange(e, 'medicineType')}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="date"
+                          value={newStock.expirationDate}
+                          onChange={(e) => handleInputChange(e, 'expirationDate')}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          value={newStock.company}
+                          onChange={(e) => handleInputChange(e, 'company')}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Select onValueChange={handleLocationChange}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select location" />
+                          </SelectTrigger>
+                          <SelectContent>
                             {locations.map((loc) => (
-                              <SelectItem
-                                key={loc.locationName}
-                                value={loc.locationName}
-                              >
+                              <SelectItem key={loc.locId} value={loc.locationName}>
                                 {loc.locationName}
                               </SelectItem>
                             ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="text-center text-gray-500">
-              No medicine in the stock
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Save
+                            className="h-5 w-5 text-green-600 cursor-pointer"
+                            onClick={handleSave}
+                          />
+                          <X
+                            className="h-5 w-5 text-red-600 cursor-pointer"
+                            onClick={handleCancel}
+                          />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+
+              {filteredStocks.length === 0 && !newStock && (
+                <div className="p-8 text-center text-gray-500 flex flex-col items-center">
+                  <PackageOpen className="h-12 w-12 text-gray-400 mb-4" />
+                  No medicines found in stock
+                </div>
+              )}
+            </motion.div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-3">
+              {selectedStocks.size > 0 && (
+                <button
+                  onClick={handleDelete}
+                  className="bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-red-700 transition-colors"
+                >
+                  <Trash2 className="h-5 w-5" />
+                  Delete Selected ({selectedStocks.size})
+                </button>
+              )}
+
+              {editStock && (
+                <>
+                  <button
+                    onClick={handleSaveEdit}
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-700 transition-colors"
+                  >
+                    <Save className="h-5 w-5" />
+                    Save Changes
+                  </button>
+                  <button
+                    onClick={handleCancel}
+                    className="bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-700 transition-colors"
+                  >
+                    <X className="h-5 w-5" />
+                    Cancel
+                  </button>
+                </>
+              )}
             </div>
-          )}
-        </div>
-        <div className="flex items-center max-lg:justify-center">
-          <div className="flex items-center gap-4 max-lg:gap-2">
-            {selectedStocks.size === 0 && !editStock && !newStock && (
-              <button
-                onClick={handleAddNewRow}
-                className="bg-gradient-to-r from-[#1F60C0] gap-2 to-[#0D4493] text-white font-semibold flex items-center px-8 py-2 rounded-md max-lg:px-4"
-              >
-                Add
-                {Shared.SquarePlus}
-              </button>
-            )}
-            {selectedStocks.size > 0 && !newStock && !editStock && (
-              <button
-                className="bg-gradient-to-r from-[#1F60C0] gap-2 to-[#0D4493] text-white font-semibold flex items-center px-8 py-2 rounded-md max-lg:px-4"
-                onClick={handleDelete}
-              >
-                Delete
-                {Shared.TrashCan}
-              </button>
-            )}
-            {selectedStocks.size === 1 && !editStock && !newStock && (
-              <button
-                onClick={() => {
-                  const selectedStock = stocks.find(
-                    (stock) => stock.id === Array.from(selectedStocks)[0]
-                  );
-                  if (selectedStock) handleEdit(selectedStock);
-                }}
-                className="bg-gradient-to-r from-[#1F60C0] gap-2 to-[#0D4493] text-white font-semibold flex items-center px-8 py-2 rounded-md max-lg:px-4"
-              >
-                Edit
-                {Shared.Edit}
-              </button>
-            )}
-            {editStock && (
-              <>
-                <button
-                  onClick={handleSaveEdit}
-                  className="bg-gradient-to-r from-[#1F60C0] gap-2 to-[#0D4493] text-white font-semibold flex items-center px-8 py-2 rounded-md max-lg:px-4"
-                >
-                  Save
-                  {Shared.Save}
-                </button>
-                <button
-                  onClick={handleCancel}
-                  className="bg-gradient-to-r from-[#1F60C0] gap-2 to-[#0D4493] text-white font-semibold flex items-center px-8 py-2 rounded-md max-lg:px-4"
-                >
-                  Cancel
-                  {Shared.Cancel}
-                </button>
-              </>
-            )}
-            {newStock && (
-              <>
-                <button
-                  onClick={handleSave}
-                  className="bg-gradient-to-r from-[#1F60C0] gap-2 to-[#0D4493] text-white font-semibold flex items-center px-8 py-2 rounded-md max-lg:px-4"
-                >
-                  Save
-                  {Shared.Save}
-                </button>
-                <button
-                  onClick={handleCancel}
-                  className="bg-gradient-to-r from-[#1F60C0] gap-2 to-[#0D4493] text-white font-semibold flex items-center px-8 py-2 rounded-md max-lg:px-4"
-                >
-                  Cancel
-                  {Shared.Cancel}
-                </button>
-              </>
-            )}
-            <button
-              onClick={handleDownloadExcel}
-              className="bg-gradient-to-r from-[#1F60C0] gap-2 to-[#0D4493] text-white font-semibold flex items-center px-8 py-2 rounded-md max-lg:px-4"
-            >
-              Download Excel
-              {Shared.Save}
-            </button>
-          </div>
+          </motion.div>
         </div>
       </div>
     </>
