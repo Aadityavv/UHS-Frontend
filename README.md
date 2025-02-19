@@ -1,12 +1,24 @@
 # UHS-Frontend
 
-UHS-Frontend is a web application developed for the University of Petroleum and Energy Studies (UPES) in Dehradun. Its primary goal is to automate the college infirmary by maintaining all medical records of students and facilitating doctor appointments.
+UHS-Frontend is a web application developed for the University of Petroleum and Energy Studies (UPES) in Dehradun. Its primary goal is to automate the college infirmary by maintaining all medical records of students, providing health analytics, facilitating doctor appointments, managing medical stock, offering emergency services, and analyzing prevalent diseases within the college and many more
 
 ## Features
 
-- **Student Medical Records**: Secure storage and management of student health information.
-- **Doctor Appointments**: Streamlined process for students to book appointments with campus doctors.
-- **Notifications**: Automated reminders for upcoming appointments and important health updates.
+-**Student Medical Records**: Secure storage and management of student health information.
+
+-**Doctor Appointments**: Streamlined process for students to book appointments with campus doctors.
+
+-**Notifications**: Automated reminders for upcoming appointments and important health updates.
+
+-**Medical Stock Management**: Track and manage the availability of medicines and medical supplies.
+
+-**Emergency Services**: Quick access to emergency medical assistance within the campus.
+
+-**Health Analytics**: Analyze medical trends and common diseases among students for better preventive measures.
+
+-**Disease Surveillance**: Monitor and analyze the spread of infections and health concerns within the college.
+
+-**User Roles and Permissions**: Different access levels for students, doctors, nursing assistants and administrators to maintain security and efficiency.
 
 ## Technologies Used
 
@@ -67,7 +79,7 @@ Or using yarn:
 yarn dev
 ```
 
-The application will be accessible at `http://localhost:3000/`.
+The application will be accessible at `http://localhost:5173/`.
 
 ### Building for Production
 
