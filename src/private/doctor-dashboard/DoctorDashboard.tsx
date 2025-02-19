@@ -358,7 +358,7 @@ const DoctorDashboard = () => {
               </motion.div>
 
               {/* Calendar */}
-              <motion.div
+              {/* <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
@@ -369,7 +369,7 @@ const DoctorDashboard = () => {
                   onSelect={setDate}
                   className="rounded-md border bg-white shadow-lg"
                 />
-              </motion.div>
+              </motion.div> */}
             </div>
 
             {/* Main Content */}
