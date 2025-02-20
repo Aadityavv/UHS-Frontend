@@ -24,7 +24,7 @@ const AssistantDoctorDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [time, setTime] = useState<Date>(new Date());
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date] = useState<Date | undefined>(new Date());
   const [totalPatients, setTotalPatients] = useState(0);
   const [patientsLeft, setPatientsLeft] = useState(0);
   const [inQueue, setInQueue] = useState(0);
