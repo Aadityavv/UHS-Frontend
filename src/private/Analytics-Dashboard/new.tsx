@@ -16,16 +16,9 @@ import { Button } from "@/components/ui/button";
 import { ChartContainer } from "@/components/ui/chart";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
+import { ToastAction } from "@/components/ui/toast";
 import { motion } from "framer-motion";
 import Skeleton from '@mui/material/Skeleton';
-import { 
-  Users,
-  Calendar,
-  Stethoscope,
-  Home,
-  Pill,
-  School
-} from 'lucide-react'; // Using Lucide icons
 
 // Types
 type ViewType = "daily" | "monthly" | "yearly";
@@ -68,23 +61,23 @@ interface SchoolData {
 }
 
 const COLORS = [
-  "#6366f1", "#8b5cf6", "#10b981", "#f59e0b", "#ef4444", "#3b82f6"
+  "#4f46e5", "#818cf8", "#34d399", "#fbbf24", "#f87171", "#60a5fa"
 ];
 
 const chartConfig = {
-  bidholi: { label: "Bidholi", color: "#6366f1" },
-  kandoli: { label: "Kandoli", color: "#8b5cf6" }
+  bidholi: { label: "Bidholi", color: "#4f46e5" },
+  kandoli: { label: "Kandoli", color: "#818cf8" }
 };
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload?.length) {
     return (
-      <div className="bg-gray-800 p-3 rounded-lg shadow-xl border border-gray-700 backdrop-blur-sm">
-        <p className="font-semibold text-gray-100 mb-1">{label}</p>
+      <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
+        <p className="font-semibold text-gray-600 mb-2">{label}</p>
         {payload.map((entry: any) => (
-          <div key={entry.name} className="flex items-center gap-2 text-sm">
-            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.fill }} />
-            <span className="text-gray-300">{entry.name}: {entry.value}</span>
+          <div key={entry.name} className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.fill }} />
+            <span className="text-gray-700">{entry.name}: {entry.value}</span>
           </div>
         ))}
       </div>
@@ -99,7 +92,7 @@ const AnalyticsDashboard = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  // Dummy Data (keep your existing data)
+  // Dummy Data
   const [schoolData, setSchoolData] = useState<SchoolData[]>([
     { name: "School of Engineering", count: 120 },
     { name: "School of Business", count: 90 },
@@ -151,23 +144,15 @@ const AnalyticsDashboard = () => {
   ]);
 
   useEffect(() => {
+    // Simulate API call with dummy data
     setTimeout(() => {
-      setTotalPatient(5000);
+      setTotalPatient(5000); // Dummy total patient count
       setLoading(false);
     }, 1000);
   }, []);
 
   const renderChartSkeleton = () => (
-    <Skeleton variant="rectangular" height={400} className="rounded-xl" />
-  );
-
-  const renderChartHeader = (icon: ReactElement, title: string) => (
-    <div className="flex items-center gap-3 mb-6">
-      <div className="p-2 rounded-lg bg-indigo-100 text-indigo-600">
-        {icon}
-      </div>
-      <h2 className="text-xl font-bold text-gray-700">{title}</h2>
-    </div>
+    <Skeleton variant="rectangular" height={400} className="rounded-2xl" />
   );
 
   const renderPatientVisitsChart = () => {
@@ -182,18 +167,18 @@ const AnalyticsDashboard = () => {
 
     return (
       <ChartContainer title="Patient Visits" config={chartConfig}>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey={view} tickLine={false} axisLine={false} />
-                  <YAxis />
-                  <Tooltip content={CustomTooltip} />
-                  <Legend />
-                  <Bar dataKey="bidholi" fill="#4f46e5" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="kandoli" fill="#818cf8" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey={view} tickLine={false} axisLine={false} />
+            <YAxis />
+            <Tooltip content={CustomTooltip} />
+            <Legend />
+            <Bar dataKey="bidholi" fill="#4f46e5" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="kandoli" fill="#818cf8" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartContainer>
     );
   };
 
@@ -235,33 +220,13 @@ const AnalyticsDashboard = () => {
     return (
       <ChartContainer title={title} config={chartConfig}>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-            <XAxis 
-              dataKey={xKey} 
-              angle={-45} 
-              textAnchor="end" 
-              height={60}
-              tick={{ fill: '#6b7280' }}
-            />
-            <YAxis 
-              tickLine={false} 
-              axisLine={false} 
-              tick={{ fill: '#6b7280' }}
-            />
-            <Tooltip content={CustomTooltip} />
-            <Bar 
-              dataKey="count" 
-              fill="#3b82f6" 
-              radius={[6, 6, 0, 0]} 
-              barSize={24}
-            />
-            <Legend 
-              wrapperStyle={{ paddingTop: 20 }}
-              formatter={(value) => (
-                <span className="text-gray-600 text-sm">{value}</span>
-              )}
-            />
+          <BarChart data={data} margin={{ top: 20, right: 30, left: 40, bottom: 60 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey={xKey} angle={-45} textAnchor="end" height={60} />
+            <YAxis />
+            <Tooltip cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />
+            <Bar dataKey="count" fill="#FF8042" radius={[4, 4, 0, 0]} />
+            <Legend />
           </BarChart>
         </ResponsiveContainer>
       </ChartContainer>
@@ -272,39 +237,29 @@ const AnalyticsDashboard = () => {
     <div className="min-h-screen bg-gray-50 p-8">
       <Toaster />
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         className="max-w-7xl mx-auto space-y-8"
       >
-        <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-xl p-6 shadow-xl">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-indigo-100/20">
-              <Users className="w-6 h-6 text-white" />
-            </div>
-            <h1 className="text-2xl font-bold text-white">
-              {loading ? (
-                <Skeleton width={300} height={32} style={{ backgroundColor: '#ffffff20' }} />
-              ) : (
-                `Total Patients: ${totalPatient.toLocaleString()}`
-              )}
-            </h1>
-          </div>
+        <div className="bg-indigo-500 rounded-2xl p-6 shadow-lg">
+          <h1 className="text-2xl font-bold text-white">
+            {loading ? (
+              <Skeleton width={300} height={32} />
+            ) : (
+              `Total Patients: ${totalPatient.toLocaleString()}`
+            )}
+          </h1>
         </div>
 
         <div className="space-y-8">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <div className="flex flex-wrap gap-4 justify-between items-center mb-6">
-              <div className="flex items-center gap-3">
-                <Calendar className="w-5 h-5 text-gray-600" />
-                <h2 className="text-lg font-semibold text-gray-700">Time-based Analysis</h2>
-              </div>
+              <h2 className="text-lg font-semibold">View By:</h2>
               <div className="flex gap-2">
                 {(["daily", "monthly", "yearly"] as ViewType[]).map((v) => (
                   <Button
                     key={v}
                     variant={view === v ? "default" : "outline"}
-                    className="rounded-full px-4 shadow-sm"
                     onClick={() => setView(v)}
                   >
                     {v.charAt(0).toUpperCase() + v.slice(1)}
@@ -315,63 +270,34 @@ const AnalyticsDashboard = () => {
             {renderPatientVisitsChart()}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              {renderChartHeader(<Stethoscope className="w-5 h-5" />, "Doctor Performance")}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
               {renderPieChart(doctorData, 'patientCount', 'name', 'Doctor Distribution')}
             </div>
             
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              {renderChartHeader(<Home className="w-5 h-5" />, "Residence Statistics")}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
               {renderPieChart(residenceData, 'count', 'type', 'Residence Distribution')}
             </div>
             
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              {renderChartHeader(<School className="w-5 h-5" />, "School-wise Distribution")}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
               {renderBarChart(schoolData, 'name', 'School Distribution')}
             </div>
             
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              {renderChartHeader(<Pill className="w-5 h-5" />, "Medication Usage")}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
               {loading ? renderChartSkeleton() : (
-                <ChartContainer title="Top Medicines" config={chartConfig}>
+                <ChartContainer 
+                  title="Top Medicines" 
+                  config={chartConfig}
+                >
                   <ResponsiveContainer width="100%" height={300}>
-                    <BarChart 
-                      data={medicineData} 
-                      margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                      <XAxis 
-                        dataKey="medicine" 
-                        angle={-45} 
-                        textAnchor="end" 
-                        height={60}
-                        tick={{ fill: '#6b7280' }}
-                      />
-                      <YAxis 
-                        tickLine={false} 
-                        axisLine={false} 
-                        tick={{ fill: '#6b7280' }}
-                      />
-                      <Tooltip content={CustomTooltip} />
-                      <Legend 
-                        wrapperStyle={{ paddingTop: 20 }}
-                        formatter={(value) => (
-                          <span className="text-gray-600 text-sm">{value}</span>
-                        )}
-                      />
-                      <Bar 
-                        dataKey="bidholi" 
-                        fill="#6366f1" 
-                        radius={[6, 6, 0, 0]} 
-                        barSize={24}
-                      />
-                      <Bar 
-                        dataKey="kandoli" 
-                        fill="#8b5cf6" 
-                        radius={[6, 6, 0, 0]} 
-                        barSize={24}
-                      />
+                    <BarChart data={medicineData} margin={{ top: 20, right: 30, left: 40, bottom: 60 }}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="medicine" angle={-45} textAnchor="end" height={60} />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="bidholi" fill="#4f46e5" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="kandoli" fill="#818cf8" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartContainer>
