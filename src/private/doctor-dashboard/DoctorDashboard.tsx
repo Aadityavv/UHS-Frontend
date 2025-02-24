@@ -348,7 +348,7 @@ const DoctorDashboard = () => {
                   className={`w-full flex items-center justify-between p-4 rounded-xl ${
                     status === "Not Available"
                       ? "bg-gray-800 cursor-not-allowed"
-                      : "bg-gradient-to-r from-[#E00000] to-[#7E0000] hover:bg-red-600"
+                      : "bg-gradient-to-r from-[#A00000] to-[#E00000] hover:bg-red-600"
                   } text-white font-medium`}
                   disabled={status === "Not Available"}
                 >
