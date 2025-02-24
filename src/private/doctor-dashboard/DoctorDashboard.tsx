@@ -486,7 +486,7 @@ const DoctorDashboard = () => {
                   className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer"
                   onClick={() => navigate("/analytics-dashboard")}
                 >
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Analytics Dashboard</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">UHS Analysis</h3>
                   <p className="text-sm text-gray-600">View analytics and reports.</p>
                 </motion.div>
 

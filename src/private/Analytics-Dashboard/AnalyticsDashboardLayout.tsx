@@ -4,7 +4,7 @@ import React from "react";
 
 const AnalyticsDashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const navsetting = {
-    title: "analytics dashboard",
+    title: "UHS analytics",
     titleLogo: Shared.Anaytics,
     additionalLogo: Shared.ArrowLeft,
     menu: false,
