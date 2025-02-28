@@ -170,22 +170,26 @@ const CommonPrescription = () => {
   return (
     <>
       <Toaster />
-      <div className="min-h-[84svh] p-4 bg-gradient-to-br from-indigo-50 to-blue-50 max-lg:min-h-[93svh] max-lg:p-2">
+      <div className="min-h-[84svh] p-2 bg-gradient-to-br from-indigo-50 to-blue-50 sm:p-4">
         <motion.div
           initial="hidden"
           animate="visible"
           variants={staggerContainer}
-          className="bg-white rounded-2xl p-6 shadow-sm border border-indigo-50"
+          className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-indigo-50"
         >
           {/* Header Section */}
-          <motion.div variants={fadeIn} className="flex items-center justify-between mb-6">
-            <div className="flex center">
-              <img src="/upes-logo.jpg" alt="Logo" className="w-[100px]" />
-            </div>
-            <h2 className="font-medium text-center text-2xl text-indigo-600">UHS Medical Report</h2>
-            <div className="font-medium flex flex-col lg:flex-row items-center max-lg:text-sm text-indigo-500">
+          <motion.div variants={fadeIn} className="flex flex-col items-center gap-4 mb-6 sm:flex-row sm:justify-between">
+            <img 
+              src="/upes-logo.jpg" 
+              alt="UPES Logo" 
+              className="w-16 sm:w-20" 
+            />
+            <h2 className="text-xl text-center text-indigo-600 sm:text-2xl">
+              UHS Medical Report
+            </h2>
+            <div className="flex flex-col items-center text-sm sm:text-base text-indigo-500">
               <span>{ndata?.time}</span>
-              <span className="lg:ml-2">{ndata?.date}</span>
+              <span>{ndata?.date}</span>
             </div>
           </motion.div>
 
@@ -194,60 +198,60 @@ const CommonPrescription = () => {
           {/* Patient Info Section */}
           <motion.div
             variants={slideIn}
-            className="grid grid-cols-3 gap-6 mb-6 max-lg:grid-cols-1"
+            className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 lg:grid-cols-3"
           >
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <label className="font-medium text-indigo-600 w-20">Name:</label>
+                <label className="font-medium text-indigo-600 w-16 sm:w-20">Name:</label>
                 <Input
                   value={ndata?.name}
-                  className="bg-indigo-50 border-indigo-100"
+                  className="bg-indigo-50 border-indigo-100 text-sm"
                   readOnly
                 />
               </div>
               <div className="flex items-center gap-2">
-                <label className="font-medium text-indigo-600 w-20">ID:</label>
+                <label className="font-medium text-indigo-600 w-16 sm:w-20">ID:</label>
                 <Input
                   value={ndata?.id}
-                  className="bg-indigo-50 border-indigo-100"
+                  className="bg-indigo-50 border-indigo-100 text-sm"
                   readOnly
                 />
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <label className="font-medium text-indigo-600 w-20">Age:</label>
+                <label className="font-medium text-indigo-600 w-16 sm:w-20">Age:</label>
                 <Input
                   value={ndata?.age}
-                  className="bg-indigo-50 border-indigo-100"
+                  className="bg-indigo-50 border-indigo-100 text-sm"
                   readOnly
                 />
               </div>
               <div className="flex items-center gap-2">
-                <label className="font-medium text-indigo-600 w-20">School:</label>
+                <label className="font-medium text-indigo-600 w-16 sm:w-20">School:</label>
                 <Input
                   value={ndata?.course}
-                  className="bg-indigo-50 border-indigo-100"
+                  className="bg-indigo-50 border-indigo-100 text-sm"
                   readOnly
                 />
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <label className="font-medium text-indigo-600 w-20">Sex:</label>
+                <label className="font-medium text-indigo-600 w-16 sm:w-20">Sex:</label>
                 <Input
                   value={ndata?.sex}
-                  className="bg-indigo-50 border-indigo-100"
+                  className="bg-indigo-50 border-indigo-100 text-sm"
                   readOnly
                 />
               </div>
               <div className="flex items-center gap-2">
-                <label className="font-medium text-indigo-600 w-32">Residence Type:</label>
+                <label className="font-medium text-indigo-600 w-24 sm:w-32">Residence Type:</label>
                 <Input
                   value={ndata?.residenceType}
-                  className="bg-indigo-50 border-indigo-100"
+                  className="bg-indigo-50 border-indigo-100 text-sm"
                   readOnly
                 />
               </div>
@@ -261,7 +265,7 @@ const CommonPrescription = () => {
             <label className="font-medium text-indigo-600 block mb-2">Diagnosis:</label>
             <Textarea
               value={diagnosis}
-              className="bg-indigo-50 border-indigo-100 rounded-xl"
+              className="bg-indigo-50 border-indigo-100 rounded-lg text-sm"
               readOnly
             />
           </motion.div>
@@ -270,11 +274,14 @@ const CommonPrescription = () => {
           <motion.div variants={fadeIn} className="mb-6">
             <label className="font-medium text-indigo-600 block mb-2">Medication:</label>
             <div className="overflow-x-auto rounded-lg border border-indigo-100">
-              <table className="w-full">
+              <table className="w-full min-w-[600px]">
                 <thead className="bg-indigo-50">
                   <tr>
                     {['S.No.', 'Medicine', 'Dosage (/day)', 'Duration', 'Suggestions'].map((header) => (
-                      <th key={header} className="px-4 py-3 text-left text-indigo-600 font-semibold">
+                      <th 
+                        key={header} 
+                        className="px-2 py-3 text-left text-indigo-600 font-semibold text-sm sm:px-4 sm:text-base"
+                      >
                         {header}
                       </th>
                     ))}
@@ -282,45 +289,56 @@ const CommonPrescription = () => {
                 </thead>
                 <tbody>
                   {ndata.meds.map((med, index) => (
-                    <tr key={index} className="hover:bg-indigo-50 even:bg-indigo-50/50">
-                      <td className="text-center p-3">{index + 1}</td>
-                      <td className="p-3">
+                    <tr key={index} className="even:bg-indigo-50/50">
+                      <td className="text-center p-2 text-sm sm:p-3 sm:text-base">
+                        {index + 1}
+                      </td>
+                      <td className="p-2 sm:p-3">
                         <Input
                           value={med.name}
-                          className="bg-indigo-50 border-indigo-100"
+                          className="bg-indigo-50 border-indigo-100 text-sm"
                           readOnly
                         />
                       </td>
-                      <td className="p-3">
-                        <div className="grid grid-cols-3 gap-2">
-                          <Input
-                            value={med.dosageMorning}
-                            className="bg-indigo-50 border-indigo-100 text-center"
-                            readOnly
-                          />
-                          <Input
-                            value={med.dosageAfternoon}
-                            className="bg-indigo-50 border-indigo-100 text-center"
-                            readOnly
-                          />
-                          <Input
-                            value={med.dosageEvening}
-                            className="bg-indigo-50 border-indigo-100 text-center"
-                            readOnly
-                          />
+                      <td className="p-2 sm:p-3">
+                        <div className="grid grid-cols-1 gap-1 sm:grid-cols-3 sm:gap-2">
+                          <div className="flex items-center gap-1 sm:block">
+                            <span className="text-xs sm:hidden">Morning: </span>
+                            <Input
+                              value={med.dosageMorning}
+                              className="bg-indigo-50 border-indigo-100 text-center text-sm"
+                              readOnly
+                            />
+                          </div>
+                          <div className="flex items-center gap-1 sm:block">
+                            <span className="text-xs sm:hidden">Afternoon: </span>
+                            <Input
+                              value={med.dosageAfternoon}
+                              className="bg-indigo-50 border-indigo-100 text-center text-sm"
+                              readOnly
+                            />
+                          </div>
+                          <div className="flex items-center gap-1 sm:block">
+                            <span className="text-xs sm:hidden">Evening: </span>
+                            <Input
+                              value={med.dosageEvening}
+                              className="bg-indigo-50 border-indigo-100 text-center text-sm"
+                              readOnly
+                            />
+                          </div>
                         </div>
                       </td>
-                      <td className="p-3">
+                      <td className="p-2 sm:p-3">
                         <Input
                           value={med.duration}
-                          className="bg-indigo-50 border-indigo-100 text-center"
+                          className="bg-indigo-50 border-indigo-100 text-center text-sm"
                           readOnly
                         />
                       </td>
-                      <td className="p-3">
+                      <td className="p-2 sm:p-3">
                         <Textarea
                           value={med.suggestion}
-                          className="bg-indigo-50 border-indigo-100"
+                          className="bg-indigo-50 border-indigo-100 text-sm"
                           readOnly
                         />
                       </td>
@@ -332,12 +350,12 @@ const CommonPrescription = () => {
           </motion.div>
 
           {/* Recommendations and Tests */}
-          <motion.div variants={fadeIn} className="space-y-6">
+          <motion.div variants={fadeIn} className="space-y-4 sm:space-y-6">
             <div>
               <label className="font-medium text-indigo-600 block mb-2">Recommendations:</label>
               <Textarea
                 value={dietaryRemarks}
-                className="bg-indigo-50 border-indigo-100 rounded-xl"
+                className="bg-indigo-50 border-indigo-100 rounded-lg text-sm"
                 readOnly
               />
             </div>
@@ -345,17 +363,23 @@ const CommonPrescription = () => {
               <label className="font-medium text-indigo-600 block mb-2">Tests Needed:</label>
               <Textarea
                 value={testNeeded}
-                className="bg-indigo-50 border-indigo-100 rounded-xl"
+                className="bg-indigo-50 border-indigo-100 rounded-lg text-sm"
                 readOnly
               />
             </div>
           </motion.div>
 
           {/* Doctor Signature */}
-          <motion.div variants={fadeIn} className="flex flex-col items-end mt-8">
-            <span className="text-indigo-600 font-semibold">{doctorName}</span>
-            <span className="text-indigo-500">({ndata?.designation})</span>
-            <div className="font-medium text-indigo-600">Doctor</div>
+          <motion.div variants={fadeIn} className="flex flex-col items-end mt-6 sm:mt-8">
+            <span className="text-indigo-600 font-semibold text-sm sm:text-base">
+              {doctorName}
+            </span>
+            <span className="text-indigo-500 text-sm sm:text-base">
+              ({ndata?.designation})
+            </span>
+            <div className="font-medium text-indigo-600 text-sm sm:text-base">
+              Doctor
+            </div>
           </motion.div>
 
           {/* PDF Download Button */}
@@ -372,14 +396,12 @@ const CommonPrescription = () => {
               }
               fileName="patient_report.pdf"
             >
-              {({ loading }) => (
-                <Button
+              <Button
                   className="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white shadow-lg"
                   disabled={loading}
                 >
-                  {loading ? 'Generating...' : 'Download PDF'}
+                  {loading ? "Generating..." : "Download PDF"}
                 </Button>
-              )}
             </PDFDownloadLink>
           </motion.div>
         </motion.div>

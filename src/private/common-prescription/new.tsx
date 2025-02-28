@@ -11,12 +11,137 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
-// ... (keep existing interfaces unchanged)
+interface Medication {
+  name: string;
+  dosageMorning: string;
+  dosageAfternoon: string;
+  dosageEvening: string;
+  duration: string;
+  suggestion: string;
+}
+
+interface PrescriptionData {
+  name: string;
+  id: string;
+  age: number;
+  course: string;
+  date: string;
+  time: string;
+  designation: string;
+  residenceType: string;
+  sex: string;
+  meds: Medication[];
+}
 
 const CommonPrescription = () => {
-  // ... (keep existing state and logic unchanged)
+  const { toast } = useToast();
+  const [ndata, setNdata] = useState<PrescriptionData>({
+    name: "",
+    id: "",
+    age: 0,
+    course: "",
+    sex: "",
+    date: "",
+    designation: "",
+    time: "",
+    residenceType: "",
+    meds: [],
+  });
 
-  // Animation variants
+  const [diagnosis, setDiagnosis] = useState("");
+  const [dietaryRemarks, setDietaryRemarks] = useState("");
+  const [testNeeded, setTestNeeded] = useState("");
+  const [doctorName, setDoctorName] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          toast({
+            variant: "destructive",
+            title: "Authentication Error",
+            description: "User token is missing. Please log in again.",
+          });
+          return;
+        }
+
+        const role = localStorage.getItem("roles");
+        const urlParam = new URLSearchParams(window.location.search).get("id");
+        if (!urlParam) return;
+
+        const age = (dob: string) => {
+          const diff_ms = Date.now() - new Date(dob).getTime();
+          const age_dt = new Date(diff_ms);
+          return Math.abs(age_dt.getUTCFullYear() - 1970);
+        };
+
+        const apiUrl =
+          role === "doctor"
+            ? `http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/api/doctor/getPrescription/${urlParam}`
+            : role === "ad"
+            ? `http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/api/AD/getPrescription/${urlParam}`
+            : `http://ec2-13-201-227-93.ap-south-1.compute.amazonaws.com/api/patient/getPrescription/${urlParam}`;
+
+        const { data } = await axios.get(apiUrl, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const { prescription } = data;
+        const patient = prescription?.patient || {};
+
+        const medsData = prescription.meds.map((med: any) => ({
+          name: med.medicine.medicineName,
+          dosageMorning: med.dosageMorning || "0",
+          dosageAfternoon: med.dosageAfternoon || "0",
+          dosageEvening: med.dosageEvening || "0",
+          duration: med.duration || "0",
+          suggestion: med.suggestion || "",
+        }));
+
+        setNdata({
+          name: patient.name || "",
+          id: patient.sapID || "",
+          age: age(patient.dateOfBirth),
+          course: patient.program || "",
+          sex: patient.gender || "",
+          date: dayjs(data.date).format("DD/MM/YYYY") || "",
+          time: data.time || "",
+          residenceType: data.residenceType || "",
+          designation: data.prescription.doctor.designation || "",
+          meds: medsData,
+        });
+
+        setDoctorName(prescription.doctor?.name || "");
+        setDiagnosis(prescription.diagnosis || "");
+        setDietaryRemarks(prescription.dietaryRemarks || "");
+        setTestNeeded(prescription.testNeeded || "");
+
+        toast({
+          title: "Data Loaded Successfully",
+          description: "Prescription details have been fetched.",
+        });
+      } catch (error: any) {
+        toast({
+          variant: "destructive",
+          title: "Error Fetching Data",
+          description:
+            error.response?.data?.message ||
+            "Error occurred while fetching prescription data.",
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
+        });
+        console.error("Error fetching prescription data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [toast]);
+
   const staggerContainer = {
     hidden: { opacity: 0 },
     visible: {
