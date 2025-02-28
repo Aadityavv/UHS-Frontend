@@ -25,9 +25,8 @@ import {
   Home,
   Pill,
   School
-} from 'lucide-react'; // Using Lucide icons
+} from 'lucide-react';
 
-// Types
 type ViewType = "daily" | "monthly" | "yearly";
 
 interface DataPoint {
@@ -99,7 +98,6 @@ const AnalyticsDashboard = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  // Dummy Data (keep your existing data)
   const [schoolData, setSchoolData] = useState<SchoolData[]>([
     { name: "School of Engineering", count: 120 },
     { name: "School of Business", count: 90 },
@@ -176,24 +174,87 @@ const AnalyticsDashboard = () => {
       monthly: monthlyData,
       yearly: yearlyData
     }[view];
-
+  
     if (loading) return renderChartSkeleton();
     if (!data?.length) return <div className="text-center p-8">No data available</div>;
-
+  
     return (
       <ChartContainer title="Patient Visits" config={chartConfig}>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey={view} tickLine={false} axisLine={false} />
-                  <YAxis />
-                  <Tooltip content={CustomTooltip} />
-                  <Legend />
-                  <Bar dataKey="bidholi" fill="#4f46e5" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="kandoli" fill="#818cf8" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart 
+            data={data} 
+            margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+            barCategoryGap="15%"
+          >
+            <defs>
+              <linearGradient id="bidholiGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#4f46e5" stopOpacity={0.8}/>
+                <stop offset="100%" stopColor="#4f46e5" stopOpacity={0.2}/>
+              </linearGradient>
+              <linearGradient id="kandoliGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#818cf8" stopOpacity={0.8}/>
+                <stop offset="100%" stopColor="#818cf8" stopOpacity={0.2}/>
+              </linearGradient>
+            </defs>
+            
+            <CartesianGrid 
+              strokeDasharray="3 3" 
+              vertical={false} 
+              stroke="#e5e7eb"
+            />
+            
+            <XAxis 
+              dataKey={view} 
+              tickLine={false}
+              axisLine={false}
+              tick={{ fill: '#6b7280', fontSize: 14 }}
+              padding={{ left: 20, right: 20 }}
+              tickMargin={12}
+            />
+            
+            <YAxis 
+              tickLine={false}
+              axisLine={false}
+              tick={{ fill: '#6b7280', fontSize: 14 }}
+              width={80}
+            />
+            
+            <Tooltip 
+              content={CustomTooltip}
+              cursor={{ fill: '#f3f4f6', radius: 8 }}
+            />
+            
+            <Legend 
+              wrapperStyle={{ paddingTop: 10 }}
+              formatter={(value) => (
+                <span className="text-gray-600 text-sm font-medium">
+                  {chartConfig[value as keyof typeof chartConfig].label}
+                </span>
+              )}
+              iconType="circle"
+              iconSize={12}
+            />
+            
+            <Bar 
+              dataKey="bidholi" 
+              fill="url(#bidholiGrad)"
+              radius={[6, 6, 0, 0]}
+              barSize={32}
+              animationBegin={100}
+              animationDuration={400}
+            />
+            
+            <Bar 
+              dataKey="kandoli" 
+              fill="url(#kandoliGrad)"
+              radius={[6, 6, 0, 0]}
+              barSize={32}
+              animationBegin={150}
+              animationDuration={400}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartContainer>
     );
   };
 
@@ -205,11 +266,30 @@ const AnalyticsDashboard = () => {
       <ChartContainer title={title} config={chartConfig}>
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>
+            <defs>
+              {data.map((_, index) => {
+                const color = COLORS[index % COLORS.length];
+                return (
+                  <radialGradient 
+                    id={`pieGrad${index}`}
+                    key={index}
+                    cx="50%"
+                    cy="50%"
+                    r="50%"
+                    fx="50%"
+                    fy="50%"
+                  >
+                    <stop offset="0%" stopColor={color} stopOpacity={0.7}/>
+                    <stop offset="100%" stopColor={color} stopOpacity={0.4}/>
+                  </radialGradient>
+                );
+              })}
+            </defs>
             <Pie
               data={data}
               cx="50%"
               cy="50%"
-              outerRadius={100}
+              outerRadius={80}
               dataKey={dataKey}
               nameKey={nameKey}
               label={({ name, value, percent }) => 
@@ -217,7 +297,7 @@ const AnalyticsDashboard = () => {
               }
             >
               {data.map((_, index) => (
-                <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                <Cell key={index} fill={`url(#pieGrad${index})`} />
               ))}
             </Pie>
             <Tooltip />
@@ -236,6 +316,12 @@ const AnalyticsDashboard = () => {
       <ChartContainer title={title} config={chartConfig}>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={data} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
+            <defs>
+              <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.2}/>
+              </linearGradient>
+            </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
             <XAxis 
               dataKey={xKey} 
@@ -252,7 +338,7 @@ const AnalyticsDashboard = () => {
             <Tooltip content={CustomTooltip} />
             <Bar 
               dataKey="count" 
-              fill="#3b82f6" 
+              fill="url(#barGradient)"
               radius={[6, 6, 0, 0]} 
               barSize={24}
             />
@@ -267,6 +353,60 @@ const AnalyticsDashboard = () => {
       </ChartContainer>
     );
   };
+
+  const renderMedicationChart = () => (
+    <ChartContainer title="Top Medicines" config={chartConfig}>
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart 
+          data={medicineData} 
+          margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
+        >
+          <defs>
+            <linearGradient id="bidholiGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#4f46e5" stopOpacity={0.8}/>
+              <stop offset="100%" stopColor="#4f46e5" stopOpacity={0.2}/>
+            </linearGradient>
+            <linearGradient id="kandoliGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#818cf8" stopOpacity={0.8}/>
+              <stop offset="100%" stopColor="#818cf8" stopOpacity={0.2}/>
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+          <XAxis 
+            dataKey="medicine" 
+            angle={-45} 
+            textAnchor="end" 
+            height={60}
+            tick={{ fill: '#6b7280' }}
+          />
+          <YAxis 
+            tickLine={false} 
+            axisLine={false} 
+            tick={{ fill: '#6b7280' }}
+          />
+          <Tooltip content={CustomTooltip} />
+          <Legend 
+            wrapperStyle={{ paddingTop: 20 }}
+            formatter={(value) => (
+              <span className="text-gray-600 text-sm">{value}</span>
+            )}
+          />
+          <Bar 
+            dataKey="bidholi" 
+            fill="url(#bidholiGrad)"
+            radius={[6, 6, 0, 0]} 
+            barSize={24}
+          />
+          <Bar 
+            dataKey="kandoli" 
+            fill="url(#kandoliGrad)"
+            radius={[6, 6, 0, 0]} 
+            barSize={24}
+          />
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartContainer>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -333,49 +473,7 @@ const AnalyticsDashboard = () => {
             
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
               {renderChartHeader(<Pill className="w-5 h-5" />, "Medication Usage")}
-              {loading ? renderChartSkeleton() : (
-                <ChartContainer title="Top Medicines" config={chartConfig}>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart 
-                      data={medicineData} 
-                      margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                      <XAxis 
-                        dataKey="medicine" 
-                        angle={-45} 
-                        textAnchor="end" 
-                        height={60}
-                        tick={{ fill: '#6b7280' }}
-                      />
-                      <YAxis 
-                        tickLine={false} 
-                        axisLine={false} 
-                        tick={{ fill: '#6b7280' }}
-                      />
-                      <Tooltip content={CustomTooltip} />
-                      <Legend 
-                        wrapperStyle={{ paddingTop: 20 }}
-                        formatter={(value) => (
-                          <span className="text-gray-600 text-sm">{value}</span>
-                        )}
-                      />
-                      <Bar 
-                        dataKey="bidholi" 
-                        fill="#6366f1" 
-                        radius={[6, 6, 0, 0]} 
-                        barSize={24}
-                      />
-                      <Bar 
-                        dataKey="kandoli" 
-                        fill="#8b5cf6" 
-                        radius={[6, 6, 0, 0]} 
-                        barSize={24}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              )}
+              {loading ? renderChartSkeleton() : renderMedicationChart()}
             </div>
           </div>
         </div>
