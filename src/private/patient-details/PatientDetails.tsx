@@ -466,7 +466,7 @@ const PatientDetails = () => {
   const [stock, setStock] = useState<Array<{ id: string; medicineName: string; quantity: number }>>([]);
   const [selectedMedicine, setSelectedMedicine] = useState<Record<number, string>>({});
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [hasAllergy, setHasAllergy] = useState(false);
+  // const [hasAllergy, setHasAllergy] = useState(false);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const age = (dob: string) => {
