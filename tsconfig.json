@@ -1,0 +1,48 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
+    "types": [
+      "node",
+      "react",
+      "jest",
+      "babel__core",
+      "babel__generator",
+      "react-transition-group"
+    ],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
+    // Strict type-checking options
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // Control unused variables and parameters
+    "noUnusedLocals": true,          // set to false if blocking builds unnecessarily
+    "noUnusedParameters": true,      // set to false if blocking builds unnecessarily
+
+    // Control implicit 'any' types
+    "noImplicitAny": true,           // set to false if too strict for now
+
+    "skipLibCheck": true,
+    "isolatedModules": true
+  }
+}
