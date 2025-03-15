@@ -7,16 +7,14 @@ import { motion } from "framer-motion";
 import {
   Stethoscope,
   Pill,
-  ClipboardList,
   HeartPulse,
+  Ambulance,
+  AlertCircle,
   Clock,
   Calendar as CalendarIcon,
-  Users,
-  List,
   BookOpen,
-  Activity,
+  Syringe,
 } from "lucide-react";
-import Skeleton from "@mui/material/Skeleton";
 
 const AssistantDoctorDashboard = () => {
   const navigate = useNavigate();
@@ -28,7 +26,6 @@ const AssistantDoctorDashboard = () => {
   const [inQueue, setInQueue] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Update time every second
   useEffect(() => {
     const timer = setInterval(() => {
       setTime(new Date());
@@ -39,7 +36,6 @@ const AssistantDoctorDashboard = () => {
     };
   }, []);
 
-  // Fetch patient data
   const fetchPatientData = async () => {
     try {
       setIsLoading(true);
@@ -85,7 +81,6 @@ const AssistantDoctorDashboard = () => {
     }
   };
 
-  // Fetch data on mount and set interval
   useEffect(() => {
     fetchPatientData();
     const interval = setInterval(() => {
@@ -95,7 +90,6 @@ const AssistantDoctorDashboard = () => {
     return () => clearInterval(interval);
   }, [toast]);
 
-  // Format time
   const formatTime = (date: Date) => {
     const hours = date.getHours();
     const minutes = date.getMinutes().toString().padStart(2, "0");
@@ -105,177 +99,181 @@ const AssistantDoctorDashboard = () => {
     return `${formattedHours}:${minutes}:${seconds} ${period}`;
   };
 
-  // Stats data
-  const stats = [
-    { title: "Total Patients", value: totalPatients, icon: <Users className="h-6 w-6" /> },
-    { title: "In Queue", value: inQueue, icon: <List className="h-6 w-6" /> },
-    { title: "Treated", value: patientsLeft, icon: <Activity className="h-6 w-6" /> },
-  ];
-
   return (
-    <div className="min-h-[79vh] overflow-x-hidden bg-gray-50">
+    <>
       <Toaster />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col lg:flex-row gap-8"
-        >
-          {/* Left Sidebar */}
-          <div className="w-full lg:w-1/4 space-y-6">
-            {/* Current Time Card */}
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-2xl p-6 text-white"
-            >
-              <h3 className="text-sm font-medium opacity-90 mb-4">Current Time</h3>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold mb-2">{formatTime(time)}</p>
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col lg:flex-row gap-8"
+          >
+            {/* Left Sidebar - Narrow Version */}
+            <div className="w-full lg:w-72 space-y-6">
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-4 text-white"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-medium mb-1">Current Time</p>
+                    <p className="text-xl font-bold">{formatTime(time)}</p>
+                  </div>
+                  <Clock className="h-6 w-6" />
                 </div>
-                <div className="bg-white/10 p-4 rounded-xl">
-                  <Clock className="h-8 w-8" />
-                </div>
-              </div>
-            </motion.div>
+              </motion.div>
 
-            {/* Today's Date Card */}
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
-            >
-              <h3 className="text-sm font-medium text-gray-500 mb-4">Today's Date</h3>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold text-gray-800">
-                    {date?.toLocaleDateString("en-US", {
-                      weekday: "long",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </p>
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <CalendarIcon className="h-5 w-5 text-blue-600" />
+                  <h3 className="text-md font-semibold">Today's Date</h3>
                 </div>
-                <CalendarIcon className="h-8 w-8 text-gray-400" />
-              </div>
-            </motion.div>
-          </div>
+                <p className="text-xs text-gray-600">
+                  {date?.toLocaleDateString("en-US", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
+              </motion.div>
 
-          {/* Main Content */}
-          <div className="flex-1">
-            {/* Stats Cards */}
-            <div className="grid md:grid-cols-3 gap-3 mb-8">
-              {stats.map((stat) => (
-                <motion.div
-                  key={stat.title}
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
-                >
-                  {isLoading ? (
-                    <>
-                      <Skeleton variant="text" width={120} height={24} className="mb-4" />
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Skeleton variant="text" width={150} height={32} className="mb-2" />
-                          <Skeleton variant="text" width={100} height={20} />
-                        </div>
-                        <Skeleton variant="circular" width={56} height={56} />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <h3 className="text-sm font-medium text-gray-500 mb-4">{stat.title}</h3>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-2xl font-bold text-gray-800">{stat.value}</p>
-                        </div>
-                        <div className="bg-indigo-50 p-4 rounded-xl text-indigo-600">
-                          {stat.icon}
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </motion.div>
-              ))}
+              <motion.div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                <h3 className="text-md font-semibold text-gray-900 mb-4">Patient Overview</h3>
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="text-center p-3 bg-indigo-50 rounded-lg">
+                    <p className="text-xs text-gray-600 mb-1">Total Patients</p>
+                    <p className="text-md font-medium">{isLoading ? "..." : totalPatients}</p>
+                  </div>
+                  <div className="text-center p-3 bg-emerald-50 rounded-lg">
+                    <p className="text-xs text-gray-600 mb-1">In Queue</p>
+                    <p className="text-md font-medium">{isLoading ? "..." : inQueue}</p>
+                  </div>
+                  <div className="text-center p-3 bg-amber-50 rounded-lg">
+                    <p className="text-xs text-gray-600 mb-1">Treatments</p>
+                    <p className="text-md font-medium">{isLoading ? "..." : patientsLeft}</p>
+                  </div>
+                </div>
+              </motion.div>
             </div>
 
-            {/* Quick Actions */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="grid md:grid-cols-2 gap-4 mb-8"
-            >
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md"
-                onClick={() => navigate("/doctor-check-in-out")}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Stethoscope className="h-8 w-8 mb-2 text-indigo-600" />
-                    <h3 className="text-xl font-bold text-gray-800">Doctors Availability</h3>
-                    <p className="text-sm text-gray-600 mt-1">Manage doctor schedules</p>
+            {/* Main Content */}
+            <div className="flex-1">
+              {/* Top Cards - Increased Height */}
+              <div className="grid md:grid-cols-2 gap-6 mb-8">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-2xl p-6 text-white cursor-pointer min-h-[180px] flex flex-col justify-between"
+                  onClick={() => navigate("/patient-list")}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-3xl font-bold mb-2">{inQueue}</p>
+                      <div className="text-sm opacity-90">Patients in Queue</div>
+                    </div>
+                    <HeartPulse className="h-10 w-10" />
                   </div>
-                  <Users className="h-12 w-12 text-gray-200" />
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-2xl p-6 text-white cursor-pointer min-h-[180px] flex flex-col justify-between"
+                  onClick={() => navigate("/adhoc")}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-2xl font-bold mb-2">Ad-Hoc Treatment</h3>
+                      <p className="text-sm opacity-90">Immediate care procedures</p>
+                    </div>
+                    <Syringe className="h-10 w-10 text-white" />
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Services Grid */}
+              <motion.div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    className="p-4 bg-blue-50 rounded-xl cursor-pointer"
+                    onClick={() => navigate("/doctor-check-in-out")}
+                  >
+                    <Stethoscope className="h-6 w-6 text-blue-600 mb-2" />
+                    <h3 className="font-semibold mb-1">Doctor Availability</h3>
+                    <p className="text-sm text-gray-600">Manage doctor schedules</p>
+                  </motion.div>
+
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    className="p-4 bg-green-50 rounded-xl cursor-pointer"
+                    onClick={() => navigate("/medicine-stock")}
+                  >
+                    <Pill className="h-6 w-6 text-green-600 mb-2" />
+                    <h3 className="font-semibold mb-1">Medical Stock</h3>
+                    <p className="text-sm text-gray-600">Manage inventory levels</p>
+                  </motion.div>
+
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    className="p-4 bg-purple-50 rounded-xl cursor-pointer"
+                    onClick={() => navigate("/patient-logs")}
+                  >
+                    <BookOpen className="h-6 w-6 text-purple-600 mb-2" />
+                    <h3 className="font-semibold mb-1">Patient Log Book</h3>
+                    <p className="text-sm text-gray-600">Historical records</p>
+                  </motion.div>
+
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    className="p-4 bg-yellow-50 rounded-xl cursor-pointer"
+                    onClick={() => navigate("/Analytics-Dashboard")}
+                  >
+                    <BookOpen className="h-6 w-6 text-yellow-600 mb-2" />
+                    <h3 className="font-semibold mb-1">UHS Analytics</h3>
+                    <p className="text-sm text-gray-600">Health Analysis</p>
+                  </motion.div>
                 </div>
               </motion.div>
 
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md"
-                onClick={() => navigate("/medicine-stock")}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Pill className="h-8 w-8 mb-2 text-indigo-600" />
-                    <h3 className="text-xl font-bold text-gray-800">Medical Stock</h3>
-                    <p className="text-sm text-gray-600 mt-1">Manage inventory levels</p>
+              {/* Emergency Section */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer"
+                  onClick={() => navigate("/Emergency")}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <AlertCircle className="h-6 w-6 text-red-600 mb-2" />
+                      <h3 className="text-xl font-bold text-gray-800 mb-2">Emergency Contacts</h3>
+                      <p className="text-sm text-gray-600">Critical response numbers</p>
+                    </div>
                   </div>
-                  <ClipboardList className="h-12 w-12 text-gray-200" />
-                </div>
-              </motion.div>
-            </motion.div>
+                </motion.div>
 
-            {/* Additional Sections */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="grid md:grid-cols-2 gap-4"
-            >
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md"
-                onClick={() => navigate("/patient-list")}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <HeartPulse className="h-8 w-8 mb-2 text-indigo-600" />
-                    <h3 className="text-xl font-bold text-gray-800">Patient Queue</h3>
-                    <p className="text-sm text-gray-600 mt-1">Manage current patient flow</p>
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer"
+                  onClick={() => navigate("/Ambulance")}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Ambulance className="h-6 w-6 text-blue-600 mb-2" />
+                      <h3 className="text-xl font-bold text-gray-800 mb-2">Ambulance Details</h3>
+                      <p className="text-sm text-gray-600">Emergency vehicle status</p>
+                    </div>
                   </div>
-                  <List className="h-12 w-12 text-gray-200" />
-                </div>
-              </motion.div>
-
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md"
-                onClick={() => navigate("/patient-logs")}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <BookOpen className="h-8 w-8 mb-2 text-indigo-600" />
-                    <h3 className="text-xl font-bold text-gray-800">Patient Log Book</h3>
-                    <p className="text-sm text-gray-600 mt-1">Access historical records</p>
-                  </div>
-                  <ClipboardList className="h-12 w-12 text-gray-200" />
-                </div>
-              </motion.div>
-            </motion.div>
-          </div>
-        </motion.div>
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
