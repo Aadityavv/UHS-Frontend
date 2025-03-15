@@ -279,9 +279,9 @@ const SignIn = () => {
               {/* TEMPORARY BUTTON */}
                 <button
                 onClick={() => navigate("/admin-portal")}
-                className="w-half p-4 rounded-xl bg-emerald-50 hover:bg-emerald-100 transition-colors"
+                className="w-half p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 transition-colors"
               >
-                <span className="text-emerald-700 font-medium">Temporary admin button</span>
+                <span className="text-emerald-700 font-sm">Temporary admin button</span>
               </button>
 
               {/* TEMPORARY BUTTON */}

@@ -25,6 +25,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { ToastAction } from "@/components/ui/toast";
+import { motion } from "framer-motion";
+import { Clock } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -196,177 +198,207 @@ const AdHocTreatment = () => {
   return (
     <>
       <Toaster />
-      <div className="min-h-[84svh] w-full flex gap-8 max-lg:min-h-[93svh]">
-        <div className="flex flex-col gap-4 w-3/4 justify-center items-center max-lg:hidden">
-          <div className="flex items-center justify-center p-5 max-lg:p-5 bg-gray-800 rounded-lg shadow-lg my-5">
-            <p className="text-4xl font-bold text-white drop-shadow-lg">
-              {formatTime(time)}
-            </p>
-          </div>
-          <div>
+      <div className="min-h-[84svh] w-full flex gap-8 max-lg:flex-col">
+        <div className="w-full lg:w-1/4 space-y-6 p-6 max-lg:p-4">
+          <motion.div 
+            whileHover={{ scale: 1.02 }}
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-4 text-white"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium mb-1">Current Time</p>
+                <p className="text-xl font-bold">{formatTime(time)}</p>
+              </div>
+              <Clock className="h-6 w-6" />
+            </div>
+          </motion.div>
+
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
+          >
             <Calendar
               mode="single"
               selected={date}
               onSelect={setDate}
-              className="rounded-md border bg-white shadow-lg max-lg:hidden"
+              className="rounded-md"
             />
-          </div>
+          </motion.div>
         </div>
-        <div className="w-full p-6">
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(handleSubmit)}
-              className="h-[100%] flex flex-col gap-4"
-            >
-              {/* Patient Details */}
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter the name of patient"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter the email of patient"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="reason"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Reason</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter the reason for medications"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
-              {/* Medicine Selection */}
-              <div className="space-y-4">
-                <div className="flex gap-4 items-center">
-                  {/* Medicine Dropdown */}
-                  <FormField
-                    control={form.control}
-                    name="medicine.name"
-                    render={({ field }) => (
-                      <div className="w-1/2">
-                        <FormLabel>Medicine</FormLabel>
-                        <Select
-                          onValueChange={(value) => {
-                            const [id, name] = value.split(":");
-                            field.onChange(name);
-                            form.setValue("medicine", {
-                              ...form.getValues("medicine"),
-                              id,
-                              name,
-                            });
-                          }}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select Medicine" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <div className="p-2">
-                              <input
-                                type="text"
-                                placeholder="Search Medicine"
-                                className="w-full px-2 py-1 border rounded"
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                              />
-                            </div>
-                            {stock
-                              .filter((medicine) =>
-                                medicine.medicineName
-                                  .toLowerCase()
-                                  .includes(searchQuery.toLowerCase())
-                              )
-                              .map((medicine) => (
-                                <SelectItem
-                                  key={medicine.id}
-                                  value={`${medicine.id}:${medicine.medicineName}`}
-                                >
-                                  {medicine.medicineName} (Qty:{" "}
-                                  {medicine.quantity}, Exp:{" "}
-                                  {formatDate(medicine.expirationDate)}, Co:{" "}
-                                  {medicine.company})
-                                </SelectItem>
-                              ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </div>
-                    )}
-                  />
-
-                  {/* Quantity Input */}
-                  <FormField
-                    control={form.control}
-                    name="medicine.quantity"
-                    render={({ field }) => (
-                      <div className="w-1/2">
-                        <FormLabel>Quantity</FormLabel>
+        <div className="flex-1 p-6 max-lg:p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
+          >
+            <h3 className="text-lg font-semibold text-gray-900 mb-6">Ad-Hoc Treatment</h3>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                {/* Patient Details */}
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Patient Name
+                      </FormLabel>
+                      <FormControl>
                         <Input
-                          type="number"
-                          placeholder="Enter Quantity"
-                          min="1"
-                          value={field.value}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            field.onChange(value ? parseInt(value, 10) : 0);
-                          }}
+                          placeholder="Enter patient name"
+                          className="rounded-lg focus:ring-2 focus:ring-indigo-600"
+                          {...field}
                         />
-                        <FormMessage />
-                      </div>
-                    )}
-                  />
-                </div>
-              </div>
+                      </FormControl>
+                      <FormMessage className="text-red-500 text-xs" />
+                    </FormItem>
+                  )}
+                />
 
-              <div className="w-full flex justify-end items-center gap-4">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={handleBack}
-                  className="text-red-500 bg-white border border-red-500 w-24"
-                >
-                  Back
-                </Button>
-                <Button
-                  type="submit"
-                  className="bg-gradient-to-r from-[#2061f5] to-[#13398f] w-24 text-white"
-                >
-                  Submit
-                </Button>
-              </div>
-            </form>
-          </Form>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Patient Email
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter patient email"
+                          className="rounded-lg focus:ring-2 focus:ring-indigo-600"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-500 text-xs" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="reason"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Treatment Reason
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter treatment reason"
+                          className="rounded-lg focus:ring-2 focus:ring-indigo-600"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-500 text-xs" />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Medicine Selection */}
+                <div className="space-y-4">
+                  <div className="flex gap-4 items-center">
+                    <FormField
+                      control={form.control}
+                      name="medicine.name"
+                      render={({ field }) => (
+                        <div className="w-1/2">
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            Medicine
+                          </FormLabel>
+                          <Select
+                            onValueChange={(value) => {
+                              const [id, name] = value.split(":");
+                              field.onChange(name);
+                              form.setValue("medicine", {
+                                ...form.getValues("medicine"),
+                                id,
+                                name,
+                              });
+                            }}
+                          >
+                            <SelectTrigger className="rounded-lg focus:ring-2 focus:ring-indigo-600">
+                              <SelectValue placeholder="Select Medicine" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <div className="p-2">
+                                <Input
+                                  placeholder="Search Medicine"
+                                  className="rounded-lg"
+                                  onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                              </div>
+                              {stock
+                                .filter((medicine) =>
+                                  medicine.medicineName
+                                    .toLowerCase()
+                                    .includes(searchQuery.toLowerCase())
+                                )
+                                .map((medicine) => (
+                                  <SelectItem
+                                    key={medicine.id}
+                                    value={`${medicine.id}:${medicine.medicineName}`}
+                                    className="hover:bg-indigo-50"
+                                  >
+                                    {medicine.medicineName} (Qty:{" "}
+                                    {medicine.quantity}, Exp:{" "}
+                                    {formatDate(medicine.expirationDate)}, Co:{" "}
+                                    {medicine.company})
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage className="text-red-500 text-xs" />
+                        </div>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="medicine.quantity"
+                      render={({ field }) => (
+                        <div className="w-1/2">
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            Quantity
+                          </FormLabel>
+                          <Input
+                            type="number"
+                            placeholder="Enter quantity"
+                            min="1"
+                            className="rounded-lg focus:ring-2 focus:ring-indigo-600"
+                            value={field.value}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              field.onChange(value ? parseInt(value, 10) : 0);
+                            }}
+                          />
+                          <FormMessage className="text-red-500 text-xs" />
+                        </div>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-4 mt-8">
+                  <Button
+                    type="button"
+                    onClick={handleBack}
+                    variant="outline"
+                    className="rounded-xl border-gray-300 text-gray-700 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"
+                  >
+                    Submit Treatment
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </motion.div>
         </div>
       </div>
     </>
