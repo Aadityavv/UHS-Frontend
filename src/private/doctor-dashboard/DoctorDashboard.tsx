@@ -8,7 +8,6 @@ import { motion } from "framer-motion";
 import Skeleton from '@mui/material/Skeleton'; // Import Skeleton from Material-UI
 import { 
   AlertCircle,
-  ClipboardList,
   Stethoscope
 } from "lucide-react";
 // import { Calendar } from "@/components/ui/calendar"; // Added Calendar import
