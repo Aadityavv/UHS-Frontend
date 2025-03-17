@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { ToastAction } from "@/components/ui/toast";
 import { motion } from "framer-motion";
+import DiagnosisWordCloud from "@/components/DiagnosisWordCloud";
 import {
   Stethoscope,
   Pill,
@@ -25,6 +26,7 @@ const AssistantDoctorDashboard = () => {
   const [patientsLeft, setPatientsLeft] = useState(0);
   const [inQueue, setInQueue] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -141,8 +143,37 @@ const AssistantDoctorDashboard = () => {
                   })}
                 </p>
               </motion.div>
+{/* Emergency Section */}
+<div className="grid md:grid-cols-1 gap-6">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer"
+                  onClick={() => navigate("/Emergency")}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <AlertCircle className="h-6 w-6 text-red-600 mb-2" />
+                      <h3 className="text-xl font-bold text-gray-800 mb-2">Emergency Contacts</h3>
+                      <p className="text-sm text-gray-600">Critical response numbers</p>
+                    </div>
+                  </div>
+                </motion.div>
 
-              <motion.div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer"
+                  onClick={() => navigate("/Ambulance")}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Ambulance className="h-6 w-6 text-blue-600 mb-2" />
+                      <h3 className="text-xl font-bold text-gray-800 mb-2">Ambulance Details</h3>
+                      <p className="text-sm text-gray-600">Emergency vehicle status</p>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+              {/* <motion.div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
                 <h3 className="text-md font-semibold text-gray-900 mb-4">Patient Overview</h3>
                 <div className="grid grid-cols-1 gap-3">
                   <div className="text-center p-3 bg-indigo-50 rounded-lg">
@@ -158,7 +189,7 @@ const AssistantDoctorDashboard = () => {
                     <p className="text-md font-medium">{isLoading ? "..." : patientsLeft}</p>
                   </div>
                 </div>
-              </motion.div>
+              </motion.div> */}
             </div>
 
             {/* Main Content */}
@@ -195,8 +226,8 @@ const AssistantDoctorDashboard = () => {
               </div>
 
               {/* Services Grid */}
-              <motion.div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <motion.div className=" rounded-2xl p-6 shadow-md  mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 gap-4">
                   <motion.div
                     whileHover={{ scale: 1.02 }}
                     className="p-4 bg-blue-50 rounded-xl cursor-pointer"
@@ -238,38 +269,10 @@ const AssistantDoctorDashboard = () => {
                   </motion.div>
                 </div>
               </motion.div>
-
-              {/* Emergency Section */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer"
-                  onClick={() => navigate("/Emergency")}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <AlertCircle className="h-6 w-6 text-red-600 mb-2" />
-                      <h3 className="text-xl font-bold text-gray-800 mb-2">Emergency Contacts</h3>
-                      <p className="text-sm text-gray-600">Critical response numbers</p>
-                    </div>
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer"
-                  onClick={() => navigate("/Ambulance")}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Ambulance className="h-6 w-6 text-blue-600 mb-2" />
-                      <h3 className="text-xl font-bold text-gray-800 mb-2">Ambulance Details</h3>
-                      <p className="text-sm text-gray-600">Emergency vehicle status</p>
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
             </div>
+            <motion.div className="mt-[-25pt]">
+    <DiagnosisWordCloud />
+  </motion.div>
           </motion.div>
         </div>
       </div>

@@ -1,17 +1,53 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import WordCloud from "react-wordcloud";
-
-// CSS for tooltips and animations
+import axios from "axios";
+import { motion } from "framer-motion";
+import Skeleton from "@mui/material/Skeleton";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/animations/scale.css";
 
-// Define the type for diagnosis prop
-interface DiagnosisWordCloudProps {
-  diagnosis: Record<string, number>;
-}
+// Optional: Add toast or notification system if needed (based on your setup)
 
-const DiagnosisWordCloud: React.FC<DiagnosisWordCloudProps> = ({ diagnosis }) => {
-  // Convert the diagnosis object to an array of { text, value }
+const DiagnosisWordCloud: React.FC = () => {
+  const [diagnosis, setDiagnosis] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch diagnosis data
+  const fetchDiagnosis = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Unauthorized. Token missing.");
+        setLoading(false);
+        return;
+      }
+
+      const response = await axios.get(
+        "https://uhs-backend.onrender.com/api/diagnosis/frequencies",
+      );
+
+      if (response.status === 200) {
+        setDiagnosis(response.data);
+      } else {
+        setError(response.data.message || "Failed to fetch diagnosis data.");
+      }
+    } catch (err: any) {
+      console.error("Error fetching diagnosis data:", err);
+      setError(err.message || "Network error occurred.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDiagnosis();
+    const interval = setInterval(fetchDiagnosis, 30000); // Auto-refresh every 30 secs
+    return () => clearInterval(interval);
+  }, []);
+
   const words = Object.entries(diagnosis).map(([text, value]) => ({
     text,
     value,
@@ -47,7 +83,6 @@ const DiagnosisWordCloud: React.FC<DiagnosisWordCloudProps> = ({ diagnosis }) =>
     "#e11d48", // Rose
   ];
 
-  // Custom callbacks (typed manually since the library lacks types)
   const callbacks = {
     getWordTooltip: (word: { text: string; value: number }) =>
       `Diagnosis: ${word.text}\nPrescribed: ${word.value} times`,
@@ -61,7 +96,6 @@ const DiagnosisWordCloud: React.FC<DiagnosisWordCloudProps> = ({ diagnosis }) =>
       calculateFontSize(word.value),
   };
 
-  // Options for react-wordcloud (manually typed)
   const customOptions = {
     rotations: 0,
     fontSizes: [14, 80] as [number, number],
@@ -74,33 +108,56 @@ const DiagnosisWordCloud: React.FC<DiagnosisWordCloudProps> = ({ diagnosis }) =>
   };
 
   return (
-    <div className="relative w-full flex justify-center items-center py-8">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative w-full flex justify-center items-center py-8"
+    >
       <div className="relative w-full max-w-5xl bg-white/60 backdrop-blur-md rounded-3xl shadow-2xl border border-gray-100 p-8 transition-all duration-500">
         <h3 className="text-2xl font-bold text-gray-800 mb-8 text-center tracking-wide">
           Diagnosis Word Cloud
         </h3>
 
-        <div
-          className="w-full h-[400px] cursor-pointer"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0))",
-            borderRadius: "1rem",
-            padding: "1rem",
-          }}
-        >
-          <WordCloud
-            words={words}
-            options={customOptions}
-            callbacks={callbacks}
-          />
-        </div>
+        {loading ? (
+          <div className="flex justify-center items-center h-[400px]">
+            <Skeleton
+              variant="rectangular"
+              width={"100%"}
+              height={400}
+              sx={{ borderRadius: "1rem" }}
+            />
+          </div>
+        ) : error ? (
+          <div className="text-center text-red-600 font-medium">{error}</div>
+        ) : words.length === 0 ? (
+          <div className="text-center text-gray-500 italic">
+            No diagnosis data available yet.
+          </div>
+        ) : (
+          <>
+            <div
+              className="w-full h-[400px] cursor-pointer"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0))",
+                borderRadius: "1rem",
+                padding: "1rem",
+              }}
+            >
+              <WordCloud
+                words={words}
+                options={customOptions}
+                callbacks={callbacks}
+              />
+            </div>
 
-        <div className="text-sm text-gray-500 italic text-center mt-4">
-          Hover to see frequency • Size shows diagnosis frequency
-        </div>
+            <div className="text-sm text-gray-500 italic text-center mt-4">
+              Hover to see frequency • Size shows diagnosis frequency
+            </div>
+          </>
+        )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
