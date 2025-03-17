@@ -3,16 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { ToastAction } from "@/components/ui/toast";
+import Skeleton from '@mui/material/Skeleton'; 
 import { motion } from "framer-motion";
 import DiagnosisWordCloud from "@/components/DiagnosisWordCloud";
 import {
   Stethoscope,
   Pill,
-  HeartPulse,
   Ambulance,
   AlertCircle,
   Clock,
-  Calendar as CalendarIcon,
   BookOpen,
   Syringe,
 } from "lucide-react";
@@ -120,13 +119,23 @@ const AssistantDoctorDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium mb-1">Current Time</p>
-                    <p className="text-xl font-bold">{formatTime(time)}</p>
+                    <p className="text-xl font-bold">{formatTime(time)}
+                      <br />
+                      <p className="text-xs text-white">
+                  {date?.toLocaleDateString("en-US", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
+                    </p>
                   </div>
                   <Clock className="h-6 w-6" />
                 </div>
               </motion.div>
 
-              <motion.div
+              {/* <motion.div
                 whileHover={{ scale: 1.02 }}
                 className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
               >
@@ -142,7 +151,7 @@ const AssistantDoctorDashboard = () => {
                     day: "numeric",
                   })}
                 </p>
-              </motion.div>
+              </motion.div> */}
 {/* Emergency Section */}
 <div className="grid md:grid-cols-1 gap-6">
                 <motion.div
@@ -173,6 +182,7 @@ const AssistantDoctorDashboard = () => {
                   </div>
                 </motion.div>
               </div>
+              
               {/* <motion.div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
                 <h3 className="text-md font-semibold text-gray-900 mb-4">Patient Overview</h3>
                 <div className="grid grid-cols-1 gap-3">
@@ -196,7 +206,54 @@ const AssistantDoctorDashboard = () => {
             <div className="flex-1">
               {/* Top Cards - Increased Height */}
               <div className="grid md:grid-cols-2 gap-6 mb-8">
-                <motion.div
+               
+              <motion.div
+  whileHover={{ scale: 1.02 }}
+  className="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-2xl p-6 text-white"
+>
+  {isLoading ? (
+    <>
+      <Skeleton variant="text" width={120} height={24} className="mb-4 bg-indigo-400" />
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex-1 grid grid-cols-2 gap-2">
+          <Skeleton variant="text" width="100%" height={40} className="bg-indigo-400" />
+          <Skeleton variant="text" width="100%" height={40} className="bg-indigo-400" />
+          <Skeleton variant="text" width="100%" height={40} className="bg-indigo-400" />
+          <Skeleton variant="text" width="100%" height={40} className="bg-indigo-400" />
+        </div>
+        <Skeleton variant="circular" width={56} height={56} className="bg-indigo-400" />
+      </div>
+    </>
+  ) : (
+    <>
+      <h3 className="text-lg font-semibold opacity-90 mb-2">Patients Overview</h3>
+      
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex-1 grid grid-cols-4 gap-2">
+          
+          <div>
+            <p className="text-2xl font-bold">{inQueue}</p>
+            <p className="text-sm opacity-90">In Queue</p>
+          </div>
+          <div className="bg-white/10 p-2 rounded-lg">
+            <p className="text-xl font-bold">{totalPatients}</p>
+            <p className="text-xs opacity-90">Total Patients</p>
+          </div>
+          <div className="bg-white/10 p-2 rounded-lg">
+            <p className="text-xl font-bold">{patientsLeft}</p>
+            <p className="text-xs opacity-90">Patients Left</p>
+          </div>
+          {/* <div className="bg-white/10 p-2 rounded-lg">
+            <p className="text-xl font-bold">{token}</p>
+            <p className="text-xs opacity-90">Current Token</p>
+          </div> */}
+        </div>
+      </div>
+    </>
+  )}
+</motion.div>   
+
+                {/* <motion.div
                   whileHover={{ scale: 1.02 }}
                   className="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-2xl p-6 text-white cursor-pointer min-h-[180px] flex flex-col justify-between"
                   onClick={() => navigate("/patient-list")}
@@ -208,7 +265,7 @@ const AssistantDoctorDashboard = () => {
                     </div>
                     <HeartPulse className="h-10 w-10" />
                   </div>
-                </motion.div>
+                </motion.div> */}
 
                 <motion.div
                   whileHover={{ scale: 1.02 }}
