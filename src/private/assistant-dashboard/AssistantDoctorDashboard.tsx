@@ -14,6 +14,7 @@ import {
   Clock,
   BookOpen,
   Syringe,
+  CalendarIcon
 } from "lucide-react";
 
 const AssistantDoctorDashboard = () => {
@@ -120,22 +121,13 @@ const AssistantDoctorDashboard = () => {
                   <div>
                     <p className="text-xs font-medium mb-1">Current Time</p>
                     <p className="text-xl font-bold">{formatTime(time)}
-                      <br />
-                      <p className="text-xs text-white">
-                  {date?.toLocaleDateString("en-US", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </p>
                     </p>
                   </div>
                   <Clock className="h-6 w-6" />
                 </div>
               </motion.div>
 
-              {/* <motion.div
+              <motion.div
                 whileHover={{ scale: 1.02 }}
                 className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
               >
@@ -151,7 +143,7 @@ const AssistantDoctorDashboard = () => {
                     day: "numeric",
                   })}
                 </p>
-              </motion.div> */}
+              </motion.div>
               <motion.div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
                 <h3 className="text-md font-semibold text-gray-900 mb-4">Patient Overview</h3>
                 <div className="grid grid-cols-1 gap-3">
