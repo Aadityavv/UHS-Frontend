@@ -38,10 +38,10 @@ const UserAppointment = () => {
     const fetchData = async () => {
       try {
         const [userRes, doctorsRes] = await Promise.all([
-          axios.get("https://uhs-backend.onrender.com/api/patient/", {
+          axios.get("https://uhs-backend.onrender.com//api/patient/", {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get("https://uhs-backend.onrender.com/api/patient/getAvailableDoctors", {
+          axios.get("https://uhs-backend.onrender.com//api/patient/getAvailableDoctors", {
             headers: {
               Authorization: `Bearer ${token}`,
               "X-Latitude": localStorage.getItem("latitude"),
@@ -74,7 +74,7 @@ const UserAppointment = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "https://uhs-backend.onrender.com/api/patient/lastAppointmentDate",
+        "https://uhs-backend.onrender.com//api/patient/lastAppointmentDate",
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setLastAppointmentDate(response.data || null);
@@ -102,7 +102,7 @@ const UserAppointment = () => {
       };
 
       await axios.post(
-        "https://uhs-backend.onrender.com/api/patient/submitAppointment",
+        "https://uhs-backend.onrender.com//api/patient/submitAppointment",
         appointmentData,
         {
           headers: {

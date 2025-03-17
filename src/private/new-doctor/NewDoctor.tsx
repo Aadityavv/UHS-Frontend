@@ -90,7 +90,7 @@ const NewDoctor = () => {
         }
         const payload = { ...data, status: false };
         await axios.post(
-          "https://uhs-backend.onrender.com/api/admin/doctor/signup",
+          "https://uhs-backend.onrender.com//api/admin/doctor/signup",
           payload,
           {
             headers: {

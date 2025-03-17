@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import DiagnosisWordCloud from "@/components/DiagnosisWordCloud";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { ToastAction } from "@/components/ui/toast";
@@ -8,7 +9,6 @@ import { motion } from "framer-motion";
 import Skeleton from '@mui/material/Skeleton'; // Import Skeleton from Material-UI
 import { 
   AlertCircle,
-  ClipboardList,
   Stethoscope
 } from "lucide-react";
 // import { Calendar } from "@/components/ui/calendar"; // Added Calendar import
@@ -24,21 +24,20 @@ const DoctorDashboard = () => {
     "check-in" | "check-out" | "Available" | "Not Available"
   >("check-out");
   const [loading, setLoading] = useState(true);
-  // const [appointmentReasons, setAppointmentReasons] = useState<{ [key: string]: number }>({});
+  const [diagnosis, setDiagnosis] = useState<{ [key: string]: number }>({});
 
-  const appointmentReasons = {
-    "Vaccination": 10,
-    "Eye Exam": 6,
-    "Blood Test": 5,
-    "Routine Checkup": 15,
-    "Physical Therapy": 4,
-    "Dental Cleaning": 8,
-    "Skin Check": 3,
-    "Allergy Consultation": 2,
-    "Follow-up Visit": 7,
-    "Emergency Visit": 1,
-  };
-  
+  // const appointmentReasons = {
+  //   "Vaccination": 10,
+  //   "Eye Exam": 6,
+  //   "Blood Test": 5,
+  //   "Routine Checkup": 15,
+  //   "Physical Therapy": 4,
+  //   "Dental Cleaning": 8,
+  //   "Skin Check": 3,
+  //   "Allergy Consultation": 2,
+  //   "Follow-up Visit": 7,
+  //   "Emergency Visit": 1,
+  // };
   
 
   const fetchPatientData = async () => {
@@ -49,7 +48,7 @@ const DoctorDashboard = () => {
         return;
       }
       const response = await fetch(
-        "https://uhs-backend.onrender.com/api/doctor/total-patient-count",
+        "https://uhs-backend.onrender.com//api/doctor/total-patient-count",
         {
           headers: {
             Authorization: "Bearer " + token,
@@ -106,7 +105,7 @@ const DoctorDashboard = () => {
       }
 
       const response = await axios.get(
-        "https://uhs-backend.onrender.com/api/doctor/setStatus?isDoctorCheckIn=true",
+        "https://uhs-backend.onrender.com//api/doctor/setStatus?isDoctorCheckIn=true",
         {
           headers: {
             Authorization: "Bearer " + token,
@@ -151,7 +150,7 @@ const DoctorDashboard = () => {
         return;
       }
       const response = await fetch(
-        "https://uhs-backend.onrender.com/api/doctor/setStatus?isDoctorCheckIn=false",
+        "https://uhs-backend.onrender.com//api/doctor/setStatus?isDoctorCheckIn=false",
         {
           headers: {
             Authorization: "Bearer " + token,
@@ -194,7 +193,7 @@ const DoctorDashboard = () => {
     }
 
     const response = await axios.get(
-      "https://uhs-backend.onrender.com/api/doctor/getCurrentToken",
+      "https://uhs-backend.onrender.com//api/doctor/getCurrentToken",
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -223,7 +222,7 @@ const DoctorDashboard = () => {
     }
 
     const response = await axios.get(
-      "https://uhs-backend.onrender.com/api/doctor/getStatus",
+      "https://uhs-backend.onrender.com//api/doctor/getStatus",
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -248,7 +247,7 @@ const DoctorDashboard = () => {
     }
   };
 
-  const fetchAppointmentReasons = async () => {
+  const fetchDiagnosis = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -256,16 +255,16 @@ const DoctorDashboard = () => {
           return;
         }
         const response = await axios.get(
-          "https://uhs-backend.onrender.com/api/doctor/appointment-reasons",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          "https://uhs-backend.onrender.com//api/diagnosis/frequencies",
+          // {
+          //   headers: {
+          //     Authorization: `Bearer ${token}`,
+          //   },
+          // }
         );
   
         if (response.status === 200) {
-          setAppointmentReasons(response.data);
+          setDiagnosis(response.data);
         }
       } catch (error) {
         console.error("Error fetching appointment reasons:", error);
@@ -276,7 +275,7 @@ const DoctorDashboard = () => {
     fetchPatientData();
     fetchTokenNum();
     fetchDoctorStatus();
-    fetchAppointmentReasons();
+    fetchDiagnosis();
 
     const interval = setInterval(() => {
       fetchPatientData();
@@ -290,7 +289,7 @@ const DoctorDashboard = () => {
       fetchDoctorStatus();
     }, 30000); 
 
-    const reasonsInterval = setInterval(fetchAppointmentReasons, 30000);
+    const reasonsInterval = setInterval(fetchDiagnosis, 30000);
 
     return () => {
       clearInterval(interval);
@@ -547,39 +546,102 @@ const DoctorDashboard = () => {
               </motion.div>
 
             {/* Appointment Reasons Cloud */}
-                          <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="mt-8 bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
-                          >
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Common Appointment Reasons</h3>
-                            <div className="flex flex-wrap gap-3 min-h-[200px] items-center justify-center p-4 bg-gray-50 rounded-xl">
-                              {Object.entries(appointmentReasons).length > 0 ? (
-                                Object.entries(appointmentReasons).map(([reason, count]) => (
-                                  <motion.span
-                                    key={reason}
-                                    whileHover={{ scale: 1.1 }}
-                                    className="inline-block px-1 py-1 rounded-full text-indigo-800 transition-all"
-                                    style={{
-                                      fontSize: `${ 8 + count * 2}px`,
-                                      opacity: 1,
-                                      fontWeight: `${ 300 + count * 20}`,
-                                    }}
-                                  >
-                                    {reason}
-                                    <span className="ml-2 text-xs opacity-75">{count}</span>
-                                  </motion.span>
-                                ))
-                              ) : (
-                                <div className="text-gray-500 text-center py-8">
-                                  {loading ? 
-                                    <Skeleton variant="text" width={200} height={24} /> : 
-                                    "No appointment reasons recorded yet"
-                                  }
-                                </div>
-                              )}
-                            </div>
-                          </motion.div>
+            {/* <motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  className="mt-8 bg-gradient-to-br from-gray-50 to-white rounded-2xl p-6 shadow-lg border border-gray-200 backdrop-blur-sm"
+>
+  <div className="mb-6 flex items-center justify-between">
+    <h3 className="text-xl font-bold text-gray-800">Diagnosis Word Cloud</h3>
+    <span className="text-sm text-gray-500">Frequency weighted display</span>
+  </div>
+
+  <div className="relative h-96 w-full bg-gradient-to-br from-white to-blue-50 rounded-xl p-4 shadow-inner">
+    {Object.entries(diagnosis).length > 0 ? (
+      Object.entries(diagnosis).map(([reason, count]) => {
+        const colorPalette = [
+          'bg-gradient-to-r from-purple-600 to-blue-600',
+          'bg-gradient-to-r from-green-600 to-emerald-600',
+          'bg-gradient-to-r from-red-600 to-orange-600',
+          'bg-gradient-to-r from-pink-600 to-rose-600',
+        ];
+        const randomRotation = Math.random() * 60 - 30; // Random rotation between -30 and 30 degrees
+        const randomX = Math.random() * 80 - 40; // Random horizontal position
+        const randomY = Math.random() * 80 - 40; // Random vertical position
+
+        return (
+          <motion.div
+  key={reason}
+  className="absolute cursor-pointer transition-transform duration-300 ease-in-out"
+  style={{
+    // Limit font size (min 14px, max 48px)
+    fontSize: `${Math.min(Math.max(14, 10 + count * 4), 48)}px`,
+
+    // Color variation (optional if you're using hue-rotate)
+    filter: `hue-rotate(${count * 15}deg)`,
+
+    // Clamp the positions to stay inside box (10% - 90%)
+    left: `${Math.min(Math.max(10, 50 + randomX), 90)}%`,
+    top: `${Math.min(Math.max(10, 50 + randomY), 90)}%`,
+
+    // Center & rotate randomly within -10 to 10 degrees
+    transform: `translate(-50%, -50%) rotate(${Math.min(Math.max(randomRotation, -10), 10)}deg)`,
+
+    // Optional: smoother word placement and hover z-index handling
+    zIndex: 10,
+  }}
+  initial={{ scale: 0, opacity: 0 }}
+  animate={{ scale: 1, opacity: 1 }}
+  transition={{ type: 'spring', stiffness: 80, damping: 10 }}
+  whileHover={{
+    scale: 1.2,
+    rotate: 0,
+    zIndex: 50,
+    transition: { duration: 0.3 },
+  }}
+>
+  <span
+    className={`
+      ${colorPalette[count % colorPalette.length]} 
+      bg-clip-text 
+      text-transparent 
+      font-semibold 
+      tracking-wide
+    `}
+  >
+    {reason}
+    <span className="ml-2 text-xs font-medium text-gray-500">
+      {count}
+    </span>
+  </span>
+</motion.div>
+
+        )
+      })
+    ) : (
+      <div className="flex h-full items-center justify-center">
+        <motion.div
+          className="text-gray-400 text-lg"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          {loading ? (
+            <Skeleton variant="text" width={240} height={32} />
+          ) : (
+            "✨ Start adding diagnoses to generate cloud"
+          )}
+        </motion.div>
+      </div>
+    )}
+  </div>
+
+  <div className="mt-6 text-right text-sm text-gray-500">
+    <span>Hover to interact • Size indicates frequency</span>
+  </div>
+            </motion.div> */}
+
+<DiagnosisWordCloud diagnosis={diagnosis} />
+
             </div>
           </motion.div>
         </div>

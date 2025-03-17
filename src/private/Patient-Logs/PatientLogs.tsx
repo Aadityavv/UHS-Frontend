@@ -51,7 +51,7 @@ const PatientLogs = () => {
     try {
       if (selectedButton === "Consultation") {
         let apiUrl =
-          "https://uhs-backend.onrender.com/api/AD/getAppointmentByDate";
+          "https://uhs-backend.onrender.com//api/AD/getAppointmentByDate";
 
         if (date) {
           apiUrl += `?date=${date}`;
@@ -82,7 +82,7 @@ const PatientLogs = () => {
           });
         }
       } else {
-        let apiUrl = `https://uhs-backend.onrender.com/api/AD/getAdHocByDate?date=${date}`;
+        let apiUrl = `https://uhs-backend.onrender.com//api/AD/getAdHocByDate?date=${date}`;
 
         const resp = await axios.get(apiUrl, {
           headers: {

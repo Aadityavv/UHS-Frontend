@@ -28,7 +28,7 @@ const DoctorCheckIn = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "https://uhs-backend.onrender.com/api/AD/getAllDoctors",
+        "https://uhs-backend.onrender.com//api/AD/getAllDoctors",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -90,7 +90,7 @@ const DoctorCheckIn = () => {
         return;
       }
       const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/AD/setStatus/${event.target.dataset.key}?isDoctorCheckIn=true`,
+        `https://uhs-backend.onrender.com//api/AD/setStatus/${event.target.dataset.key}?isDoctorCheckIn=true`,
         {
           headers: {
             Authorization: "Bearer " + token,
@@ -133,7 +133,7 @@ const DoctorCheckIn = () => {
         return;
       }
       const response = await fetch(
-        `https://uhs-backend.onrender.com/api/AD/setStatus/${event.target.dataset.key}?isDoctorCheckIn=false`,
+        `https://uhs-backend.onrender.com//api/AD/setStatus/${event.target.dataset.key}?isDoctorCheckIn=false`,
         {
           headers: {
             Authorization: "Bearer " + token,
