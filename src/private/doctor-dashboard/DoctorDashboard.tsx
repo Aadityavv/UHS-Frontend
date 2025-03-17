@@ -640,7 +640,7 @@ const DoctorDashboard = () => {
   </div>
             </motion.div> */}
 
-<DiagnosisWordCloud diagnosis={diagnosis} />
+<DiagnosisWordCloud />
 
             </div>
           </motion.div>
