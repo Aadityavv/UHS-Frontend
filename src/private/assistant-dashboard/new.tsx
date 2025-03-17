@@ -4,7 +4,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { ToastAction } from "@/components/ui/toast";
 import { motion } from "framer-motion";
-import DiagnosisWordCloud from "@/components/DiagnosisWordCloud";
 import {
   Stethoscope,
   Pill,
@@ -12,6 +11,7 @@ import {
   Ambulance,
   AlertCircle,
   Clock,
+  Calendar as CalendarIcon,
   BookOpen,
   Syringe,
 } from "lucide-react";
@@ -21,11 +21,10 @@ const AssistantDoctorDashboard = () => {
   const { toast } = useToast();
   const [time, setTime] = useState<Date>(new Date());
   const [date] = useState<Date | undefined>(new Date());
-    const [totalPatients, setTotalPatients] = useState(0);
-    const [patientsLeft, setPatientsLeft] = useState(0);
-    const [inQueue, setInQueue] = useState(0);
-    const [isLoading, setIsLoading] = useState(true);
-  
+  const [totalPatients, setTotalPatients] = useState(0);
+  const [patientsLeft, setPatientsLeft] = useState(0);
+  const [inQueue, setInQueue] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -119,23 +118,13 @@ const AssistantDoctorDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium mb-1">Current Time</p>
-                    <p className="text-xl font-bold">{formatTime(time)}
-                      <br />
-                      <p className="text-xs text-white">
-                  {date?.toLocaleDateString("en-US", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </p>
-                    </p>
+                    <p className="text-xl font-bold">{formatTime(time)}</p>
                   </div>
                   <Clock className="h-6 w-6" />
                 </div>
               </motion.div>
 
-              {/* <motion.div
+              <motion.div
                 whileHover={{ scale: 1.02 }}
                 className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
               >
@@ -151,7 +140,8 @@ const AssistantDoctorDashboard = () => {
                     day: "numeric",
                   })}
                 </p>
-              </motion.div> */}
+              </motion.div>
+
               <motion.div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
                 <h3 className="text-md font-semibold text-gray-900 mb-4">Patient Overview</h3>
                 <div className="grid grid-cols-1 gap-3">
@@ -169,43 +159,12 @@ const AssistantDoctorDashboard = () => {
                   </div>
                 </div>
               </motion.div>
-{/* Emergency Section */}
-<div className="grid md:grid-cols-1 gap-6">
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer"
-                  onClick={() => navigate("/Emergency")}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <AlertCircle className="h-6 w-6 text-red-600 mb-2" />
-                      <h3 className="text-xl font-bold text-gray-800 mb-2">Emergency Contacts</h3>
-                      <p className="text-sm text-gray-600">Critical response numbers</p>
-                    </div>
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer"
-                  onClick={() => navigate("/Ambulance")}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Ambulance className="h-6 w-6 text-blue-600 mb-2" />
-                      <h3 className="text-xl font-bold text-gray-800 mb-2">Ambulance Details</h3>
-                      <p className="text-sm text-gray-600">Emergency vehicle status</p>
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
             </div>
 
             {/* Main Content */}
             <div className="flex-1">
               {/* Top Cards - Increased Height */}
-              <div className="grid md:grid-cols-2 gap-6 mb-8">  
-
+              <div className="grid md:grid-cols-2 gap-6 mb-8">
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   className="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-2xl p-6 text-white cursor-pointer min-h-[180px] flex flex-col justify-between"
@@ -236,8 +195,8 @@ const AssistantDoctorDashboard = () => {
               </div>
 
               {/* Services Grid */}
-              <motion.div className=" rounded-2xl p-6 shadow-md  mb-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 gap-4">
+              <motion.div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <motion.div
                     whileHover={{ scale: 1.02 }}
                     className="p-4 bg-blue-50 rounded-xl cursor-pointer"
@@ -279,9 +238,37 @@ const AssistantDoctorDashboard = () => {
                   </motion.div>
                 </div>
               </motion.div>
-              <motion.div>
-    <DiagnosisWordCloud />
-  </motion.div>
+
+              {/* Emergency Section */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer"
+                  onClick={() => navigate("/Emergency")}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <AlertCircle className="h-6 w-6 text-red-600 mb-2" />
+                      <h3 className="text-xl font-bold text-gray-800 mb-2">Emergency Contacts</h3>
+                      <p className="text-sm text-gray-600">Critical response numbers</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer"
+                  onClick={() => navigate("/Ambulance")}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Ambulance className="h-6 w-6 text-blue-600 mb-2" />
+                      <h3 className="text-xl font-bold text-gray-800 mb-2">Ambulance Details</h3>
+                      <p className="text-sm text-gray-600">Emergency vehicle status</p>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
             </div>
           </motion.div>
         </div>
