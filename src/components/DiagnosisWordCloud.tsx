@@ -5,27 +5,28 @@ import WordCloud from "react-wordcloud";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/animations/scale.css";
 
-const DiagnosisWordCloud = ({ diagnosis }) => {
+// Define the type for diagnosis prop
+interface DiagnosisWordCloudProps {
+  diagnosis: Record<string, number>;
+}
+
+const DiagnosisWordCloud: React.FC<DiagnosisWordCloudProps> = ({ diagnosis }) => {
   // Convert the diagnosis object to an array of { text, value }
   const words = Object.entries(diagnosis).map(([text, value]) => ({
     text,
     value,
   }));
 
-  // Find min and max frequencies to normalize font size calculation
   const frequencies = Object.values(diagnosis);
   const minFrequency = Math.min(...frequencies);
   const maxFrequency = Math.max(...frequencies);
 
-  // Function to calculate font size based on raw frequencies (you can adjust the factor)
-  const calculateFontSize = (value) => {
+  const calculateFontSize = (value: number): number => {
     const minFontSize = 14;
     const maxFontSize = 80;
 
-    // If all frequencies are the same, return mid-size
     if (minFrequency === maxFrequency) return (minFontSize + maxFontSize) / 2;
 
-    // Linear interpolation
     return (
       minFontSize +
       ((value - minFrequency) / (maxFrequency - minFrequency)) *
@@ -33,41 +34,43 @@ const DiagnosisWordCloud = ({ diagnosis }) => {
     );
   };
 
+  const colorPalette: string[] = [
+    "#4f46e5", // Indigo
+    "#2563eb", // Blue
+    "#16a34a", // Green
+    "#d97706", // Amber
+    "#dc2626", // Red
+    "#9333ea", // Purple
+    "#0ea5e9", // Sky
+    "#14b8a6", // Teal
+    "#a855f7", // Violet
+    "#e11d48", // Rose
+  ];
+
+  // Custom callbacks (typed manually since the library lacks types)
+  const callbacks = {
+    getWordTooltip: (word: { text: string; value: number }) =>
+      `Diagnosis: ${word.text}\nPrescribed: ${word.value} times`,
+
+    getWordColor: () => {
+      const index = Math.floor(Math.random() * colorPalette.length);
+      return colorPalette[index];
+    },
+
+    getWordFontSize: (word: { text: string; value: number }) =>
+      calculateFontSize(word.value),
+  };
+
+  // Options for react-wordcloud (manually typed)
   const customOptions = {
-    rotations: 0, // static rotation for better readability
-    fontSizes: [14, 80], // fallback if no scale function used
+    rotations: 0,
+    fontSizes: [14, 80] as [number, number],
     fontFamily: "Poppins, sans-serif",
     deterministic: true,
     enableTooltip: true,
-    scale: "sqrt", // scale font sizes better
-    transitionDuration: 5000,
-    // Colors are randomized from this palette
-    colors: [
-      "#4f46e5", // Indigo
-      "#2563eb", // Blue
-      "#16a34a", // Green
-      "#d97706", // Amber
-      "#dc2626", // Red
-      "#9333ea", // Purple
-    ],
-  };
-
-  // Custom callbacks for tooltip
-  const callbacks = {
-    getWordTooltip: (word) =>
-      `Diagnosis: ${word.text}\nPrescribed: ${word.value} times`,
-    getWordColor: (word) => {
-      const colorPalette = [
-        "#4f46e5", // Indigo
-        "#2563eb", // Blue
-        "#16a34a", // Green
-        "#d97706", // Amber
-        "#dc2626", // Red
-        "#9333ea", // Purple
-      ];
-      return colorPalette[Math.floor(Math.random() * colorPalette.length)];
-    },
-    getWordFontSize: (word) => calculateFontSize(word.value),
+    scale: "sqrt" as const,
+    transitionDuration: 500,
+    colors: colorPalette,
   };
 
   return (

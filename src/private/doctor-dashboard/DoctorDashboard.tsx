@@ -651,7 +651,7 @@ const DoctorDashboard = () => {
 };
 
 export default DoctorDashboard;
-function setTime(arg0: Date) {
+function setTime(_arg0: Date) {
   throw new Error("Function not implemented.");
 }
 
