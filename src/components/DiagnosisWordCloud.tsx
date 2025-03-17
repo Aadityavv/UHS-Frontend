@@ -115,7 +115,7 @@ const DiagnosisWordCloud: React.FC = () => {
     >
       <div className="relative w-full max-w-5xl bg-white/60 backdrop-blur-md rounded-3xl shadow-2xl border border-gray-100 p-8 transition-all duration-5000">
         <h3 className="text-2xl font-bold text-gray-800 mb-8 text-center tracking-wide">
-          Diagnosis Word Cloud
+          Diagnosis Cloud
         </h3>
 
         {loading ? (
