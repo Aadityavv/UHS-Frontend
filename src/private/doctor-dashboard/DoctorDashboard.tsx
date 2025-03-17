@@ -24,7 +24,6 @@ const DoctorDashboard = () => {
     "check-in" | "check-out" | "Available" | "Not Available"
   >("check-out");
   const [loading, setLoading] = useState(true);
-  const [diagnosis, setDiagnosis] = useState<{ [key: string]: number }>({});
 
   // const appointmentReasons = {
   //   "Vaccination": 10,
@@ -247,35 +246,11 @@ const DoctorDashboard = () => {
     }
   };
 
-  const fetchDiagnosis = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          navigate("/");
-          return;
-        }
-        const response = await axios.get(
-          "https://uhs-backend.onrender.com/api/diagnosis/frequencies",
-          // {
-          //   headers: {
-          //     Authorization: `Bearer ${token}`,
-          //   },
-          // }
-        );
-  
-        if (response.status === 200) {
-          setDiagnosis(response.data);
-        }
-      } catch (error) {
-        console.error("Error fetching appointment reasons:", error);
-      }
-    };
-
   useEffect(() => {
     fetchPatientData();
     fetchTokenNum();
     fetchDoctorStatus();
-    fetchDiagnosis();
+  
 
     const interval = setInterval(() => {
       fetchPatientData();
@@ -289,13 +264,11 @@ const DoctorDashboard = () => {
       fetchDoctorStatus();
     }, 30000); 
 
-    const reasonsInterval = setInterval(fetchDiagnosis, 30000);
 
     return () => {
       clearInterval(interval);
       clearInterval(tokenInterval);
       clearInterval(statusInterval);
-      clearInterval(reasonsInterval);
     };
   }, []);
 
