@@ -103,7 +103,7 @@ const DiagnosisWordCloud: React.FC = () => {
     deterministic: true,
     enableTooltip: true,
     scale: "sqrt" as const,
-    transitionDuration: 2500,
+    transitionDuration: 250,
     colors: colorPalette,
   };
 
