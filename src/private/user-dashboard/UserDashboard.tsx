@@ -243,21 +243,32 @@ const UserDashboard = () => {
 
               {/* NEXT STEPS */}
               <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
-              >
-                <h3 className="text-sm font-medium text-gray-500 mb-4">Next Steps</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-700">Estimated Wait Time</span>
-                    <span className="font-medium text-indigo-600">~15 mins</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-700">Room Number</span>
-                    <span className="font-medium text-indigo-600">B-204</span>
-                  </div>
-                </div>
-              </motion.div>
+  whileHover={{ scale: 1.02 }}
+  className="bg-white rounded-2xl px-4 py-6 shadow-sm border border-gray-100"
+>
+  <h3 className="text-md font-medium text-gray-500 mb-4">Next Steps</h3>
+
+  <div className="flex flex-col gap-4 text-sm">
+    {/* Token Number */}
+    <div className="flex justify-between items-center">
+      <span className="font-semibold text-gray-700">Your Token Number:</span>
+      <span className="font-semibold text-indigo-600">{status.tokenNo}</span>
+    </div>
+
+    {/* Current Token Number */}
+    <div className="flex justify-between items-center">
+      <span className="font-semibold text-gray-700">Current Token Number:</span>
+      <span className="font-semibold text-indigo-600">{status.tokenNo}</span>
+    </div>
+
+    {/* Doctor Assigned */}
+    <div className="flex justify-between items-center">
+      <span className="font-semibold text-gray-700">Doctor Assigned:</span>
+      <span className="font-semibold text-indigo-600">{status.doctorName}</span>
+    </div>
+  </div>
+</motion.div>
+
             </div>
 
             {/* HEALTH OVERVIEW */}
