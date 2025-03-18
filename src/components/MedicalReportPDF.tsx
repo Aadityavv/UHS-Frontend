@@ -217,7 +217,7 @@ const MedicalReportPDF: React.FC<MedicalReportProps> = ({
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.label}>School:</Text>
-            <Text style={styles.input}>{ndata?.schoolpatient}</Text>
+            <Text style={styles.input}>{ndata?.school}</Text>
           </View>
         </View>
 
