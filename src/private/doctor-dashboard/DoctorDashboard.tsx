@@ -415,19 +415,19 @@ const DoctorDashboard = () => {
         <div className="flex-1 grid grid-cols-4 gap-2">
           
           <div>
-            <p className="text-2xl font-bold">{inQueue}</p>
+            <p className="text-lg font-bold">{inQueue}</p>
             <p className="text-sm opacity-90">In Queue</p>
           </div>
           <div className="bg-white/10 p-2 rounded-lg">
-            <p className="text-xl font-bold">{totalPatients}</p>
+            <p className="text-lg font-bold">{totalPatients}</p>
             <p className="text-xs opacity-90">Total Patients</p>
           </div>
           <div className="bg-white/10 p-2 rounded-lg">
-            <p className="text-xl font-bold">{patientsLeft}</p>
+            <p className="text-lg font-bold">{patientsLeft}</p>
             <p className="text-xs opacity-90">Patients Left</p>
           </div>
           <div className="bg-white/10 p-2 rounded-lg">
-            <p className="text-xl font-bold">{token}</p>
+            <p className="text-lg font-bold">{token}</p>
             <p className="text-xs opacity-90">Current Token</p>
           </div>
         </div>
@@ -483,7 +483,7 @@ const DoctorDashboard = () => {
 
                 <motion.div
                   whileHover={{ scale: 1.02 }}
-                  className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer"
+                  className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 cursor-pointer"
                   onClick={() => navigate("/medicine-stock")}
                 >
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Medical Stock</h3>
@@ -492,7 +492,7 @@ const DoctorDashboard = () => {
 
                 <motion.div
                   whileHover={{ scale: 1.02 }}
-                  className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer"
+                  className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 cursor-pointer"
                   onClick={() => navigate("/analytics-dashboard")}
                 >
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">UHS Analysis</h3>
@@ -501,7 +501,7 @@ const DoctorDashboard = () => {
 
                 <motion.div
                   whileHover={{ scale: 1.02 }}
-                  className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer"
+                  className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 cursor-pointer"
                   onClick={() => navigate("/ambulance")}
                 >
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Ambulance Details</h3>
@@ -510,7 +510,7 @@ const DoctorDashboard = () => {
 
                 <motion.div
                   whileHover={{ scale: 1.02 }}
-                  className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer"
+                  className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 cursor-pointer"
                   onClick={() => navigate("/emergency")}
                 >
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Emergency Contacts</h3>
