@@ -742,7 +742,7 @@ const MedicineStock = () => {
                 </button>
               )}
 
-              {editStock && (
+              {/* {editStock && (
                 <>
                   <button
                     onClick={handleSaveEdit}
@@ -759,7 +759,7 @@ const MedicineStock = () => {
                     Cancel
                   </button>
                 </>
-              )}
+              )} */}
             </div>
           </motion.div>
         </div>
