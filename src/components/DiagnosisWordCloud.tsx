@@ -6,12 +6,11 @@ import Skeleton from "@mui/material/Skeleton";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/animations/scale.css";
 
-// Optional: Add toast or notification system if needed (based on your setup)
-
 const DiagnosisWordCloud: React.FC = () => {
   const [diagnosis, setDiagnosis] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   // Fetch diagnosis data
   const fetchDiagnosis = async () => {
@@ -26,7 +25,7 @@ const DiagnosisWordCloud: React.FC = () => {
       }
 
       const response = await axios.get(
-        "https://uhs-backend.onrender.com/api/diagnosis/frequencies",
+        "http://localhost:8081/api/diagnosis/frequencies",
       );
 
       if (response.status === 200) {
@@ -46,6 +45,20 @@ const DiagnosisWordCloud: React.FC = () => {
     fetchDiagnosis();
     const interval = setInterval(fetchDiagnosis, 30000); // Auto-refresh every 30 secs
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const updateDimensions = () => {
+      setDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    window.addEventListener("resize", updateDimensions);
+    updateDimensions(); // Initial call to set dimensions
+
+    return () => window.removeEventListener("resize", updateDimensions);
   }, []);
 
   const words = Object.entries(diagnosis).map(([text, value]) => ({
@@ -105,6 +118,8 @@ const DiagnosisWordCloud: React.FC = () => {
     scale: "sqrt" as const,
     transitionDuration: 250,
     colors: colorPalette,
+    width: dimensions.width, // Use dynamic width
+    height: dimensions.height, // Use dynamic height
   };
 
   return (
@@ -136,7 +151,7 @@ const DiagnosisWordCloud: React.FC = () => {
         ) : (
           <>
             <div
-              className="w-full h-[400px] cursor-pointer"
+              className="wordcloud-container w-full h-[400px] cursor-pointer"
               style={{
                 background:
                   "linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0))",
@@ -145,6 +160,7 @@ const DiagnosisWordCloud: React.FC = () => {
               }}
             >
               <WordCloud
+                key={JSON.stringify(words)} // Force re-render when words change
                 words={words}
                 options={customOptions}
                 callbacks={callbacks}

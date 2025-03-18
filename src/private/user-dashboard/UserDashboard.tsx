@@ -44,10 +44,10 @@ const UserDashboard = () => {
     const fetchData = async () => {
       try {
         const [userRes, statusRes] = await Promise.all([
-          axios.get("https://uhs-backend.onrender.com/api/patient/", {
+          axios.get("http://localhost:8081/api/patient/", {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get("https://uhs-backend.onrender.com/api/patient/getStatus", {
+          axios.get("http://localhost:8081/api/patient/getStatus", {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);

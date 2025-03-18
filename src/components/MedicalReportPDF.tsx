@@ -11,7 +11,7 @@ interface PatientData {
   name: string;
   id: string;
   age: number;
-  course: string;
+  school: string;
   date: string;
   time: string;
   designation: string;
@@ -217,7 +217,7 @@ const MedicalReportPDF: React.FC<MedicalReportProps> = ({
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.label}>School:</Text>
-            <Text style={styles.input}>{ndata?.course}</Text>
+            <Text style={styles.input}>{ndata?.schoolpatient}</Text>
           </View>
         </View>
 

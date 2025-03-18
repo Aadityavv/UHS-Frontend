@@ -24,7 +24,7 @@ interface PrescriptionData {
   name: string;
   id: string;
   age: number;
-  course: string;
+  school: string;
   date: string;
   time: string;
   designation: string;
@@ -39,7 +39,7 @@ const CommonPrescription = () => {
     name: "",
     id: "",
     age: 0,
-    course: "",
+    school: "",
     sex: "",
     date: "",
     designation: "",
@@ -79,10 +79,10 @@ const CommonPrescription = () => {
 
         const apiUrl =
           role === "doctor"
-            ? `https://uhs-backend.onrender.com/api/doctor/getPrescription/${urlParam}`
+            ? `http://localhost:8081/api/doctor/getPrescription/${urlParam}`
             : role === "ad"
-            ? `https://uhs-backend.onrender.com/api/AD/getPrescription/${urlParam}`
-            : `https://uhs-backend.onrender.com/api/patient/getPrescription/${urlParam}`;
+            ? `http://localhost:8081/api/AD/getPrescription/${urlParam}`
+            : `http://localhost:8081/api/patient/getPrescription/${urlParam}`;
 
         const { data } = await axios.get(apiUrl, {
           headers: {
@@ -106,7 +106,7 @@ const CommonPrescription = () => {
           name: patient.name || "",
           id: patient.sapID || "",
           age: age(patient.dateOfBirth),
-          course: patient.program || "",
+          school: patient.school || "",
           sex: patient.gender || "",
           date: dayjs(data.date).format("DD/MM/YYYY") || "",
           time: data.time || "",
@@ -231,7 +231,7 @@ const CommonPrescription = () => {
               <div className="flex items-center gap-2">
                 <label className="font-medium text-indigo-600 w-16 sm:w-20">School:</label>
                 <Input
-                  value={ndata?.course}
+                  value={ndata?.school}
                   className="bg-indigo-50 border-indigo-100 text-sm"
                   readOnly
                 />
@@ -277,7 +277,7 @@ const CommonPrescription = () => {
               <table className="w-full min-w-[600px]">
                 <thead className="bg-indigo-50">
                   <tr>
-                    {['S.No.', 'Medicine', 'Dosage (/day)', 'Duration', 'Suggestions'].map((header) => (
+                    {['S.No.', 'Medicine', 'Dosage ', 'Duration', 'Suggestions'].map((header) => (
                       <th 
                         key={header} 
                         className="px-2 py-3 text-left text-indigo-600 font-semibold text-sm sm:px-4 sm:text-base"
