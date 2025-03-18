@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
+import dayjs from 'dayjs';
 import { 
   Activity,
   Calendar,
@@ -125,7 +126,7 @@ const UserDashboard = () => {
                     <div className="flex items-center text-sm text-gray-600">
                       <Calendar className="h-4 w-4 mr-2 text-indigo-600" />
                       <span>
-                        {new Date(userDetails.dateOfBirth).toLocaleDateString()}
+                    {userDetails.dateOfBirth ? dayjs(userDetails.dateOfBirth).format("DD/MM/YYYY") : "N/A"}
                       </span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
