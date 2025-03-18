@@ -4,12 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
-import { 
+import {
   Calendar as CalendarIcon,
   Clock,
   Eye,
   FileText,
-  Filter
+  Filter,
+  ArrowUpDown
 } from "lucide-react";
 import Skeleton from '@mui/material/Skeleton';
 import { ToastAction } from "@radix-ui/react-toast";
@@ -27,25 +28,27 @@ const UserPrescription = () => {
   const [filteredReports, setFilteredReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [, setSortField] = useState<'date' | 'time' | 'token'>('date');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const role = localStorage.getItem("roles");
-        const apiUrl = role === "patient" 
+        const apiUrl = role === "patient"
           ? "https://uhs-backend.onrender.com/api/patient/getAppointment"
           : `https://uhs-backend.onrender.com/api/doctor/getAppointmentPat/${getPatientEmail()}`;
 
         const { data } = await axios.get(apiUrl, {
-          headers: { 
+          headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`
           }
         });
 
         const formattedData = data.map((item: any) => ({
           id: item.appointmentId,
-          date: format(parseISO(item.date), "dd MMM yyyy"),
-          time: format(parseISO(item.date), "hh:mm a"),
+          date: format(parseISO(item.date), "dd/MM/yyyy"),
+          time: format(parseISO(`1970-01-01T${item.time}`), "hh:mm a"),
           token: item.token,
           link: item.appointmentId
         }));
@@ -79,14 +82,31 @@ const UserPrescription = () => {
 
   const filterByDate = (selectedDate: Date | undefined) => {
     if (!selectedDate) return;
-    const filtered = reports.filter(report => 
-      format(parseISO(report.date), "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd")
+    const filtered = reports.filter(report =>
+      report.date === format(selectedDate, "dd/MM/yyyy")
     );
     setFilteredReports(filtered);
   };
 
+  const handleSort = (field: 'date' | 'time' | 'token') => {
+    const order = sortOrder === 'asc' ? 'desc' : 'asc';
+    setSortOrder(order);
+    setSortField(field);
+
+    const sortedReports = [...filteredReports].sort((a, b) => {
+      const fieldA = a[field].toLowerCase();
+      const fieldB = b[field].toLowerCase();
+
+      if (fieldA < fieldB) return order === 'asc' ? -1 : 1;
+      if (fieldA > fieldB) return order === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    setFilteredReports(sortedReports);
+  };
+
   return (
-    <div className="min-h-[79vh] bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-indigo-50">
       <Toaster />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <motion.div
@@ -94,15 +114,14 @@ const UserPrescription = () => {
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col lg:flex-row gap-8"
         >
-          {/* Main Content */}
           <div className="flex-1">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
+              className="bg-white rounded-2xl p-6 shadow-md border border-gray-200"
             >
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Medical Prescriptions</h3>
+                <h3 className="text-xl font-bold text-gray-800">Medical Prescriptions</h3>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2 text-sm text-indigo-600">
                     <FileText className="h-4 w-4" />
@@ -118,7 +137,6 @@ const UserPrescription = () => {
                 </div>
               </div>
 
-              {/* Mobile Date Filter */}
               {isMobileFilterOpen && (
                 <div className="lg:hidden mb-6">
                   <Popover>
@@ -165,32 +183,38 @@ const UserPrescription = () => {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <div className="grid grid-cols-4 gap-4 px-4 py-2 bg-gray-50 rounded-lg">
-                    <span className="text-sm font-medium text-gray-500">Date</span>
-                    <span className="text-sm font-medium text-gray-500">Time</span>
-                    <span className="text-sm font-medium text-gray-500">Token</span>
-                    <span className="text-sm font-medium text-gray-500 text-right">Actions</span>
+                  <div className="grid grid-cols-4 gap-4 px-4 py-2 bg-indigo-100 rounded-lg">
+                    <button onClick={() => handleSort('date')} className="flex items-center text-sm font-medium text-indigo-700">
+                      Date <ArrowUpDown className="h-4 w-4 ml-1" />
+                    </button>
+                    <p className="flex items-center text-sm font-medium text-indigo-700">
+                      Time 
+                    </p>
+                    <p className="flex items-center text-sm font-medium text-indigo-700">
+                      Token
+                    </p>
+                    <span className="text-sm font-medium text-indigo-700 text-right">Actions</span>
                   </div>
 
                   {filteredReports.map((report) => (
-                    <div key={report.id} className="grid grid-cols-4 gap-4 items-center p-4 hover:bg-gray-50 rounded-lg">
+                    <div key={report.id} className="grid grid-cols-4 gap-4 items-center p-4 hover:bg-indigo-50 rounded-lg transition">
                       <div className="flex items-center">
                         <CalendarIcon className="h-4 w-4 mr-2 text-indigo-600" />
-                        <span className="text-gray-600">{report.date}</span>
+                        <span className="text-gray-700">{report.date}</span>
                       </div>
                       <div className="flex items-center">
                         <Clock className="h-4 w-4 mr-2 text-indigo-600" />
-                        <span className="text-gray-600">{report.time}</span>
+                        <span className="text-gray-700">{report.time}</span>
                       </div>
-                      <div className="text-gray-600">{report.token}</div>
+                      <div className="text-gray-700">{report.token}</div>
                       <div className="flex justify-end">
-                        <button
+                        <Button
+                          variant="outline"
                           onClick={() => navigate(`/prescription?id=${report.id}`)}
-                          className="flex items-center text-indigo-600 hover:text-indigo-700"
+                          className="flex items-center text-indigo-600 hover:text-indigo-700 border-indigo-600 hover:border-indigo-700"
                         >
-                          <Eye className="h-4 w-4 mr-2" />
-                          <span className="text-sm">View</span>
-                        </button>
+                          <Eye className="h-4 w-4 mr-2" /> View
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -199,13 +223,12 @@ const UserPrescription = () => {
             </motion.div>
           </div>
 
-          {/* Desktop Calendar Filter */}
           <div className="w-full lg:w-1/4">
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.02 }}
-              className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hidden lg:block"
+              className="bg-white rounded-2xl p-6 shadow-md border border-gray-200 hidden lg:block"
             >
-              <h3 className="text-sm font-medium text-gray-500 mb-4">Filter by Date</h3>
+              <h3 className="text-sm font-semibold text-gray-700 mb-4">Filter by Date</h3>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
