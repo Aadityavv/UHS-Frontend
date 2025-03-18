@@ -7,376 +7,220 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import Shared from "@/Shared";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { ToastAction } from "@/components/ui/toast";
-import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
+import dayjs from "dayjs";
+import { motion } from "framer-motion";
+import {
+  Stethoscope,
+  Pill,
+  ArrowUp,
+  ArrowDown,
+  EyeIcon,
+} from "lucide-react";
 
 const PatientLogs = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+
   const [selectedButton, setSelectedButton] = useState("Consultation");
-  const [time, setTime] = useState<Date>(new Date());
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const [reports, setReports] = useState<
-    Array<{
-      reportId: string;
-      patientName: string;
-      token: string;
-      date:string;
-      time:string;
-      location:string;
-    }>
-  >([]);
-  const [adHocRep, setAdHocRep] = useState<
-    Array<{
-      patientName: string;
-      medicineName: string;
-      quantity: string;
-      patientEmail: string;
-      adName: string;
-      adEmail: string;
-      date: string;
-      time: string;
-    }>
-  >([]);
+  const [, setTime] = useState<Date>(new Date());
+  // const [date, setDate] = useState<Date | undefined>(new Date());
+  const [reports, setReports] = useState([]);
+  const [adHocRep, setAdHocRep] = useState([]);
   const [selectedDate, setSelectedDate] = useState<string>("");
+  const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
+
+  const formatDate = (dateStr: string | Date) => dayjs(dateStr).format("DD/MM/YYYY");
 
   const fetchData = async (date?: string) => {
     try {
+      if (!date) return;
+      let apiUrl = selectedButton === "Consultation"
+        ? `https://uhs-backend.onrender.com/api/AD/getAppointmentByDate?date=${date}`
+        : `https://uhs-backend.onrender.com/api/AD/getAdHocByDate?date=${date}`;
+
+      const resp = await axios.get(apiUrl, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+
+      const response = resp.data;
       if (selectedButton === "Consultation") {
-        let apiUrl =
-          "https://uhs-backend.onrender.com/api/AD/getAppointmentByDate";
-
-        if (date) {
-          apiUrl += `?date=${date}`;
-        }
-
-        const resp = await axios.get(apiUrl, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-
-        const response = resp.data;
-
         const formatData = response.map((rept: any) => ({
           reportId: rept.appointmentId,
           patientName: rept.PatientName,
           token: rept.token,
-          date: rept.date,
+          date: formatDate(rept.date),
           time: rept.time,
-          location: rept.location
+          location: rept.location,
         }));
-
         setReports(formatData);
-        if (formatData.length === 0) {
-          toast({
-            title: "No Appointment Found",
-            description: "No Appointments are found for the current date",
-          });
-        }
       } else {
-        let apiUrl = `https://uhs-backend.onrender.com/api/AD/getAdHocByDate?date=${date}`;
-
-        const resp = await axios.get(apiUrl, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-
-        const response = resp.data;
-
         const formatData = response.map((rept: any) => ({
           patientName: rept.PatientName,
           medicineName: rept.MedicineName,
           quantity: rept.Quantity,
           patientEmail: rept.PatientEmail,
-          adEmail: rept.ADEmail,
           adName: rept.ADName,
-          date: rept.Date,
+          adEmail: rept.ADEmail,
+          date: formatDate(rept.Date),
           time: rept.Time,
         }));
         setAdHocRep(formatData);
-        if (formatData.length === 0) {
-          toast({
-            title: "No Ad-Hoc Treatments Found",
-            description: "No Ad-Hoc treatments are found for the current date",
-          });
-        }
       }
     } catch (error: any) {
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message
-      ) {
-        toast({
-          title: "Error",
-          description: error.response.data.message,
-          variant: "destructive",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
-        });
-      } else {
-        toast({
-          title: "Error",
-          description:
-            "An error occurred while fetching reports. Please try again.",
-          variant: "destructive",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
-        });
-      }
+      toast({
+        title: "Error",
+        description: error?.response?.data?.message || "An unexpected error occurred.",
+        variant: "destructive",
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
+      });
     }
   };
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedDate(e.target.value);
-  };
-
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => setSelectedDate(e.target.value);
   const handleDateFilter = () => {
+    if (!selectedDate) {
+      toast({ title: "Select a date first", description: "Please pick a date before submitting." });
+      return;
+    }
     fetchData(selectedDate);
   };
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTime(new Date());
-    }, 1000);
+  const handleSort = (key: string) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
 
-    return () => {
-      clearInterval(timer);
-    };
-  }, []);
+    const sortedData = [...(selectedButton === "Consultation" ? reports : adHocRep)].sort((a, b) => {
+      if (a[key] < b[key]) return direction === 'ascending' ? -1 : 1;
+      if (a[key] > b[key]) return direction === 'ascending' ? 1 : -1;
+      return 0;
+    });
 
-  const formatTime = (date: Date) => {
-    const hours = date.getHours();
-    const minutes = date.getMinutes().toString().padStart(2, "0");
-    const seconds = date.getSeconds().toString().padStart(2, "0");
-    const period = hours >= 12 ? "PM" : "AM";
-    const formattedHours = (hours % 12 || 12).toString().padStart(2, "0");
-    return `${formattedHours}:${minutes}:${seconds} ${period}`;
+    selectedButton === "Consultation" ? setReports(sortedData) : setAdHocRep(sortedData);
   };
 
   useEffect(() => {
-    const fetchDefaultData = () => {
-      const today = new Date().toISOString().split("T")[0];
-      setSelectedDate(today);
-      fetchData(today);
-    };
+    const today = new Date().toISOString().split("T")[0];
+    setSelectedDate(today);
+    fetchData(today);
+  }, [selectedButton]);
 
-    fetchDefaultData();
-
-    const timer = setInterval(() => {
-      setTime(new Date());
-    }, 1000);
-
-    return () => {
-      clearInterval(timer);
-    };
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
   }, []);
 
   return (
     <>
       <Toaster />
-      <div className="min-h-[84svh] flex flex-col items-center max-lg:h-[93svh]">
-        <div className="w-full p-5 flex gap-4 items-center max-lg:justify-between">
-          <div className="flex items-center gap-2">
-            <label htmlFor="date-picker" className="font-medium">
-              Select Date:
-            </label>
-            <input
-              id="date-picker"
-              type="date"
-              value={selectedDate}
-              onChange={handleDateChange}
-              className="border rounded px-2 py-1"
-            />
-          </div>
-          <Button
-            type="submit"
-            onClick={handleDateFilter}
-            className="bg-gradient-to-r from-[#2061f5] to-[#13398f] w-24 text-white"
-          >
-            Submit
-          </Button>
-        </div>
-        <div className="flex justify-center w-full max-lg:h-[80svh]">
-          <div className="flex flex-col gap-4 w-1/2 justify-center items-center max-lg:hidden">
-            <div className="flex items-center justify-center p-5 max-lg:p-5 bg-gray-800 rounded-lg shadow-lg my-5">
-              <p className="text-4xl font-bold text-white drop-shadow-lg">
-                {formatTime(time)}
-              </p>
+      <div className="min-h-screen bg-white p-4 md:p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col gap-6 lg:flex-row">
+            {/* Sidebar */}
+            <div className="w-full lg:w-1/4 space-y-6">
+              {/* <motion.div whileHover={{ scale: 1.02 }} className="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl p-6 text-white shadow">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm">Current Time</p>
+                    <p className="text-2xl font-bold">{formatTimeString(time)}</p>
+                  </div>
+                  <Clock className="h-8 w-8" />
+                </div>
+              </motion.div> */}
+              <div className="bg-gray-50 rounded-xl p-6 shadow">
+                <h3 className="text-md font-semibold text-gray-700 mb-4">Select Date</h3>
+                <input type="date" value={selectedDate} onChange={handleDateChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-400" />
+                <Button onClick={handleDateFilter} className="w-full mt-4 bg-indigo-600 text-white">Fetch Data</Button>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-6 shadow">
+                <h3 className="text-md font-semibold text-gray-700 mb-4">Data Views</h3>
+                <div className="flex flex-col gap-4">
+                  <Button onClick={() => setSelectedButton("Consultation")} className={`w-full ${selectedButton === "Consultation" ? "bg-indigo-600 text-white" : "bg-white border text-gray-700"}`}>
+                    <Stethoscope className="h-4 w-4 mr-2" /> Consultations
+                  </Button>
+                  <Button onClick={() => setSelectedButton("AdHoc")} className={`w-full ${selectedButton === "AdHoc" ? "bg-indigo-600 text-white" : "bg-white border text-gray-700"}`}>
+                    <Pill className="h-4 w-4 mr-2" /> Ad-Hoc Treatments
+                  </Button>
+                </div>
+              </div>
             </div>
-            <div>
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={setDate}
-                className="rounded-md border bg-white shadow-lg max-lg:hidden"
-              />
+
+            {/* Main Content */}
+            <div className="flex-1">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-xl shadow border p-4 md:p-8">
+                <h2 className="text-xl font-bold text-gray-800 mb-4">{selectedButton} Records</h2>
+                <div className="overflow-auto">
+                  <Table>
+                    <TableCaption className="text-sm text-gray-500">List of {selectedButton} Records</TableCaption>
+                    <TableHeader>
+                      <TableRow>
+                        {selectedButton === "Consultation" ? (
+                          <>
+                            <TableHead className="cursor-pointer" onClick={() => handleSort('token')}>Token {sortConfig.key === 'token' && (sortConfig.direction === 'ascending' ? <ArrowUp className="inline w-4 h-4" /> : <ArrowDown className="inline w-4 h-4" />)}</TableHead>
+                            <TableHead>Patient</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Time</TableHead>
+                            <TableHead>Location</TableHead>
+                            <TableHead>Action</TableHead>
+                          </>
+                        ) : (
+                          <>
+                            <TableHead>Patient</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Medicine</TableHead>
+                            <TableHead>Quantity</TableHead>
+                            <TableHead>Nurse</TableHead>
+                            <TableHead>Nurse Email</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Time</TableHead>
+                          </>
+                        )}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {(selectedButton === "Consultation" ? reports : adHocRep).map((item: any, index: number) => (
+                        <TableRow key={index} className="hover:bg-indigo-50/50">
+                          {selectedButton === "Consultation" ? (
+                            <>
+                              <TableCell>{item.token}</TableCell>
+                              <TableCell>{item.patientName}</TableCell>
+                              <TableCell>{item.date}</TableCell>
+                              <TableCell>{item.time}</TableCell>
+                              <TableCell>{item.location}</TableCell>
+                              <TableCell>
+                                <Button variant="outline" onClick={() => navigate(`/previous-prescription?id=${item.reportId}`)}>
+                                  <EyeIcon className="h-4 w-4 mr-2" /> View
+                                </Button>
+                              </TableCell>
+                            </>
+                          ) : (
+                            <>
+                              <TableCell>{item.patientName}</TableCell>
+                              <TableCell>{item.patientEmail}</TableCell>
+                              <TableCell>{item.medicineName}</TableCell>
+                              <TableCell>{item.quantity}</TableCell>
+                              <TableCell>{item.adName}</TableCell>
+                              <TableCell>{item.adEmail}</TableCell>
+                              <TableCell>{item.date}</TableCell>
+                              <TableCell>{item.time}</TableCell>
+                            </>
+                          )}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </motion.div>
             </div>
-          </div>
-          <div className="w-full overflow-y-scroll p-5 pt-0">
-            <div className="flex justify-center items-center gap-2 mb-4">
-              <button
-                onClick={() => setSelectedButton("Consultation")}
-                className={`shadow-md px-4 py-2 rounded-md w-40 ${
-                  selectedButton === "Consultation"
-                    ? "bg-gradient-to-r from-[#2061f5] to-[#13398f] text-white"
-                    : "bg-gray-100 text-black"
-                }`}
-              >
-                Consultations
-              </button>
-              <button
-                onClick={() => setSelectedButton("AdHoc")}
-                className={`shadow-md px-4 py-2 rounded-md w-40 whitespace-nowrap ${
-                  selectedButton === "AdHoc"
-                    ? "bg-gradient-to-r from-[#2061f5] to-[#13398f] text-white"
-                    : "bg-gray-100 text-black"
-                }`}
-              >
-                Ad-Hoc Treatments
-              </button>
-            </div>
-            {selectedButton === "Consultation" ? (
-              <Table className="border">
-                <TableCaption>A list of your recent reports</TableCaption>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[16.6%] text-center">
-                      Token Number
-                    </TableHead>
-                    <TableHead className="w-[16.6%] text-center">
-                      Patient Name
-                    </TableHead>
-                    <TableHead className="w-[16.6%] text-center">
-                      Date                     
-                    </TableHead>
-                    <TableHead className="w-[16.6%] text-center">
-                      Time
-                    </TableHead>
-                    <TableHead className="w-[16.6%] text-center">
-                      Location
-                    </TableHead>
-                    <TableHead className="text-center whitespace-nowrap">
-                      Download Report
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {reports.map((report) => (
-                    <TableRow key={report.reportId}>
-                      <TableCell className="font-medium text-center">
-                        {report.token}
-                      </TableCell>
-
-                      <TableCell className="text-center">
-                        {report.patientName}
-                      </TableCell>
-
-                      <TableCell className="text-center">
-                        {report.date}
-                      </TableCell>
-
-                      <TableCell className="text-center">
-                        {report.time}
-                      </TableCell>
-
-                      <TableCell className="text-center">
-                        {report.location}
-                      </TableCell>
-
-                      <TableCell className="text-center">
-                        <a
-                          onClick={() =>
-                            navigate(
-                              `/previous-prescription?id=${report.reportId}`
-                            )
-                          }
-                          download
-                        >
-                          {Shared.Download}
-                        </a>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <Table className="border">
-                <TableCaption>A list of your recent reports</TableCaption>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[12.5%] text-center whitespace-nowrap">
-                      Patient Name
-                    </TableHead>
-                    <TableHead className="w-[12.5%] text-center whitespace-nowrap">
-                      Patient Email
-                    </TableHead>
-                    <TableHead className="w-[12.5%] text-center whitespace-nowrap">
-                      Medicine Name
-                    </TableHead>
-                    <TableHead className="w-[12.5%] text-center whitespace-nowrap">
-                      Quantity
-                    </TableHead>
-                    <TableHead className="w-[12.5%] text-center whitespace-nowrap">
-                      Nursing Assistant Name
-                    </TableHead>
-                    <TableHead className="w-[12.5%] text-center whitespace-nowrap">
-                      Nursing Assistant Email
-                    </TableHead>
-                    <TableHead className="w-[12.5%] text-center whitespace-nowrap">
-                      Date
-                    </TableHead>
-                    <TableHead className="w-[12.5%] text-center whitespace-nowrap">
-                      Time
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {adHocRep.map((report, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="font-medium text-center">
-                        {report.patientName}
-                      </TableCell>
-
-                      <TableCell className="text-center">
-                        {report.patientEmail}
-                      </TableCell>
-
-                      <TableCell className="text-center">
-                        {report.medicineName}
-                      </TableCell>
-
-                      <TableCell className="text-center">
-                        {report.quantity}
-                      </TableCell>
-
-                      <TableCell className="text-center">
-                        {report.adName}
-                      </TableCell>
-
-                      <TableCell className="text-center">
-                        {report.adEmail}
-                      </TableCell>
-
-                      <TableCell className="text-center">
-                        {report.date}
-                      </TableCell>
-
-                      <TableCell className="text-center">
-                        {report.time}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
           </div>
         </div>
       </div>
