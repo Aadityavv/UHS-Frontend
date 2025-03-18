@@ -25,7 +25,7 @@ const DiagnosisWordCloud: React.FC = () => {
       }
 
       const response = await axios.get(
-        "http://localhost:8081/api/diagnosis/frequencies",
+        "https://uhs-backend.onrender.com/api/diagnosis/frequencies",
       );
 
       if (response.status === 200) {

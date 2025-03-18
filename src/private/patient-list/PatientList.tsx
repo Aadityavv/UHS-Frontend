@@ -71,9 +71,9 @@ const PatientList = () => {
       };
 
       const [pendingRes, assignedRes, appointedRes] = await Promise.all([
-        axios.get("http://localhost:8081/api/AD/getPatientQueue", { headers }),
-        axios.get("http://localhost:8081/api/AD/getAssignedPatient", { headers }),
-        axios.get("http://localhost:8081/api/AD/getCompletedQueue", { headers }),
+        axios.get("https://uhs-backend.onrender.com/api/AD/getPatientQueue", { headers }),
+        axios.get("https://uhs-backend.onrender.com/api/AD/getAssignedPatient", { headers }),
+        axios.get("https://uhs-backend.onrender.com/api/AD/getCompletedQueue", { headers }),
       ]);
 
       const combinePatients = [
@@ -137,7 +137,7 @@ const PatientList = () => {
       };
 
       const response = await axios.get(
-        "http://localhost:8081/api/AD/getAvailableDoctors",
+        "https://uhs-backend.onrender.com/api/AD/getAvailableDoctors",
         { headers }
       );
 
@@ -174,7 +174,7 @@ const PatientList = () => {
         if (temperature < 90 || temperature > 110) throw new Error("Temperature out of range");
 
         await axios.post(
-          "http://localhost:8081/api/AD/submitAppointment",
+          "https://uhs-backend.onrender.com/api/AD/submitAppointment",
           {
             weight: weight,
             temperature: temperature,
@@ -186,7 +186,7 @@ const PatientList = () => {
       } else if (action === "reassign") {
         const modifiedEmail = encodeEmail(email);
         await axios.post(
-          "http://localhost:8081/api/AD/reassign",
+          "https://uhs-backend.onrender.com/api/AD/reassign",
           {
             patientEmail: modifiedEmail,
             doctorEmail: dialogData.doctorEmail,
@@ -196,7 +196,7 @@ const PatientList = () => {
       } else if (action === "reject") {
         const modifiedEmail = encodeEmail(email);
         await axios.get(
-          `http://localhost:8081/api/AD/rejectAppointment?email=${modifiedEmail}`,
+          `https://uhs-backend.onrender.com/api/AD/rejectAppointment?email=${modifiedEmail}`,
           { headers }
         );
       }
@@ -221,7 +221,7 @@ const PatientList = () => {
       };
 
       const response = await axios.get(
-        `http://localhost:8081/api/AD/completeAppointment/${modifiedEmail}`,
+        `https://uhs-backend.onrender.com/api/AD/completeAppointment/${modifiedEmail}`,
         { headers }
       );
 
@@ -246,7 +246,7 @@ const PatientList = () => {
       };
 
       const response = await axios.get(
-        `http://localhost:8081/api/AD/rejectAppointment?email=${modifiedEmail}`,
+        `https://uhs-backend.onrender.com/api/AD/rejectAppointment?email=${modifiedEmail}`,
         { headers }
       );
 
