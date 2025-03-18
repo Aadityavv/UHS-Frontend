@@ -5,10 +5,10 @@ import {
 } from "@/components/ui/popover";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { LogOut, UserCircle2, ArrowLeft } from "lucide-react";
 
-const Navbar = ({
-  props,
-}: {
+const Navbar = ({ props }: {
   props: {
     title: string;
     titleLogo: JSX.Element | string | false;
@@ -20,95 +20,84 @@ const Navbar = ({
 }) => {
   const navigate = useNavigate();
   const [navPageBack, setNavPageBack] = useState("");
-  const navigateTo = (path: string) => {
-    navigate(path);
-  };
 
   useEffect(() => {
     if (props.prevRef !== null) setNavPageBack(props.prevRef);
     else setNavPageBack(`/${props.role}-dashboard`);
-  });
+  }, [props.prevRef, props.role]);
 
   const handleLogout = () => {
     localStorage.clear();
-    if (props.role == "admin") {
-      navigateTo("/admin-portal");
-    } else {
-      navigateTo("/");
-    }
+    navigate(props.role === "admin" ? "/admin-portal" : "/");
   };
 
   return (
-    <div className="bg-white shadow-md p-4 flex items-center justify-between h-[8svh] border-b border border-[gray] max-lg:h-[7svh] relative">
-      {/* Title and Title Logo */}
-      <div className="text-xl gap-2 absolute inset-0 flex items-center justify-center z-0 pointer-events-none max-lg:hidden">
+    <motion.nav
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white shadow-sm border-b border-gray-200 px-4 lg:px-6 py-2 flex items-center justify-between relative"
+    >
+      {/* Left Section */}
+      <div className="flex items-center z-10">
+        <img
+          src="/upes-logo.jpg"
+          alt="UPES Logo"
+          className="w-24 lg:w-28"
+        />
+        {/* <p className="font-mono text-2xl lg:text-3xl font-semibold text-gray-800">|UHS
+        </p> */}
+      </div>
+
+      {/* Center Title & Logo */}
+      <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-3 pointer-events-none">
         {props.titleLogo &&
           (typeof props.titleLogo === "string" ? (
-            <img src={props.titleLogo} alt="Title Logo"/>
+            <img src={props.titleLogo} alt="Title Logo" className="h-8 w-8" />
           ) : (
             props.titleLogo
           ))}
-        <span className="capitalize font-semibold text-2xl max-lg:text-xl">
+        <span className="font-bold text-lg lg:text-2xl text-gray-800 capitalize">
           {props.title}
         </span>
       </div>
 
-      {/* Left Section */}
-      <span className="flex items-center justify-center z-10">
-        <img
-          src="/upes-logo.jpg"
-          alt="UPES Logo"
-          className="w-[100px] max-lg:w-[80px]"
-        />
-        <p className="font-mono text-3xl max-lg:text-2xl">|UHS</p>
-      </span>
-
       {/* Right Section */}
-      {props.additionalLogo && props.menu ? (
-        <Popover>
-          <PopoverTrigger className="text-2xl max-lg:text-lg flex items-center justify-end z-10">
-            {props.additionalLogo}
-          </PopoverTrigger>
-          <PopoverContent className="space-y-2 p-2 max-lg:p-2 z-10">
-            {props.role !== "doctor" &&
-            props.role !== "ad" &&
-            props.role !== "admin" ? (
-              <div
-                className="flex items-center gap-3 max-lg:items-start max-lg:gap-1 hover:bg-gray-100 hover:text-blue-500 hover:cursor-pointer p-1 rounded-md"
-                onClick={() => navigateTo("/patient-profile")}
+      <div className="flex items-center gap-2 z-10">
+        {props.additionalLogo && props.menu ? (
+          <Popover>
+            <PopoverTrigger className="flex items-center justify-center text-gray-700 hover:text-indigo-600">
+              {props.additionalLogo}
+            </PopoverTrigger>
+            <PopoverContent align="end" className="space-y-2 p-2 w-48 shadow-md">
+              {props.role !== "doctor" && props.role !== "ad" && props.role !== "admin" && (
+                <button
+                  onClick={() => navigate("/patient-profile")}
+                  className="flex items-center w-full gap-2 px-3 py-2 rounded-md text-sm hover:bg-indigo-50"
+                >
+                  <UserCircle2 className="h-5 w-5 text-indigo-600" />
+                  <span>Profile</span>
+                </button>
+              )}
+              <button
+                onClick={handleLogout}
+                className="flex items-center w-full gap-2 px-3 py-2 rounded-md text-sm text-red-600 hover:bg-red-50"
               >
-                <img
-                  src="/user-icon.png"
-                  alt="User Icon"
-                  className="w-4 max-lg:w-5"
-                />
-                <span className="text-base max-lg:text-sm">Profile</span>
-              </div>
-            ) : (
-              <></>
-            )}
-            <div
-              className="flex items-center gap-2.5 max-lg:items-start max-lg:gap-1 hover:bg-gray-100 hover:text-blue-500 p-1 hover:cursor-pointer rounded-md"
-              onClick={handleLogout}
-            >
-              <img
-                src="/logout.png"
-                alt="Logout Icon"
-                className="w-5 max-lg:w-6"
-              />
-              <span className="text-base max-lg:text-sm">Logout</span>
-            </div>
-          </PopoverContent>
-        </Popover>
-      ) : (
-        <Link
-          to={navPageBack}
-          className="text-base max-lg:text-sm flex items-center justify-end z-10"
-        >
-          {props.additionalLogo}
-        </Link>
-      )}
-    </div>
+                <LogOut className="h-5 w-5" />
+                <span>Logout</span>
+              </button>
+            </PopoverContent>
+          </Popover>
+        ) : (
+          <Link
+            to={navPageBack}
+            className="flex items-center gap-2 text-gray-700 hover:text-indigo-600 text-sm"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span className="hidden lg:inline">Back</span>
+          </Link>
+        )}
+      </div>
+    </motion.nav>
   );
 };
 
