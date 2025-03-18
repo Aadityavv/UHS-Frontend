@@ -277,7 +277,7 @@ const CommonPrescription = () => {
               <table className="w-full min-w-[600px]">
                 <thead className="bg-indigo-50">
                   <tr>
-                    {['S.No.', 'Medicine', 'Dosage ', 'Duration', 'Suggestions'].map((header) => (
+                    {['S.No.', 'Medicine', 'Dosage', 'Duration', 'Suggestions'].map((header) => (
                       <th 
                         key={header} 
                         className="px-2 py-3 text-left text-indigo-600 font-semibold text-sm sm:px-4 sm:text-base"
@@ -301,30 +301,33 @@ const CommonPrescription = () => {
                         />
                       </td>
                       <td className="p-2 sm:p-3">
-                        <div className="grid grid-cols-1 gap-1 sm:grid-cols-3 sm:gap-2">
-                          <div className="flex items-center gap-1 sm:block">
-                            <span className="text-xs sm:hidden">Morning: </span>
+                        <div className="grid grid-cols-1 gap-1 mb-5 sm:grid-cols-3 sm:gap-2">
+                          <div className="flex flex-col items-center gap-1">
+                          <span className="text-xs text-indigo-500">Morning</span>
                             <Input
                               value={med.dosageMorning}
                               className="bg-indigo-50 border-indigo-100 text-center text-sm"
                               readOnly
                             />
+                            
                           </div>
-                          <div className="flex items-center gap-1 sm:block">
-                            <span className="text-xs sm:hidden">Afternoon: </span>
+                          <div className="flex flex-col items-center gap-1">
+                          <span className="text-xs text-indigo-500">Afternoon</span>
                             <Input
                               value={med.dosageAfternoon}
                               className="bg-indigo-50 border-indigo-100 text-center text-sm"
                               readOnly
                             />
+                            
                           </div>
-                          <div className="flex items-center gap-1 sm:block">
-                            <span className="text-xs sm:hidden">Evening: </span>
+                          <div className="flex flex-col items-center gap-1">
+                          <span className="text-xs text-indigo-500">Evening</span>
                             <Input
                               value={med.dosageEvening}
                               className="bg-indigo-50 border-indigo-100 text-center text-sm"
                               readOnly
                             />
+                            
                           </div>
                         </div>
                       </td>
