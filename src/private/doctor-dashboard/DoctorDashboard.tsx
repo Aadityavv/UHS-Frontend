@@ -424,7 +424,7 @@ const DoctorDashboard = () => {
           </div>
           <div className="bg-white/10 p-2 rounded-lg">
             <p className="text-lg font-bold">{patientsLeft}</p>
-            <p className="text-xs opacity-90">Patients Left</p>
+            <p className="text-xs opacity-90">Patients Treated</p>
           </div>
           <div className="bg-white/10 p-2 rounded-lg">
             <p className="text-lg font-bold">{token}</p>

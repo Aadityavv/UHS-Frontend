@@ -156,7 +156,7 @@ const AssistantDoctorDashboard = () => {
                     <p className="text-md font-medium">{isLoading ? "..." : inQueue}</p>
                   </div>
                   <div className="text-center p-3 bg-amber-50 rounded-lg">
-                    <p className="text-xs text-gray-600 mb-1">Treatments</p>
+                    <p className="text-xs text-gray-600 mb-1">Treated</p>
                     <p className="text-md font-medium">{isLoading ? "..." : patientsLeft}</p>
                   </div>
                 </div>
