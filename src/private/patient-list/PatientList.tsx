@@ -333,117 +333,122 @@ const PatientList = () => {
                   </span>
                 </TableCell>
                 <TableCell className="space-x-2 flex justify-end">
-                  {patient.status === "Pending" && (
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            if (patient.email) {
-                              setCurrentPatientEmail(patient.email);
-                              fetchAvailableDoctors();
-                            }
-                          }}
-                        >
-                          <Stethoscope className="mr-2 h-4 w-4" /> Assign
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-md">
-                        <DialogHeader>
-                          <DialogTitle>Assign Doctor</DialogTitle>
-                          <DialogDescription>
-                            Assign a doctor to {patient.name}
-                          </DialogDescription>
-                        </DialogHeader>
-                        <form
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                            handleAction("assign", patient.email);
-                          }}
-                          className="space-y-4"
-                        >
-                          <div className="space-y-2">
-                            <label className="block text-sm font-medium">
-                              Select Doctor *
-                            </label>
-                            <select
-                              className="w-full p-2 border rounded-md"
-                              value={dialogData.pref_doc}
-                              onChange={(e) =>
-                                setDialogData({
-                                  ...dialogData,
-                                  pref_doc: e.target.value,
-                                })
-                              }
-                              required
-                            >
-                              <option value="">Choose a doctor</option>
-                              {doctors.map((doctor) => (
-                                <option key={doctor.id} value={doctor.id}>
-                                  {doctor.name}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
+  {patient.status === "Pending" && (
+    <>
+      {/* Dedicated Reject Button */}
+      <Button
+        variant="destructive"
+        size="sm"
+        onClick={() => handleAction("reject", patient.email)}
+        disabled={submitting}
+      >
+        Reject
+      </Button>
 
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <label className="block text-sm font-medium">
-                                Temperature (°F) *
-                              </label>
-                              <Input
-                                type="number"
-                                min="90"
-                                max="110"
-                                step="0.1"
-                                value={dialogData.temperature}
-                                onChange={(e) =>
-                                  setDialogData({
-                                    ...dialogData,
-                                    temperature: e.target.value,
-                                  })
-                                }
-                                required
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <label className="block text-sm font-medium">
-                                Weight (kg) *
-                              </label>
-                              <Input
-                                type="number"
-                                min="0"
-                                step="0.1"
-                                value={dialogData.weight}
-                                onChange={(e) =>
-                                  setDialogData({
-                                    ...dialogData,
-                                    weight: e.target.value,
-                                  })
-                                }
-                                required
-                              />
-                            </div>
-                          </div>
+      {/* Assign Button and Dialog */}
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (patient.email) {
+                setCurrentPatientEmail(patient.email);
+                fetchAvailableDoctors();
+              }
+            }}
+          >
+            <Stethoscope className="mr-2 h-4 w-4" /> Assign
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Assign Doctor</DialogTitle>
+            <DialogDescription>
+              Assign a doctor to {patient.name}
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleAction("assign", patient.email);
+            }}
+            className="space-y-4"
+          >
+            <div className="space-y-2">
+              <label className="block text-sm font-medium">
+                Select Doctor *
+              </label>
+              <select
+                className="w-full p-2 border rounded-md"
+                value={dialogData.pref_doc}
+                onChange={(e) =>
+                  setDialogData({
+                    ...dialogData,
+                    pref_doc: e.target.value,
+                  })
+                }
+                required
+              >
+                <option value="">Choose a doctor</option>
+                {doctors.map((doctor) => (
+                  <option key={doctor.id} value={doctor.id}>
+                    {doctor.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                          <div className="flex justify-between">
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              onClick={() => handleAction("reject", patient.email)}
-                              disabled={submitting}
-                            >
-                              Reject
-                            </Button>
-                            <Button type="submit" disabled={submitting}>
-                              {submitting ? "Submitting..." : "Confirm"}
-                            </Button>
-                          </div>
-                        </form>
-                      </DialogContent>
-                    </Dialog>
-                  )}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium">
+                  Temperature (°F) *
+                </label>
+                <Input
+                  type="number"
+                  min="90"
+                  max="110"
+                  step="0.1"
+                  value={dialogData.temperature}
+                  onChange={(e) =>
+                    setDialogData({
+                      ...dialogData,
+                      temperature: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium">
+                  Weight (kg) *
+                </label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={dialogData.weight}
+                  onChange={(e) =>
+                    setDialogData({
+                      ...dialogData,
+                      weight: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <Button type="submit" disabled={submitting}>
+                {submitting ? "Submitting..." : "Confirm"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
+  )}
 
                   {/* {patient.status === "Assigned" && (
                     <Dialog>

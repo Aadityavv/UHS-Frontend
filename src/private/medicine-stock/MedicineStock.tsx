@@ -367,9 +367,7 @@ const MedicineStock = () => {
     // Then filter by search term
     const filteredBySearch = filteredByLocation.filter(
       (stock) =>
-        stock.medicineName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        stock.composition.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        stock.company.toLowerCase().includes(searchTerm.toLowerCase())
+        stock.medicineName.toLowerCase().includes(searchTerm.toLowerCase()) 
     );
 
     // Finally sort

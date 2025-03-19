@@ -2,16 +2,15 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { Phone, MapPin, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Emergency = () => {
-  // Data for emergency contacts
   const emergencyContacts = [
     {
       name: "Dr. Sanjay Gusai",
@@ -48,9 +47,6 @@ const Emergency = () => {
         transition={{ duration: 0.5 }}
         className="flex flex-col items-center justify-center gap-4 text-center"
       >
-        {/* <h1 className="text-4xl md:text-5xl font-bold text-gray-800">
-          Emergency Contacts
-        </h1> */}
         <p className="text-lg text-gray-600 max-w-2xl">
           In case of an emergency, reach out to our dedicated team of nurses available on campus.
         </p>
@@ -74,8 +70,9 @@ const Emergency = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 300 }}
+            className="h-full"
           >
-            <Card className="hover:shadow-lg transition-shadow duration-200 bg-white/90 backdrop-blur-md border border-gray-200">
+            <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-200 bg-white/90 backdrop-blur-md border border-gray-200">
               <CardHeader className="text-center">
                 <Stethoscope className="w-12 h-12 mx-auto text-blue-500" />
                 <CardTitle className="text-xl mt-2">{contact.name}</CardTitle>
@@ -83,10 +80,10 @@ const Emergency = () => {
                   {contact.role}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="text-center">
-                <div className="flex items-center justify-center gap-2 text-gray-700">
-                  <MapPin className="w-5 h-5" />
-                  <p>{contact.address}</p>
+              <CardContent className="flex-1 text-center">
+                <div className="flex items-center justify-center gap-2 text-gray-700 h-full px-2">
+                  <MapPin className="w-5 h-5 flex-shrink-0" />
+                  <p className="break-words">{contact.address}</p>
                 </div>
               </CardContent>
               <CardFooter className="flex justify-center">
