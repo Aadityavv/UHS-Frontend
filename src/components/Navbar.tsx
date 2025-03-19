@@ -49,14 +49,14 @@ const Navbar = ({ props }: {
       </div>
 
       {/* Center Title & Logo */}
-      <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-3 pointer-events-none">
+      <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-3 pointer-events-none ml-3">
         {/* {props.titleLogo &&
           (typeof props.titleLogo === "string" ? (
             <img src={props.titleLogo} alt="Title Logo" className="h-8 w-8" />
           ) : (
             props.titleLogo
           ))} */}
-        <span className="font-bold text-lg lg:text-2xl text-gray-800 capitalize">
+        <span className="font-semibold text-lg lg:text-2xl text-gray-800 capitalize">
           {props.title}
         </span>
       </div>
