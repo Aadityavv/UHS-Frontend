@@ -28,16 +28,17 @@ const UserPrescription = () => {
   const [filteredReports, setFilteredReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [, setSortField] = useState<'date' | 'time' | 'token'>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // Default to descending
+  const [, setSortField] = useState<'date' | 'time'>('date');
+
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const role = localStorage.getItem("roles");
         const apiUrl = role === "patient"
-          ? "https://uhs-backend.onrender.com/api/patient/getAppointment"
-          : `https://uhs-backend.onrender.com/api/doctor/getAppointmentPat/${getPatientEmail()}`;
+          ? "http://localhost:8081/api/patient/getAppointment"
+          : `http://localhost:8081/api/doctor/getAppointmentPat/${getPatientEmail()}`;
 
         const { data } = await axios.get(apiUrl, {
           headers: {
@@ -49,9 +50,19 @@ const UserPrescription = () => {
           id: item.appointmentId,
           date: format(parseISO(item.date), "dd/MM/yyyy"),
           time: format(parseISO(`1970-01-01T${item.time}`), "hh:mm a"),
-          token: item.token,
           link: item.appointmentId
         }));
+
+         // Sort the data in descending order by date initially
+         const sortedData = formattedData.sort((a: any, b: any) => {
+          const dateA = new Date(a.date.split('/').reverse().join('-'));
+          const dateB = new Date(b.date.split('/').reverse().join('-'));
+          return dateB.getTime() - dateA.getTime(); // Descending order
+        });
+
+        setReports(sortedData);
+        setFilteredReports(sortedData);
+
 
         setReports(formattedData);
         setFilteredReports(formattedData);
@@ -88,20 +99,25 @@ const UserPrescription = () => {
     setFilteredReports(filtered);
   };
 
-  const handleSort = (field: 'date' | 'time' | 'token') => {
+  const handleSort = (field: 'date' | 'time') => {
     const order = sortOrder === 'asc' ? 'desc' : 'asc';
     setSortOrder(order);
     setSortField(field);
 
     const sortedReports = [...filteredReports].sort((a, b) => {
-      const fieldA = a[field].toLowerCase();
-      const fieldB = b[field].toLowerCase();
-
-      if (fieldA < fieldB) return order === 'asc' ? -1 : 1;
-      if (fieldA > fieldB) return order === 'asc' ? 1 : -1;
+      if (field === 'date') {
+        // Convert dates to timestamps for comparison
+        const dateA = new Date(a.date.split('/').reverse().join('-')).getTime();
+        const dateB = new Date(b.date.split('/').reverse().join('-')).getTime();
+        return order === 'asc' ? dateA - dateB : dateB - dateA; // Sort by date
+      } else if (field === 'time') {
+        // Convert times to timestamps for comparison
+        const timeA = new Date(`1970-01-01T${a.time}`).getTime();
+        const timeB = new Date(`1970-01-01T${b.time}`).getTime();
+        return order === 'asc' ? timeA - timeB : timeB - timeA; // Sort by time
+      }
       return 0;
     });
-
     setFilteredReports(sortedReports);
   };
 
@@ -176,37 +192,32 @@ const UserPrescription = () => {
                     <div key={i} className="flex justify-between p-3">
                       <Skeleton variant="text" width={100} height={24} />
                       <Skeleton variant="text" width={80} height={24} />
-                      <Skeleton variant="text" width={60} height={24} />
                       <Skeleton variant="circular" width={32} height={32} />
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <div className="grid grid-cols-4 gap-4 px-4 py-2 bg-indigo-100 rounded-lg">
+                  <div className="grid grid-cols-3 gap-4 px-4 py-2 bg-indigo-100 rounded-lg">
                     <button onClick={() => handleSort('date')} className="flex items-center text-sm font-medium text-indigo-700">
                       Date <ArrowUpDown className="h-4 w-4 ml-1" />
                     </button>
                     <p className="flex items-center text-sm font-medium text-indigo-700">
                       Time 
                     </p>
-                    <p className="flex items-center text-sm font-medium text-indigo-700">
-                      Token
-                    </p>
                     <span className="text-sm font-medium text-indigo-700 text-right">Actions</span>
                   </div>
 
                   {filteredReports.map((report) => (
-                    <div key={report.id} className="grid grid-cols-4 gap-4 items-center p-4 hover:bg-indigo-50 rounded-lg transition">
+                    <div key={report.id} className="grid grid-cols-3 gap-4 items-center p-4 hover:bg-indigo-50 rounded-lg transition">
                       <div className="flex items-center">
-                        <CalendarIcon className="h-4 w-4 mr-2 text-indigo-600" />
+                      <CalendarIcon className="h-4 w-4 mr-2 text-indigo-600 hidden lg:inline-block" />
                         <span className="text-gray-700">{report.date}</span>
                       </div>
                       <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-2 text-indigo-600" />
+                      <Clock className="h-4 w-4 mr-2 text-indigo-600 hidden lg:inline-block" />
                         <span className="text-gray-700">{report.time}</span>
                       </div>
-                      <div className="text-gray-700">{report.token}</div>
                       <div className="flex justify-end">
                         <Button
                           variant="outline"
