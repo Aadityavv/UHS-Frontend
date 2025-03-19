@@ -255,105 +255,113 @@ const CommonPrescription = () => {
           </motion.div>
 
           {/* Medications Section */}
-          <motion.div
-            variants={cardVariants}
-            className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200"
-          >
-            <h3 className="text-lg font-bold text-indigo-800 mb-4 flex items-center gap-2">
-              <span className="w-2 h-6 bg-indigo-500 rounded-full"></span>
-              Prescribed Medications
-            </h3>
+<motion.div
+  variants={cardVariants}
+  className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200"
+>
+  <h3 className="text-lg font-bold text-indigo-800 mb-4 flex items-center gap-2">
+    <span className="w-2 h-6 bg-indigo-500 rounded-full"></span>
+    Prescribed Medications
+  </h3>
 
-            {/* Mobile View */}
-            <div className="md:hidden space-y-4">
-              {ndata.meds.map((med, index) => (
-                <div key={index} className="bg-slate-50 p-4 rounded-lg">
-                  <div className="grid grid-cols-3 gap-2 mb-3">
-                    <div className="text-center">
-                      <div className="text-xs text-slate-500">Morning</div>
-                      <div className="font-medium">{med.dosageMorning}</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-xs text-slate-500">Afternoon</div>
-                      <div className="font-medium">{med.dosageAfternoon}</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-xs text-slate-500">Evening</div>
-                      <div className="font-medium">{med.dosageEvening}</div>
-                    </div>
-                  </div>
-                  <div className="text-sm text-slate-600">
-                    <span className="font-medium">Duration:</span> {med.duration} days
-                  </div>
-                  {med.suggestion && (
-                    <div className="mt-2 text-sm text-slate-600">
-                      <span className="font-medium">Notes:</span> {med.suggestion}
-                    </div>
-                  )}
-                </div>
-              ))}
+  {/* Mobile View */}
+  <div className="md:hidden space-y-4">
+    {ndata.meds.map((med, index) => (
+      <div key={index} className="bg-slate-50 p-4 rounded-lg">
+        {/* Medicine Name */}
+        <div className="flex justify-between items-start mb-3">
+          <div className="font-medium text-indigo-800">{med.name}</div>
+        </div>
+
+        {/* Dosage Information */}
+        <div className="grid grid-cols-3 gap-2 mb-3">
+          <div className="text-center">
+            <div className="text-xs text-slate-500">Morning</div>
+            <div className="font-medium">{med.dosageMorning}</div>
+          </div>
+          <div className="text-center">
+            <div className="text-xs text-slate-500">Afternoon</div>
+            <div className="font-medium">{med.dosageAfternoon}</div>
+          </div>
+          <div className="text-center">
+            <div className="text-xs text-slate-500">Evening</div>
+            <div className="font-medium">{med.dosageEvening}</div>
+          </div>
+        </div>
+
+        {/* Duration and Suggestions */}
+        <div className="text-sm text-slate-600">
+          <span className="font-medium">Duration:</span> {med.duration} days
+        </div>
+        {med.suggestion && (
+          <div className="mt-2 text-sm text-slate-600">
+            <span className="font-medium">Notes:</span> {med.suggestion}
+          </div>
+        )}
+      </div>
+    ))}
+  </div>
+
+  {/* Desktop View */}
+  <table className="hidden md:table w-full">
+    <thead className="bg-slate-50">
+      <tr>
+        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600">
+          #
+        </th>
+        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600">
+          Medication
+        </th>
+        <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600">
+          Dosage
+        </th>
+        <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600">
+          Duration
+        </th>
+        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600">
+          Notes
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {ndata.meds.map((med, index) => (
+        <tr
+          key={index}
+          className="border-b border-slate-100 last:border-0"
+        >
+          <td className="py-3 px-4 text-indigo-800 font-medium">
+            {index + 1}
+          </td>
+          <td className="py-3 px-4 font-medium text-slate-800">
+            {med.name}
+          </td>
+          <td className="py-3 px-4 text-center">
+            <div className="grid grid-cols-3 gap-2 text-lg">
+              <div className="text-center">
+                <div className="text-sm text-slate-500">Morning</div>
+                <div className="font-medium">{med.dosageMorning}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm text-slate-500">Afternoon</div>
+                <div className="font-medium">{med.dosageAfternoon}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm text-slate-500">Evening</div>
+                <div className="font-medium">{med.dosageEvening}</div>
+              </div>
             </div>
-
-            {/* Desktop View */}
-            <table className="hidden md:table w-full">
-              <thead className="bg-slate-50">
-                <tr>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600">
-                    #
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600">
-                    Medication
-                  </th>
-                  <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600">
-                    Dosage
-                  </th>
-                  <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600">
-                    Duration
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600">
-                    Notes
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {ndata.meds.map((med, index) => (
-                  <tr
-                    key={index}
-                    className="border-b border-slate-100 last:border-0"
-                  >
-                    <td className="py-3 px-4 text-indigo-800 font-medium">
-                      {index + 1}
-                    </td>
-                    <td className="py-3 px-4 font-medium text-slate-800">
-                      {med.name}
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <div className="grid grid-cols-3 gap-2 text-lg">
-                        <div className="text-center">
-                          <div className="text-sm text-slate-500">Morning</div>
-                          <div className="font-medium">{med.dosageMorning}</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sm text-slate-500">Afternoon</div>
-                          <div className="font-medium">{med.dosageAfternoon}</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sm text-slate-500">Evening</div>
-                          <div className="font-medium">{med.dosageEvening}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-center text-slate-600">
-                      {med.duration} days
-                    </td>
-                    <td className="py-3 px-4 text-slate-600 text-sm">
-                      {med.suggestion}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </motion.div>
+          </td>
+          <td className="py-3 px-4 text-center text-slate-600">
+            {med.duration} days
+          </td>
+          <td className="py-3 px-4 text-slate-600 text-sm">
+            {med.suggestion}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</motion.div>
 
           {/* Recommendations & Tests */}
           <motion.div
