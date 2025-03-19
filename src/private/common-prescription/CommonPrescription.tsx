@@ -7,7 +7,6 @@ import { PDFDownloadLink } from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Clock } from "lucide-react";
 
 interface Medication {
   name: string;
@@ -158,7 +157,7 @@ const CommonPrescription = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-pulse text-2xl text-emerald-600">
+        <div className="animate-pulse text-2xl text-indigo-600">
           Loading Report...
         </div>
       </div>
@@ -183,7 +182,7 @@ const CommonPrescription = () => {
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex items-center gap-4">
                 <div>
-                  <h1 className="text-2xl font-bold text-emerald-800">
+                  <h1 className="text-2xl font-bold text-indigo-800">
                     Medical Report
                   </h1>
                   <p className="text-slate-500">University Health Services</p>
@@ -207,7 +206,7 @@ const CommonPrescription = () => {
               <label className="text-xs font-semibold text-slate-500 uppercase">
                 Patient Name
               </label>
-              <div className="text-lg font-medium text-emerald-800 mt-1">
+              <div className="text-lg font-medium text-indigo-800 mt-1">
                 {ndata.name}
               </div>
             </div>
@@ -215,7 +214,7 @@ const CommonPrescription = () => {
               <label className="text-xs font-semibold text-slate-500 uppercase">
                 Student ID
               </label>
-              <div className="text-lg font-medium text-emerald-800 mt-1">
+              <div className="text-lg font-medium text-indigo-800 mt-1">
                 {ndata.id}
               </div>
             </div>
@@ -223,7 +222,7 @@ const CommonPrescription = () => {
               <label className="text-xs font-semibold text-slate-500 uppercase">
                 Age & Gender
               </label>
-              <div className="text-lg font-medium text-emerald-800 mt-1">
+              <div className="text-lg font-medium text-indigo-800 mt-1">
                 {ndata.age} / {ndata.sex}
               </div>
             </div>
@@ -231,7 +230,7 @@ const CommonPrescription = () => {
               <label className="text-xs font-semibold text-slate-500 uppercase">
                 School
               </label>
-              <div className="text-lg font-medium text-emerald-800 mt-1">
+              <div className="text-lg font-medium text-indigo-800 mt-1">
                 {ndata.school}
               </div>
             </div>
@@ -242,8 +241,8 @@ const CommonPrescription = () => {
             variants={cardVariants}
             className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200"
           >
-            <h3 className="text-lg font-bold text-emerald-800 mb-4 flex items-center gap-2">
-              <span className="w-2 h-6 bg-emerald-500 rounded-full"></span>
+            <h3 className="text-lg font-bold text-indigo-800 mb-4 flex items-center gap-2">
+              <span className="w-2 h-6 bg-indigo-500 rounded-full"></span>
               Diagnosis
             </h3>
             <div className="prose prose-slate max-w-none">
@@ -260,8 +259,8 @@ const CommonPrescription = () => {
             variants={cardVariants}
             className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200"
           >
-            <h3 className="text-lg font-bold text-emerald-800 mb-4 flex items-center gap-2">
-              <span className="w-2 h-6 bg-emerald-500 rounded-full"></span>
+            <h3 className="text-lg font-bold text-indigo-800 mb-4 flex items-center gap-2">
+              <span className="w-2 h-6 bg-indigo-500 rounded-full"></span>
               Prescribed Medications
             </h3>
 
@@ -322,22 +321,25 @@ const CommonPrescription = () => {
                     key={index}
                     className="border-b border-slate-100 last:border-0"
                   >
-                    <td className="py-3 px-4 text-emerald-800 font-medium">
+                    <td className="py-3 px-4 text-indigo-800 font-medium">
                       {index + 1}
                     </td>
                     <td className="py-3 px-4 font-medium text-slate-800">
                       {med.name}
                     </td>
                     <td className="py-3 px-4 text-center">
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="text-sm bg-emerald-50 p-1 rounded">
-                          {med.dosageMorning}
+                      <div className="grid grid-cols-3 gap-2 text-lg">
+                        <div className="text-center">
+                          <div className="text-sm text-slate-500">Morning</div>
+                          <div className="font-medium">{med.dosageMorning}</div>
                         </div>
-                        <div className="text-sm bg-emerald-50 p-1 rounded">
-                          {med.dosageAfternoon}
+                        <div className="text-center">
+                          <div className="text-sm text-slate-500">Afternoon</div>
+                          <div className="font-medium">{med.dosageAfternoon}</div>
                         </div>
-                        <div className="text-sm bg-emerald-50 p-1 rounded">
-                          {med.dosageEvening}
+                        <div className="text-center">
+                          <div className="text-sm text-slate-500">Evening</div>
+                          <div className="font-medium">{med.dosageEvening}</div>
                         </div>
                       </div>
                     </td>
@@ -359,8 +361,8 @@ const CommonPrescription = () => {
             className="grid grid-cols-1 md:grid-cols-2 gap-4"
           >
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
-              <h3 className="text-lg font-bold text-emerald-800 mb-4 flex items-center gap-2">
-                <span className="w-2 h-6 bg-emerald-500 rounded-full"></span>
+              <h3 className="text-lg font-bold text-indigo-800 mb-4 flex items-center gap-2">
+                <span className="w-2 h-6 bg-indigo-500 rounded-full"></span>
                 Recommendations
               </h3>
               <div className="prose prose-slate max-w-none">
@@ -373,8 +375,8 @@ const CommonPrescription = () => {
             </div>
 
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
-              <h3 className="text-lg font-bold text-emerald-800 mb-4 flex items-center gap-2">
-                <span className="w-2 h-6 bg-emerald-500 rounded-full"></span>
+              <h3 className="text-lg font-bold text-indigo-800 mb-4 flex items-center gap-2">
+                <span className="w-2 h-6 bg-indigo-500 rounded-full"></span>
                 Required Tests
               </h3>
               <div className="prose prose-slate max-w-none">
@@ -394,7 +396,7 @@ const CommonPrescription = () => {
           >
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div className="space-y-2">
-                <div className="text-lg font-bold text-emerald-800">
+                <div className="text-lg font-bold text-indigo-800">
                   {doctorName}
                 </div>
                 <div className="text-slate-600">{ndata.designation}</div>
@@ -415,7 +417,7 @@ const CommonPrescription = () => {
                 fileName="patient_report.pdf"
               >
                 <Button
-                  className="w-full md:w-auto bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg"
+                  className="w-full md:w-auto bg-gradient-to-r from-indigo-600 to-indigo-600 hover:from-indigo-700 hover:to-indigo-700 text-white shadow-lg"
                   disabled={loading}
                 >
                   {loading ? "Generating PDF..." : "Download Full Report"}
