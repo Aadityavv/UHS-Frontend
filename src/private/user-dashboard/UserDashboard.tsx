@@ -399,7 +399,7 @@ const UserDashboard = () => {
                   </p>
                 </div>
                 <div className="text-center p-4 bg-emerald-50 rounded-xl">
-                    <p className="text-sm text-gray-600 mb-1">Medications</p>
+                    <p className="text-sm text-gray-600 mb-1">Active medications</p>
 
                     {loadingMedications ? (
                       <p className="font-medium">Loading...</p>
