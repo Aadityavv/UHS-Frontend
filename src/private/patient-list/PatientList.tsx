@@ -135,22 +135,31 @@ const PatientList = () => {
         "X-Latitude": localStorage.getItem("latitude"),
         "X-Longitude": localStorage.getItem("longitude"),
       };
-
+  
       const response = await axios.get(
         "https://uhs-backend.onrender.com/api/AD/getAvailableDoctors",
         { headers }
       );
-
-      setDoctors(
-        response.data.map((d: any) => ({
-          id: d.doctorId.toString(),
-          name: d.name,
-        }))
-      );
+  
+      const availableDoctors = response.data.map((d: any) => ({
+        id: d.doctorId.toString(),
+        name: d.name,
+      }));
+  
+      setDoctors(availableDoctors);
+  
+      if (availableDoctors.length === 0) {
+        toast({
+          variant: "destructive",
+          title: "No Doctors Available",
+          description: "Currently, no doctors are available for appointment.",
+        });
+      }
     } catch (error) {
       handleError(error, "Error fetching doctors");
     }
   };
+  
 
   const handleAction = async (action: string, email?: string) => {
     if (!email) return;
