@@ -207,7 +207,7 @@ const DoctorCheckIn = () => {
               >
                 <div className="flex items-center mb-4">
                   <CalendarIcon className="h-5 w-5 mr-2 text-blue-600" />
-                  <h3 className="text-lg text-gray-600 font-semibold">Select Date</h3>
+                  <h3 className="text-lg text-gray-600 font-semibold">Calendar</h3>
                 </div>
                 <Calendar
                   mode="single"

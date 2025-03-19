@@ -2,14 +2,12 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
-import { ToastAction } from "@/components/ui/toast";
 import MedicalReportPDF from "@/components/MedicalReportPDF";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Clock } from "lucide-react";
 
 interface Medication {
   name: string;
@@ -131,7 +129,6 @@ const CommonPrescription = () => {
           description:
             error.response?.data?.message ||
             "Error occurred while fetching prescription data.",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
         console.error("Error fetching prescription data:", error);
       } finally {
@@ -153,259 +150,278 @@ const CommonPrescription = () => {
     },
   };
 
-  const fadeIn = {
+  const cardVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-  };
-
-  const slideIn = {
-    hidden: { opacity: 0, x: -50 },
-    visible: { opacity: 1, x: 0, transition: { duration: 0.6 } },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-pulse text-2xl text-emerald-600">
+          Loading Report...
+        </div>
+      </div>
+    );
   }
 
   return (
     <>
       <Toaster />
-      <div className="min-h-[84svh] p-2 bg-gradient-to-br from-indigo-50 to-blue-50 sm:p-4">
+      <div className="min-h-[84svh] p-4 bg-slate-50">
         <motion.div
           initial="hidden"
           animate="visible"
           variants={staggerContainer}
-          className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-indigo-50"
+          className="max-w-6xl mx-auto space-y-8"
         >
-          {/* Header Section */}
-          <motion.div variants={fadeIn} className="flex flex-col items-center gap-4 mb-6 sm:flex-row sm:justify-between">
-            <img 
-              src="/upes-logo.jpg" 
-              alt="UPES Logo" 
-              className="w-16 sm:w-20" 
-            />
-            <h2 className="text-xl text-center text-indigo-600 sm:text-2xl">
-              UHS Medical Report
-            </h2>
-            <div className="flex flex-col items-center text-sm sm:text-base text-indigo-500">
-              <span>{ndata?.time}</span>
-              <span>{ndata?.date}</span>
-            </div>
-          </motion.div>
-
-          <hr className="border border-indigo-100 my-4" />
-
-          {/* Patient Info Section */}
+          {/* Header Card */}
           <motion.div
-            variants={slideIn}
-            className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 lg:grid-cols-3"
+            variants={cardVariants}
+            className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200"
           >
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <label className="font-medium text-indigo-600 w-16 sm:w-20">Name:</label>
-                <Input
-                  value={ndata?.name}
-                  className="bg-indigo-50 border-indigo-100 text-sm"
-                  readOnly
-                />
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div>
+                  <h1 className="text-2xl font-bold text-emerald-800">
+                    Medical Report
+                  </h1>
+                  <p className="text-slate-500">University Health Services</p>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <label className="font-medium text-indigo-600 w-16 sm:w-20">ID:</label>
-                <Input
-                  value={ndata?.id}
-                  className="bg-indigo-50 border-indigo-100 text-sm"
-                  readOnly
-                />
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <label className="font-medium text-indigo-600 w-16 sm:w-20">Age:</label>
-                <Input
-                  value={ndata?.age}
-                  className="bg-indigo-50 border-indigo-100 text-sm"
-                  readOnly
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <label className="font-medium text-indigo-600 w-16 sm:w-20">School:</label>
-                <Input
-                  value={ndata?.school}
-                  className="bg-indigo-50 border-indigo-100 text-sm"
-                  readOnly
-                />
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <label className="font-medium text-indigo-600 w-16 sm:w-20">Sex:</label>
-                <Input
-                  value={ndata?.sex}
-                  className="bg-indigo-50 border-indigo-100 text-sm"
-                  readOnly
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <label className="font-medium text-indigo-600 w-24 sm:w-32">Residence Type:</label>
-                <Input
-                  value={ndata?.residenceType}
-                  className="bg-indigo-50 border-indigo-100 text-sm"
-                  readOnly
-                />
+              <div className="text-center md:text-right hidden sm:block">
+                <div className="space-y-1 text-md font-bold">
+                  
+                  <div className="text-slate-500">{ndata?.time}</div>
+                </div>
               </div>
             </div>
           </motion.div>
 
-          <hr className="border border-indigo-100 my-4" />
+          {/* Patient Info Grid */}
+          <motion.div
+            variants={cardVariants}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+          >
+            <div className="bg-white p-4 rounded-xl border border-slate-200">
+              <label className="text-xs font-semibold text-slate-500 uppercase">
+                Patient Name
+              </label>
+              <div className="text-lg font-medium text-emerald-800 mt-1">
+                {ndata.name}
+              </div>
+            </div>
+            <div className="bg-white p-4 rounded-xl border border-slate-200">
+              <label className="text-xs font-semibold text-slate-500 uppercase">
+                Student ID
+              </label>
+              <div className="text-lg font-medium text-emerald-800 mt-1">
+                {ndata.id}
+              </div>
+            </div>
+            <div className="bg-white p-4 rounded-xl border border-slate-200">
+              <label className="text-xs font-semibold text-slate-500 uppercase">
+                Age & Gender
+              </label>
+              <div className="text-lg font-medium text-emerald-800 mt-1">
+                {ndata.age} / {ndata.sex}
+              </div>
+            </div>
+            <div className="bg-white p-4 rounded-xl border border-slate-200">
+              <label className="text-xs font-semibold text-slate-500 uppercase">
+                School
+              </label>
+              <div className="text-lg font-medium text-emerald-800 mt-1">
+                {ndata.school}
+              </div>
+            </div>
+          </motion.div>
 
           {/* Diagnosis Section */}
-          <motion.div variants={fadeIn} className="mb-6">
-            <label className="font-medium text-indigo-600 block mb-2">Diagnosis:</label>
-            <Textarea
-              value={diagnosis}
-              className="bg-indigo-50 border-indigo-100 rounded-lg text-sm"
-              readOnly
-            />
+          <motion.div
+            variants={cardVariants}
+            className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200"
+          >
+            <h3 className="text-lg font-bold text-emerald-800 mb-4 flex items-center gap-2">
+              <span className="w-2 h-6 bg-emerald-500 rounded-full"></span>
+              Diagnosis
+            </h3>
+            <div className="prose prose-slate max-w-none">
+              {diagnosis.split("\n").map((line, i) => (
+                <p key={i} className="text-slate-700">
+                  {line}
+                </p>
+              ))}
+            </div>
           </motion.div>
 
-          {/* Medicines Table */}
-          <motion.div variants={fadeIn} className="mb-6">
-            <label className="font-medium text-indigo-600 block mb-2">Medication:</label>
-            <div className="overflow-x-auto rounded-lg border border-indigo-100">
-              <table className="w-full min-w-[600px]">
-                <thead className="bg-indigo-50">
-                  <tr>
-                    {['S.No.', 'Medicine', 'Dosage', 'Duration', 'Suggestions'].map((header) => (
-                      <th 
-                        key={header} 
-                        className="px-2 py-3 text-left text-indigo-600 font-semibold text-sm sm:px-4 sm:text-base"
-                      >
-                        {header}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {ndata.meds.map((med, index) => (
-                    <tr key={index} className="even:bg-indigo-50/50">
-                      <td className="text-center p-2 text-sm sm:p-3 sm:text-base">
-                        {index + 1}
-                      </td>
-                      <td className="p-2 sm:p-3">
-                        <Input
-                          value={med.name}
-                          className="bg-indigo-50 border-indigo-100 text-sm"
-                          readOnly
-                        />
-                      </td>
-                      <td className="p-2 sm:p-3">
-                        <div className="grid grid-cols-1 gap-1 mb-5 sm:grid-cols-3 sm:gap-2">
-                          <div className="flex flex-col items-center gap-1">
-                          <span className="text-xs text-indigo-500">Morning</span>
-                            <Input
-                              value={med.dosageMorning}
-                              className="bg-indigo-50 border-indigo-100 text-center text-sm"
-                              readOnly
-                            />
-                            
-                          </div>
-                          <div className="flex flex-col items-center gap-1">
-                          <span className="text-xs text-indigo-500">Afternoon</span>
-                            <Input
-                              value={med.dosageAfternoon}
-                              className="bg-indigo-50 border-indigo-100 text-center text-sm"
-                              readOnly
-                            />
-                            
-                          </div>
-                          <div className="flex flex-col items-center gap-1">
-                          <span className="text-xs text-indigo-500">Evening</span>
-                            <Input
-                              value={med.dosageEvening}
-                              className="bg-indigo-50 border-indigo-100 text-center text-sm"
-                              readOnly
-                            />
-                            
-                          </div>
+          {/* Medications Section */}
+          <motion.div
+            variants={cardVariants}
+            className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200"
+          >
+            <h3 className="text-lg font-bold text-emerald-800 mb-4 flex items-center gap-2">
+              <span className="w-2 h-6 bg-emerald-500 rounded-full"></span>
+              Prescribed Medications
+            </h3>
+
+            {/* Mobile View */}
+            <div className="md:hidden space-y-4">
+              {ndata.meds.map((med, index) => (
+                <div key={index} className="bg-slate-50 p-4 rounded-lg">
+                  <div className="grid grid-cols-3 gap-2 mb-3">
+                    <div className="text-center">
+                      <div className="text-xs text-slate-500">Morning</div>
+                      <div className="font-medium">{med.dosageMorning}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xs text-slate-500">Afternoon</div>
+                      <div className="font-medium">{med.dosageAfternoon}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xs text-slate-500">Evening</div>
+                      <div className="font-medium">{med.dosageEvening}</div>
+                    </div>
+                  </div>
+                  <div className="text-sm text-slate-600">
+                    <span className="font-medium">Duration:</span> {med.duration} days
+                  </div>
+                  {med.suggestion && (
+                    <div className="mt-2 text-sm text-slate-600">
+                      <span className="font-medium">Notes:</span> {med.suggestion}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop View */}
+            <table className="hidden md:table w-full">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600">
+                    #
+                  </th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600">
+                    Medication
+                  </th>
+                  <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600">
+                    Dosage
+                  </th>
+                  <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600">
+                    Duration
+                  </th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600">
+                    Notes
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {ndata.meds.map((med, index) => (
+                  <tr
+                    key={index}
+                    className="border-b border-slate-100 last:border-0"
+                  >
+                    <td className="py-3 px-4 text-emerald-800 font-medium">
+                      {index + 1}
+                    </td>
+                    <td className="py-3 px-4 font-medium text-slate-800">
+                      {med.name}
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="text-sm bg-emerald-50 p-1 rounded">
+                          {med.dosageMorning}
                         </div>
-                      </td>
-                      <td className="p-2 sm:p-3">
-                        <Input
-                          value={med.duration}
-                          className="bg-indigo-50 border-indigo-100 text-center text-sm"
-                          readOnly
-                        />
-                      </td>
-                      <td className="p-2 sm:p-3">
-                        <Textarea
-                          value={med.suggestion}
-                          className="bg-indigo-50 border-indigo-100 text-sm"
-                          readOnly
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        <div className="text-sm bg-emerald-50 p-1 rounded">
+                          {med.dosageAfternoon}
+                        </div>
+                        <div className="text-sm bg-emerald-50 p-1 rounded">
+                          {med.dosageEvening}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-center text-slate-600">
+                      {med.duration} days
+                    </td>
+                    <td className="py-3 px-4 text-slate-600 text-sm">
+                      {med.suggestion}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </motion.div>
+
+          {/* Recommendations & Tests */}
+          <motion.div
+            variants={cardVariants}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          >
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
+              <h3 className="text-lg font-bold text-emerald-800 mb-4 flex items-center gap-2">
+                <span className="w-2 h-6 bg-emerald-500 rounded-full"></span>
+                Recommendations
+              </h3>
+              <div className="prose prose-slate max-w-none">
+                {dietaryRemarks.split("\n").map((line, i) => (
+                  <p key={i} className="text-slate-700">
+                    {line}
+                  </p>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
+              <h3 className="text-lg font-bold text-emerald-800 mb-4 flex items-center gap-2">
+                <span className="w-2 h-6 bg-emerald-500 rounded-full"></span>
+                Required Tests
+              </h3>
+              <div className="prose prose-slate max-w-none">
+                {testNeeded.split("\n").map((line, i) => (
+                  <p key={i} className="text-slate-700">
+                    {line}
+                  </p>
+                ))}
+              </div>
             </div>
           </motion.div>
 
-          {/* Recommendations and Tests */}
-          <motion.div variants={fadeIn} className="space-y-4 sm:space-y-6">
-            <div>
-              <label className="font-medium text-indigo-600 block mb-2">Recommendations:</label>
-              <Textarea
-                value={dietaryRemarks}
-                className="bg-indigo-50 border-indigo-100 rounded-lg text-sm"
-                readOnly
-              />
-            </div>
-            <div>
-              <label className="font-medium text-indigo-600 block mb-2">Tests Needed:</label>
-              <Textarea
-                value={testNeeded}
-                className="bg-indigo-50 border-indigo-100 rounded-lg text-sm"
-                readOnly
-              />
-            </div>
-          </motion.div>
-
-          {/* Doctor Signature */}
-          <motion.div variants={fadeIn} className="flex flex-col items-end mt-6 sm:mt-8">
-            <span className="text-indigo-600 font-semibold text-sm sm:text-base">
-              {doctorName}
-            </span>
-            <span className="text-indigo-500 text-sm sm:text-base">
-              ({ndata?.designation})
-            </span>
-            <div className="font-medium text-indigo-600 text-sm sm:text-base">
-              Doctor
-            </div>
-          </motion.div>
-
-          {/* PDF Download Button */}
-          <motion.div variants={fadeIn} className="flex justify-end mt-6">
-            <PDFDownloadLink
-              document={
-                <MedicalReportPDF
-                  ndata={ndata}
-                  diagnosis={diagnosis}
-                  dietaryRemarks={dietaryRemarks}
-                  doctorName={doctorName}
-                  testNeeded={testNeeded}
-                />
-              }
-              fileName="patient_report.pdf"
-            >
-              <Button
-                  className="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white shadow-lg"
+          {/* Doctor Signature & Download */}
+          <motion.div
+            variants={cardVariants}
+            className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200"
+          >
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+              <div className="space-y-2">
+                <div className="text-lg font-bold text-emerald-800">
+                  {doctorName}
+                </div>
+                <div className="text-slate-600">{ndata.designation}</div>
+                <div className="text-sm text-slate-500">
+                  Licensed Medical Practitioner
+                </div>
+              </div>
+              <PDFDownloadLink
+                document={
+                  <MedicalReportPDF
+                    ndata={ndata}
+                    diagnosis={diagnosis}
+                    dietaryRemarks={dietaryRemarks}
+                    doctorName={doctorName}
+                    testNeeded={testNeeded}
+                  />
+                }
+                fileName="patient_report.pdf"
+              >
+                <Button
+                  className="w-full md:w-auto bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg"
                   disabled={loading}
                 >
-                  {loading ? "Generating..." : "Download PDF"}
+                  {loading ? "Generating PDF..." : "Download Full Report"}
                 </Button>
-            </PDFDownloadLink>
+              </PDFDownloadLink>
+            </div>
           </motion.div>
         </motion.div>
       </div>
