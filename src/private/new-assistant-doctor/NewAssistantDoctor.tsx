@@ -72,7 +72,7 @@ const NewAssistantDoctor = () => {
         }
         const payload = { ...data, status: false };
         await axios.post(
-          "https://uhs-backend.onrender.com/api/admin/AD/signup",
+          "http://localhost:8081/api/admin/AD/signup",
           payload,
           {
             headers: {

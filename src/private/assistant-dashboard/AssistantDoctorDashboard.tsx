@@ -48,7 +48,7 @@ const AssistantDoctorDashboard = () => {
       }
 
       const response = await fetch(
-        "https://uhs-backend.onrender.com/api/AD/total-patient-count",
+        "http://localhost:8081/api/AD/total-patient-count",
         {
           headers: {
             Authorization: "Bearer " + token,

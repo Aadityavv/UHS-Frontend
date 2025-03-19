@@ -17,6 +17,17 @@ import {
 import Skeleton from '@mui/material/Skeleton';
 import { ToastAction } from "@radix-ui/react-toast";
 
+// ✅ Define Medication type here (outside the component)
+type Medication = {
+  pres_medicine_id: string;
+  medicineName?: string;
+  dosage?: string;
+  duration?: number;
+  appointmentDate?: string;
+  endDate?: string;
+  // Add any other fields if they exist in your backend response
+};
+
 const UserDashboard = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -26,6 +37,7 @@ const UserDashboard = () => {
     doctorName: "",
     tokenNo: "",
   });
+
   const [userDetails, setUserDetails] = useState({
     name: "",
     email: "",
@@ -33,38 +45,122 @@ const UserDashboard = () => {
     phoneNumber: "",
     bloodGroup: "",
     imageUrl: "",
+    allergies:"",
   });
-  const [loading, setLoading] = useState(true);
-  const [lastAppointmentDate, setLastAppointmentDate] = useState<string | null>(null);
 
-  const fetchLastAppointmentDate = useCallback(async () => {
+  const [loading, setLoading] = useState(true);
+  const [activeMedications, setActiveMedications] = useState<Medication[]>([]);
+  const [lastAppointmentDate, setLastAppointmentDate] = useState<string | null>(null);
+  const [loadingMedications, setLoadingMedications] = useState(true);
+
+  
+  // ✅ New state for allergies and BMI
+  const [allergies, setAllergies] = useState<string>("N/A");
+  const [bmi, setBmi] = useState<string>("N/A");
+
+  // ✅ Function to calculate BMI
+  const calculateBMI = (heightCm: number, weightKg: number): string => {
+    if (!heightCm || !weightKg) return "N/A";
+    const heightM = heightCm / 100;
+    const bmiValue = weightKg / (heightM * heightM);
+    return bmiValue.toFixed(1); // One decimal place
+  };
+
+  // ✅ Fetch medical details including allergies and bmi
+  const fetchMedicalDetails = useCallback(async () => {
     const token = localStorage.getItem("token");
-    if (!token) return;
+
+    if (!token || !userDetails.email) {
+      console.warn("Missing token or user email for fetching medical details.");
+      return;
+    }
+    console.log("Fetching medical details for:", userDetails.email);
 
     try {
       const response = await axios.get(
-        "https://uhs-backend.onrender.com/api/patient/lastAppointmentDate",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        `http://localhost:8081/api/medical-details/email/${userDetails.email}`,
+        // {
+        //   headers: {
+        //     Authorization: `Bearer ${token}`
+        //   }
+        // }
       );
 
       if (response?.data) {
-        const formattedDate = dayjs(response.data).format("DD/MM/YYYY");
-        setLastAppointmentDate(formattedDate);
-      } else {
-        setLastAppointmentDate(null);
+        const medicalData = response.data;
+
+        console.log("Medical details fetched:", medicalData);
+
+        // Set allergies
+        setAllergies(medicalData.allergies || "N/A");
+
+        // Calculate and set BMI
+        if (medicalData.height && medicalData.weight) {
+          const calculatedBMI = calculateBMI(medicalData.height, medicalData.weight);
+          setBmi(calculatedBMI);
+        } else {
+          setBmi("N/A");
+        }
       }
-    } catch (error: any) {
-      console.error("Last appointment fetch error:", error);
+
+    } catch (error: unknown) {
+      console.error("Error fetching medical details:", error);
       toast({
         title: "Error",
-        description: "Couldn't get last appointment date",
+        description: "Couldn't fetch medical details",
         variant: "destructive",
         action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
-  }, [toast]);
+  }, [toast, userDetails.email]);
+
+
+  const fetchActiveMedications = useCallback(async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token || !userDetails.email) {
+      console.warn("Missing token or user email for fetching active medications.");
+      return;
+    }
+
+    const encodedEmail = encodeURIComponent(userDetails.email);
+    console.log("Fetching active medications for:", encodedEmail);
+
+    setLoadingMedications(true);
+
+    try {
+      const response = await axios.get<Medication[]>(
+        `http://localhost:8081/api/patient/medications/active/${encodedEmail}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      
+
+      if (response?.data) {
+        const uniqueMedications = Array.from(
+          new Map(response.data.map((med: Medication) => [med.pres_medicine_id, med])).values()
+        );
+
+        setActiveMedications(uniqueMedications);
+      } else {
+        setActiveMedications([]);
+      }
+
+    } catch (error: unknown) {
+      console.error("Active medications fetch error:", error);
+      toast({
+        title: "Error",
+        description: "Couldn't fetch active medications",
+        variant: "destructive",
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
+      });
+    } finally {
+      setLoadingMedications(false);
+    }
+  }, [toast, userDetails.email]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -74,37 +170,61 @@ const UserDashboard = () => {
     }
 
     const fetchData = async () => {
+      setLoading(true);
+      setLoadingMedications(true);
+
       try {
-        const [userRes, statusRes] = await Promise.all([
-          axios.get("https://uhs-backend.onrender.com/api/patient/", {
+        const [userRes, statusRes, lastAppointmentRes] = await Promise.all([
+          axios.get("http://localhost:8081/api/patient/", {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get("https://uhs-backend.onrender.com/api/patient/getStatus", {
+          axios.get("http://localhost:8081/api/patient/getStatus", {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get("http://localhost:8081/api/patient/lastAppointmentDate", {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);
 
-        setUserDetails(userRes.data);
+        const userData = userRes.data;
+
+        setUserDetails(userData);
         setStatus({
           appointmentStatus: statusRes.data.Appointment ? "Queued" : "NA",
           doctorName: statusRes.data.Doctor ? statusRes.data.DoctorName : "Not Appointed",
           tokenNo: statusRes.data.TokenNo || "N/A",
         });
-      } catch (error: any) {
+
+        if (lastAppointmentRes?.data) {
+          const formattedDate = dayjs(lastAppointmentRes.data).format("DD/MM/YYYY");
+          setLastAppointmentDate(formattedDate);
+        } else {
+          setLastAppointmentDate(null);
+        }
+
+        await Promise.all([
+          fetchActiveMedications(),
+          fetchMedicalDetails()
+        ]);
+
+      } catch (error: unknown) {
+        console.error("Dashboard data fetch error:", error);
         toast({
           title: "Error",
-          description: error.response?.data?.message || "Something went wrong!",
+          description: "Something went wrong!",
           variant: "destructive",
           action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       } finally {
         setLoading(false);
+        setLoadingMedications(false);
       }
     };
 
     fetchData();
-    fetchLastAppointmentDate(); // 👉 You forgot to call this earlier!
-  }, [navigate, toast, fetchLastAppointmentDate]);
+  }, [navigate, toast, fetchActiveMedications]);
+
+  console.log(userDetails);
 
   return (
     <div className="min-h-[79vh] overflow-x-hidden bg-gray-50">
@@ -243,32 +363,25 @@ const UserDashboard = () => {
 
               {/* NEXT STEPS */}
               <motion.div
-  whileHover={{ scale: 1.02 }}
-  className="bg-white rounded-2xl px-4 py-6 shadow-sm border border-gray-100"
->
-  <h3 className="text-md font-medium text-gray-500 mb-4">Next Steps</h3>
-
-  <div className="flex flex-col gap-4 text-sm">
-    {/* Token Number */}
-    <div className="flex justify-between items-center">
-      <span className="font-semibold text-gray-700">Your Token Number:</span>
-      <span className="font-semibold text-indigo-600">{status.tokenNo}</span>
-    </div>
-
-    {/* Current Token Number */}
-    <div className="flex justify-between items-center">
-      <span className="font-semibold text-gray-700">Current Token Number:</span>
-      <span className="font-semibold text-indigo-600">{status.tokenNo}</span>
-    </div>
-
-    {/* Doctor Assigned */}
-    <div className="flex justify-between items-center">
-      <span className="font-semibold text-gray-700">Doctor Assigned:</span>
-      <span className="font-semibold text-indigo-600">{status.doctorName}</span>
-    </div>
-  </div>
-</motion.div>
-
+                whileHover={{ scale: 1.02 }}
+                className="bg-white rounded-2xl px-4 py-6 shadow-sm border border-gray-100"
+              >
+                <h3 className="text-md font-medium text-gray-500 mb-4">Next Steps</h3>
+                <div className="flex flex-col gap-4 text-sm">
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-gray-700">Your Token Number:</span>
+                    <span className="font-semibold text-indigo-600">{status.tokenNo}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-gray-700">Current Token Number:</span>
+                    <span className="font-semibold text-indigo-600">{status.tokenNo}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-gray-700">Doctor Assigned:</span>
+                    <span className="font-semibold text-indigo-600">{status.doctorName}</span>
+                  </div>
+                </div>
+              </motion.div>
             </div>
 
             {/* HEALTH OVERVIEW */}
@@ -286,16 +399,30 @@ const UserDashboard = () => {
                   </p>
                 </div>
                 <div className="text-center p-4 bg-emerald-50 rounded-xl">
-                  <p className="text-sm text-gray-600 mb-1">Medications</p>
-                  <p className="font-medium">3 Active</p>
-                </div>
+                    <p className="text-sm text-gray-600 mb-1">Medications</p>
+
+                    {loadingMedications ? (
+                      <p className="font-medium">Loading...</p>
+                    ) : activeMedications.length > 0 ? (
+                      <ul className="font-medium space-y-1 text-sm text-gray-700">
+                        {activeMedications.map((med) => (
+                          <li key={med.pres_medicine_id} className="capitalize">
+                            {med.medicineName}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="font-medium">No Active Medications</p>
+                    )}
+                  </div>
+
                 <div className="text-center p-4 bg-amber-50 rounded-xl">
                   <p className="text-sm text-gray-600 mb-1">Allergies</p>
-                  <p className="font-medium">2 Reported</p>
+                  <p className="font-medium">{allergies}</p>
                 </div>
                 <div className="text-center p-4 bg-rose-50 rounded-xl">
                   <p className="text-sm text-gray-600 mb-1">BMI</p>
-                  <p className="font-medium">22.6</p>
+                  <p className="font-medium">{bmi}</p>
                 </div>
               </div>
             </motion.div>
