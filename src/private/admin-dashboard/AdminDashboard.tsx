@@ -36,22 +36,22 @@ const AdminDashboard = () => {
         }
 
         const [patientsRes, sessionsRes, healthRes, activitiesRes] = await Promise.all([
-          fetch("https://uhs-backend.onrender.com//api/patient/count", {
+          fetch("https://uhs-backend.onrender.com/api/patient/count", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }),
-          fetch("https://uhs-backend.onrender.com//api/sessions/active", {
+          fetch("https://uhs-backend.onrender.com/api/sessions/active", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }),
-          fetch("https://uhs-backend.onrender.com//api/system/health", {
+          fetch("https://uhs-backend.onrender.com/api/system/health", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }),
-          fetch("https://uhs-backend.onrender.com//api/activities/recent", {
+          fetch("https://uhs-backend.onrender.com/api/activities/recent", {
             headers: {
               Authorization: `Bearer ${token}`,
             },

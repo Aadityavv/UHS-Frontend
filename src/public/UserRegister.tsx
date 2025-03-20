@@ -161,7 +161,7 @@ const UserRegister = () => {
         };
         setStatus("Loading...");
         await axios
-          .post("https://uhs-backend.onrender.com//api/auth/patient/signup", payload)
+          .post("https://uhs-backend.onrender.com/api/auth/patient/signup", payload)
           .then((res) => {
             setStatus("Submit");
             return res.data;

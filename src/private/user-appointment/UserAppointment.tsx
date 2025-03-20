@@ -51,17 +51,17 @@ const UserAppointment = () => {
     // const fetchData = async () => {
     //   try {
     //     const [userRes, doctorsRes, statusRes] = await Promise.all([
-    //       axios.get("https://uhs-backend.onrender.com//api/patient/", {
+    //       axios.get("https://uhs-backend.onrender.com/api/patient/", {
     //         headers: { Authorization: `Bearer ${token}` },
     //       }),
-    //       axios.get("https://uhs-backend.onrender.com//api/patient/getAvailableDoctors", {
+    //       axios.get("https://uhs-backend.onrender.com/api/patient/getAvailableDoctors", {
     //         headers: {
     //           Authorization: `Bearer ${token}`,
     //           "X-Latitude": localStorage.getItem("latitude") || "0",
     //           "X-Longitude": localStorage.getItem("longitude") || "0",
     //         },
     //       }),
-    //       axios.get("https://uhs-backend.onrender.com//api/patient/getStatus", {
+    //       axios.get("https://uhs-backend.onrender.com/api/patient/getStatus", {
     //         headers: { Authorization: `Bearer ${token}` },
     //       }),
     //     ]);
@@ -100,7 +100,7 @@ const UserAppointment = () => {
     
       try {
         // Fetch User Profile
-        const userRes = await axios.get("https://uhs-backend.onrender.com//api/patient/", {
+        const userRes = await axios.get("https://uhs-backend.onrender.com/api/patient/", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUserDetails(userRes.data);
@@ -117,7 +117,7 @@ const UserAppointment = () => {
       try {
         // Fetch Doctors List (non-critical)
         const doctorsRes = await axios.get(
-          "https://uhs-backend.onrender.com//api/patient/getAvailableDoctors",
+          "https://uhs-backend.onrender.com/api/patient/getAvailableDoctors",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -144,7 +144,7 @@ const UserAppointment = () => {
     
       try {
         // Fetch Status (non-critical)
-        const statusRes = await axios.get("https://uhs-backend.onrender.com//api/patient/getStatus", {
+        const statusRes = await axios.get("https://uhs-backend.onrender.com/api/patient/getStatus", {
           headers: { Authorization: `Bearer ${token}` },
         });
     
@@ -177,7 +177,7 @@ const UserAppointment = () => {
 
     try {
       const response = await axios.get(
-        "https://uhs-backend.onrender.com//api/patient/lastAppointmentDate",
+        "https://uhs-backend.onrender.com/api/patient/lastAppointmentDate",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -216,7 +216,7 @@ const UserAppointment = () => {
 
     try {
       await axios.post(
-        "https://uhs-backend.onrender.com//api/patient/submitAppointment",
+        "https://uhs-backend.onrender.com/api/patient/submitAppointment",
         appointmentData,
         {
           headers: {

@@ -42,8 +42,8 @@ const PatientLogs = () => {
     try {
       if (!date) return;
       let apiUrl = selectedButton === "Consultation"
-        ? `https://uhs-backend.onrender.com//api/AD/getAppointmentByDate?date=${date}`
-        : `https://uhs-backend.onrender.com//api/AD/getAdHocByDate?date=${date}`;
+        ? `https://uhs-backend.onrender.com/api/AD/getAppointmentByDate?date=${date}`
+        : `https://uhs-backend.onrender.com/api/AD/getAdHocByDate?date=${date}`;
 
       const resp = await axios.get(apiUrl, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },

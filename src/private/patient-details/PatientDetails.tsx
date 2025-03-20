@@ -66,10 +66,10 @@ const PatientDetails = () => {
     const fetchData = async () => {
       try {
         const [patientResp, medResp] = await Promise.all([
-          axios.get("https://uhs-backend.onrender.com//api/doctor/getPatient", {
+          axios.get("https://uhs-backend.onrender.com/api/doctor/getPatient", {
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
           }),
-          axios.get("https://uhs-backend.onrender.com//api/doctor/stock/available", {
+          axios.get("https://uhs-backend.onrender.com/api/doctor/stock/available", {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
               "X-Latitude": localStorage.getItem("latitude"),
@@ -90,7 +90,7 @@ const PatientDetails = () => {
           allergies: response.medicalDetails.allergies,
           reason: response.reason,
           email: response.patient.email,
-          imageUrl: `https://uhs-backend.onrender.com//${response.patient.imageUrl}`,
+          imageUrl: `https://uhs-backend.onrender.com/${response.patient.imageUrl}`,
           docName: response.docName,
           height: response.medicalDetails.height,
           weight: response.medicalDetails.weight,
@@ -128,7 +128,7 @@ const PatientDetails = () => {
       }));
 
       const resp = await axios.post(
-        "https://uhs-backend.onrender.com//api/doctor/prescription/submit",
+        "https://uhs-backend.onrender.com/api/doctor/prescription/submit",
         {
           diagnosis,
           dietaryRemarks: dietary,
@@ -155,7 +155,7 @@ const PatientDetails = () => {
   const handleRelease = async () => {
     try {
       const resp = await axios.get(
-        "https://uhs-backend.onrender.com//api/doctor/releasePatient",
+        "https://uhs-backend.onrender.com/api/doctor/releasePatient",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
