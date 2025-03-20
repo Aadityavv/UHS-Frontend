@@ -555,7 +555,7 @@ const PatientList = () => {
 
       {!loading && filteredPatients.length === 0 && (
         <div className="text-center py-12 text-gray-500">
-          No patients found matching your search
+          No patients found matching your search.
         </div>
       )}
     </div>
