@@ -71,9 +71,9 @@ const PatientList = () => {
       };
 
       const [pendingRes, assignedRes, appointedRes] = await Promise.all([
-        axios.get("https://uhs-backend.onrender.com/api/AD/getPatientQueue", { headers }),
-        axios.get("https://uhs-backend.onrender.com/api/AD/getAssignedPatient", { headers }),
-        axios.get("https://uhs-backend.onrender.com/api/AD/getCompletedQueue", { headers }),
+        axios.get("http://localhost:8081/api/AD/getPatientQueue", { headers }),
+        axios.get("http://localhost:8081/api/AD/getAssignedPatient", { headers }),
+        axios.get("http://localhost:8081/api/AD/getCompletedQueue", { headers }),
       ]);
 
       const combinePatients = [
@@ -105,6 +105,10 @@ const PatientList = () => {
         })),
       ];
 
+      console.log("Pending Patients:", pendingRes.data);
+      console.log("Assigned Patients:", assignedRes.data);
+      console.log("Appointed Patients:", appointedRes.data);
+
       setPatients(combinePatients);
       setFilteredPatients(combinePatients);
     } catch (error) {
@@ -112,20 +116,21 @@ const PatientList = () => {
     } finally {
       setLoading(false);
     }
+
   };
 
   useEffect(() => {
     fetchAllPatients();
   }, []);
+  
 
   useEffect(() => {
-    const filtered = patients.filter((p) =>
-      Object.values(p).some((value) =>
-        value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      )
+    const filtered = patients.filter((p) => 
+      p.name?.toLowerCase().includes(searchQuery.toLowerCase()) 
     );
     setFilteredPatients(filtered);
   }, [searchQuery, patients]);
+
 
   const fetchAvailableDoctors = async () => {
     try {
@@ -135,31 +140,22 @@ const PatientList = () => {
         "X-Latitude": localStorage.getItem("latitude"),
         "X-Longitude": localStorage.getItem("longitude"),
       };
-  
+
       const response = await axios.get(
-        "https://uhs-backend.onrender.com/api/AD/getAvailableDoctors",
+        "http://localhost:8081/api/AD/getAvailableDoctors",
         { headers }
       );
-  
-      const availableDoctors = response.data.map((d: any) => ({
-        id: d.doctorId.toString(),
-        name: d.name,
-      }));
-  
-      setDoctors(availableDoctors);
-  
-      if (availableDoctors.length === 0) {
-        toast({
-          variant: "destructive",
-          title: "No Doctors Available",
-          description: "Currently, no doctors are available for appointment.",
-        });
-      }
+
+      setDoctors(
+        response.data.map((d: any) => ({
+          id: d.doctorId.toString(),
+          name: d.name,
+        }))
+      );
     } catch (error) {
       handleError(error, "Error fetching doctors");
     }
   };
-  
 
   const handleAction = async (action: string, email?: string) => {
     if (!email) return;
@@ -183,7 +179,7 @@ const PatientList = () => {
         if (temperature < 90 || temperature > 110) throw new Error("Temperature out of range");
 
         await axios.post(
-          "https://uhs-backend.onrender.com/api/AD/submitAppointment",
+          "http://localhost:8081/api/AD/submitAppointment",
           {
             weight: weight,
             temperature: temperature,
@@ -195,7 +191,7 @@ const PatientList = () => {
       } else if (action === "reassign") {
         const modifiedEmail = encodeEmail(email);
         await axios.post(
-          "https://uhs-backend.onrender.com/api/AD/reassign",
+          "http://localhost:8081/api/AD/reassign",
           {
             patientEmail: modifiedEmail,
             doctorEmail: dialogData.doctorEmail,
@@ -205,7 +201,7 @@ const PatientList = () => {
       } else if (action === "reject") {
         const modifiedEmail = encodeEmail(email);
         await axios.get(
-          `https://uhs-backend.onrender.com/api/AD/rejectAppointment?email=${modifiedEmail}`,
+          `http://localhost:8081/api/AD/rejectAppointment?email=${modifiedEmail}`,
           { headers }
         );
       }
@@ -230,7 +226,7 @@ const PatientList = () => {
       };
 
       const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/AD/completeAppointment/${modifiedEmail}`,
+        `http://localhost:8081/api/AD/completeAppointment/${modifiedEmail}`,
         { headers }
       );
 
@@ -255,7 +251,7 @@ const PatientList = () => {
       };
 
       const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/AD/rejectAppointment?email=${modifiedEmail}`,
+        `http://localhost:8081/api/AD/rejectAppointment?email=${modifiedEmail}`,
         { headers }
       );
 
@@ -333,122 +329,117 @@ const PatientList = () => {
                   </span>
                 </TableCell>
                 <TableCell className="space-x-2 flex justify-end">
-  {patient.status === "Pending" && (
-    <>
-      {/* Dedicated Reject Button */}
-      <Button
-        variant="destructive"
-        size="sm"
-        onClick={() => handleAction("reject", patient.email)}
-        disabled={submitting}
-      >
-        Reject
-      </Button>
+                  {patient.status === "Pending" && (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            if (patient.email) {
+                              setCurrentPatientEmail(patient.email);
+                              fetchAvailableDoctors();
+                            }
+                          }}
+                        >
+                          <Stethoscope className="mr-2 h-4 w-4" /> Assign
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Assign Doctor</DialogTitle>
+                          <DialogDescription>
+                            Assign a doctor to {patient.name}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            handleAction("assign", patient.email);
+                          }}
+                          className="space-y-4"
+                        >
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium">
+                              Select Doctor *
+                            </label>
+                            <select
+                              className="w-full p-2 border rounded-md"
+                              value={dialogData.pref_doc}
+                              onChange={(e) =>
+                                setDialogData({
+                                  ...dialogData,
+                                  pref_doc: e.target.value,
+                                })
+                              }
+                              required
+                            >
+                              <option value="">Choose a doctor</option>
+                              {doctors.map((doctor) => (
+                                <option key={doctor.id} value={doctor.id}>
+                                  {doctor.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
 
-      {/* Assign Button and Dialog */}
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              if (patient.email) {
-                setCurrentPatientEmail(patient.email);
-                fetchAvailableDoctors();
-              }
-            }}
-          >
-            <Stethoscope className="mr-2 h-4 w-4" /> Assign
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Assign Doctor</DialogTitle>
-            <DialogDescription>
-              Assign a doctor to {patient.name}
-            </DialogDescription>
-          </DialogHeader>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleAction("assign", patient.email);
-            }}
-            className="space-y-4"
-          >
-            <div className="space-y-2">
-              <label className="block text-sm font-medium">
-                Select Doctor *
-              </label>
-              <select
-                className="w-full p-2 border rounded-md"
-                value={dialogData.pref_doc}
-                onChange={(e) =>
-                  setDialogData({
-                    ...dialogData,
-                    pref_doc: e.target.value,
-                  })
-                }
-                required
-              >
-                <option value="">Choose a doctor</option>
-                {doctors.map((doctor) => (
-                  <option key={doctor.id} value={doctor.id}>
-                    {doctor.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <label className="block text-sm font-medium">
+                                Temperature (°F) *
+                              </label>
+                              <Input
+                                type="number"
+                                min="90"
+                                max="110"
+                                step="0.1"
+                                value={dialogData.temperature}
+                                onChange={(e) =>
+                                  setDialogData({
+                                    ...dialogData,
+                                    temperature: e.target.value,
+                                  })
+                                }
+                                required
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="block text-sm font-medium">
+                                Weight (kg) *
+                              </label>
+                              <Input
+                                type="number"
+                                min="0"
+                                step="0.1"
+                                value={dialogData.weight}
+                                onChange={(e) =>
+                                  setDialogData({
+                                    ...dialogData,
+                                    weight: e.target.value,
+                                  })
+                                }
+                                required
+                              />
+                            </div>
+                          </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium">
-                  Temperature (°F) *
-                </label>
-                <Input
-                  type="number"
-                  min="90"
-                  max="110"
-                  step="0.1"
-                  value={dialogData.temperature}
-                  onChange={(e) =>
-                    setDialogData({
-                      ...dialogData,
-                      temperature: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="block text-sm font-medium">
-                  Weight (kg) *
-                </label>
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  value={dialogData.weight}
-                  onChange={(e) =>
-                    setDialogData({
-                      ...dialogData,
-                      weight: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <Button type="submit" disabled={submitting}>
-                {submitting ? "Submitting..." : "Confirm"}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </>
-  )}
+                          <div className="flex justify-between">
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              onClick={() => handleAction("reject", patient.email)}
+                              disabled={submitting}
+                            >
+                              Reject
+                            </Button>
+                            <Button type="submit" disabled={submitting}>
+                              {submitting ? "Submitting..." : "Confirm"}
+                            </Button>
+                          </div>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  )}
 
                   {/* {patient.status === "Assigned" && (
                     <Dialog>
@@ -555,7 +546,7 @@ const PatientList = () => {
 
       {!loading && filteredPatients.length === 0 && (
         <div className="text-center py-12 text-gray-500">
-          No patients found matching your search.
+          No patients found matching your search
         </div>
       )}
     </div>
