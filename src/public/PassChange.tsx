@@ -33,7 +33,7 @@ const PassChange = () => {
         
         try{
 
-            const response = await axios.post(`http://localhost:8081/api/auth/passwordChange?code=${code}&role=${role}`,input)
+            const response = await axios.post(`https://uhs-backend.onrender.com//api/auth/passwordChange?code=${code}&role=${role}`,input)
             console.log(response.status)
             if(response.status === 200){
                 toast({
