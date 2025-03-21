@@ -26,9 +26,9 @@ import { Eye, EyeOff, MapPin, Stethoscope, User, HeartPulse } from "lucide-react
 import { motion } from "framer-motion";
 
 const API_URLS = {
-  patient: "http://localhost:8081/api/auth/patient/signin",
-  doctor: "http://localhost:8081/api/auth/doctor/signin",
-  nursing_assistant: "http://localhost:8081/api/auth/ad/signin",
+  patient: "https://uhs-backend.onrender.com/api/auth/patient/signin",
+  doctor: "https://uhs-backend.onrender.com/api/auth/doctor/signin",
+  nursing_assistant: "https://uhs-backend.onrender.com/api/auth/ad/signin",
 };
 
 const DASHBOARD_ROUTES = {
@@ -116,7 +116,7 @@ const SignIn = () => {
   
         try {
           const profileRes = await axios.get(
-            "http://localhost:8081/api/patient/getAllDetails",
+            "https://uhs-backend.onrender.com/api/patient/getAllDetails",
             {
               headers: { Authorization: `Bearer ${token}` },
             }
@@ -176,7 +176,7 @@ const SignIn = () => {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const resp = await axios.get("http://localhost:8081/locations");
+        const resp = await axios.get("https://uhs-backend.onrender.com/locations");
   
         // Access the array correctly
         const locations = resp.data._embedded?.locations;
