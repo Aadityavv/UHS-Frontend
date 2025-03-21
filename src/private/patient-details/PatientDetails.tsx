@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { ToastAction } from "@/components/ui/toast";
@@ -24,7 +24,7 @@ const PatientDetails = () => {
   const [selectedMedicine, setSelectedMedicine] = useState<Record<number, string>>({});
   const [searchQuery, setSearchQuery] = useState<string>("");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [, setIsMobile] = useState(window.innerWidth <= 768);
 
   // Date formatting function
   const formatDate = (dateString: string) => {
@@ -268,12 +268,6 @@ const PatientDetails = () => {
   };
 
   // Helper component for detail items
-  const DetailItem = ({ label, value }: { label: string; value: string | number }) => (
-    <div className="flex flex-col">
-      <label className="text-sm font-medium text-indigo-600">{label}</label>
-      <p className="text-sm bg-indigo-50 p-2 rounded-md">{value || "-"}</p>
-    </div>
-  );
 
   return (
     <>
