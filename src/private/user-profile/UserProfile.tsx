@@ -73,23 +73,23 @@ const UserProfile = () => {
     const fetchUserDetails = async () => {
       try {
         const res = await axios.get(
-          "https://uhs-backend.onrender.com/api/patient/getAllDetails",
+          "http://localhost:8081/api/patient/getAllDetails",
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
         const data = res.data;
         updateFormValues(data);
-        setImg(`https://uhs-backend.onrender.com/api//${data.imageUrl}`);
+        setImg(`http://localhost:8081/api//${data.imageUrl}`);
       } catch (error: any) {
         if (error.response?.status === 404) {
           try {
             const resBackup = await axios.get(
-              "https://uhs-backend.onrender.com/api/patient/",
+              "http://localhost:8081/api/patient/",
               { headers: { Authorization: `Bearer ${token}` } }
             );
             const dataBackup = resBackup.data;
             updateFormValues(dataBackup);
-            setImg(`https://uhs-backend.onrender.com/api//${dataBackup.imageUrl}`);
+            setImg(`http://localhost:8081/api//${dataBackup.imageUrl}`);
             toast({
               title: "Required!",
               description: "Set Height, Weight, Family History, Medical History, Allergies, Address Type, and Current Address.",
@@ -124,8 +124,9 @@ const UserProfile = () => {
       setValue("program", data.program || "");
       setValue("dateOfBirth", dob || "");
       setValue("emergencyContact", data.emergencyContact || "");
-      setValue("height", data.height ?? "");
-      setValue("weight", data.weight ?? "");
+      setValue("height", data.height !== undefined && data.height !== null ? String(data.height) : "");
+      setValue("weight", data.weight !== undefined && data.weight !== null ? String(data.weight) : "");
+
 
       setValue("gender", data.gender || "");
       setValue("bloodGroup", data.bloodGroup || "");
@@ -146,7 +147,7 @@ const UserProfile = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        "https://uhs-backend.onrender.com/api/patient/update",
+        "http://localhost:8081/api/patient/update",
         {
           currentAddress: data.currentAddress,
           medicalHistory: data.medicalHistory,
@@ -173,6 +174,7 @@ const UserProfile = () => {
       });
     }
   };
+  
 
   const handleCancel = () => navigate("/patient-dashboard");
 

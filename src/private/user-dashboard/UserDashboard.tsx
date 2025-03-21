@@ -78,7 +78,7 @@ const UserDashboard = () => {
 
     try {
       const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/medical-details/email/${userDetails.email}`,
+        `http://localhost:8081/api/medical-details/email/${userDetails.email}`,
         // {
         //   headers: {
         //     Authorization: `Bearer ${token}`
@@ -130,7 +130,7 @@ const UserDashboard = () => {
 
     try {
       const response = await axios.get<Medication[]>(
-        `https://uhs-backend.onrender.com/api/patient/medications/active/${encodedEmail}`,
+        `http://localhost:8081/api/patient/medications/active/${encodedEmail}`,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -172,42 +172,70 @@ const UserDashboard = () => {
     const fetchData = async () => {
       setLoading(true);
       setLoadingMedications(true);
-
+    
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/");
+        return;
+      }
+    
+      const headers = { Authorization: `Bearer ${token}` };
+    
       try {
-        const [userRes, statusRes, lastAppointmentRes] = await Promise.all([
-          axios.get("https://uhs-backend.onrender.com/api/patient/", {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          axios.get("https://uhs-backend.onrender.com/api/patient/getStatus", {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          axios.get("https://uhs-backend.onrender.com/api/patient/lastAppointmentDate", {
-            headers: { Authorization: `Bearer ${token}` }
-          })
+        const [userRes, statusRes, lastAppointmentRes] = await Promise.allSettled([
+          axios.get("http://localhost:8081/api/patient/", { headers }),
+          axios.get("http://localhost:8081/api/patient/getStatus", { headers }),
+          axios.get("http://localhost:8081/api/patient/lastAppointmentDate", { headers }),
         ]);
+    
+        // Handle User Details ✅
+        if (userRes.status === "fulfilled" && userRes.value?.data) {
+          const userData = userRes.value.data;
+          setUserDetails(userData);
+        } else if (userRes.status === "rejected") {
+          const errorReason = (userRes as PromiseRejectedResult).reason;
+          console.error("Failed to fetch user details:", errorReason);
+        
+          toast({
+            title: "Error",
+            description: "Failed to fetch user details.",
+            variant: "destructive",
+            action: <ToastAction altText="Try again">Try again</ToastAction>,
+          });
 
-        const userData = userRes.data;
-
-        setUserDetails(userData);
-        setStatus({
-          appointmentStatus: statusRes.data.Appointment ? "Queued" : "NA",
-          doctorName: statusRes.data.Doctor ? statusRes.data.DoctorName : "Not Appointed",
-          tokenNo: statusRes.data.TokenNo || "N/A",
-        });
-
-        if (lastAppointmentRes?.data) {
-          const formattedDate = dayjs(lastAppointmentRes.data).format("DD/MM/YYYY");
+          return; // if no user data, we can't continue
+        }
+    
+        // Handle Status ✅
+        if (statusRes.status === "fulfilled" && statusRes.value?.data) {
+          const data = statusRes.value.data;
+          setStatus({
+            appointmentStatus: data.Appointment ? "Queued" : "NA",
+            doctorName: data.Doctor ? data.DoctorName : "Not Appointed",
+            tokenNo: data.TokenNo || "N/A",
+          });
+        } else {
+          console.warn("No appointment status available (might be no active appointment).");
+          setStatus({
+            appointmentStatus: "NA",
+            doctorName: "Not Appointed",
+            tokenNo: "N/A",
+          });
+        }
+    
+        // Handle Last Appointment ✅
+        if (lastAppointmentRes.status === "fulfilled" && lastAppointmentRes.value?.data) {
+          const formattedDate = dayjs(lastAppointmentRes.value.data).format("DD/MM/YYYY");
           setLastAppointmentDate(formattedDate);
         } else {
+          console.warn("No last appointment date found.");
           setLastAppointmentDate(null);
         }
-
-        await Promise.all([
-          fetchActiveMedications(),
-          fetchMedicalDetails()
-        ]);
-
-      } catch (error: unknown) {
+    
+        // Additional data fetching
+        await Promise.all([fetchActiveMedications(), fetchMedicalDetails()]);
+    
+      } catch (error) {
         console.error("Dashboard data fetch error:", error);
         toast({
           title: "Error",
@@ -220,6 +248,7 @@ const UserDashboard = () => {
         setLoadingMedications(false);
       }
     };
+    
 
     fetchData();
   }, [navigate, toast, fetchActiveMedications]);
