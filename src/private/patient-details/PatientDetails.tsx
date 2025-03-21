@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { ToastAction } from "@/components/ui/toast";
@@ -15,8 +15,8 @@ const PatientDetails = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [diagnosis, setDiagnosis] = useState<string>("");
-  const [dietary, setDietary] = useState<string>("");  
-  const [tests, setTests] = useState<string>("");      
+  const [dietary, setDietary] = useState<string>(""); 
+  const [tests, setTests] = useState<string>(""); 
   const [medLst, setMedLst] = useState<Record<number, string>>({});
   const [rows, setRows] = useState([{ id: 1 }]);
   const [ndata, setNdata] = useState<any>({});
@@ -24,7 +24,7 @@ const PatientDetails = () => {
   const [selectedMedicine, setSelectedMedicine] = useState<Record<number, string>>({});
   const [searchQuery, setSearchQuery] = useState<string>("");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
-  const [, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   // Date formatting function
   const formatDate = (dateString: string) => {
@@ -81,10 +81,10 @@ const PatientDetails = () => {
     const fetchData = async () => {
       try {
         const [patientResp, medResp] = await Promise.all([
-          axios.get("http://localhost:8081/api/doctor/getPatient", {
+          axios.get("https://uhs-backend.onrender.com/api/doctor/getPatient", {
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
           }),
-          axios.get("http://localhost:8081/api/doctor/stock/available", {
+          axios.get("https://uhs-backend.onrender.com/api/doctor/stock/available", {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
               "X-Latitude": localStorage.getItem("latitude"),
@@ -105,7 +105,7 @@ const PatientDetails = () => {
           allergies: response.medicalDetails.allergies,
           reason: response.reason,
           email: response.patient.email,
-          imageUrl: `http://localhost:8081/${response.patient.imageUrl}`,
+          imageUrl: `https://uhs-backend.onrender.com/${response.patient.imageUrl}`,
           docName: response.docName,
           height: response.medicalDetails.height,
           weight: response.medicalDetails.weight,
@@ -142,16 +142,36 @@ const PatientDetails = () => {
         });
         return;
       }
-  
+
+          if (!dietary.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Validation Error",
+        description: "Recommendations are required",
+        action: <ToastAction altText="Understand">OK</ToastAction>,
+      });
+      return;
+    }
+
+    if (!tests.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Validation Error",
+        description: "Required tests are needed",
+        action: <ToastAction altText="Understand">OK</ToastAction>,
+      });
+      return;
+    }
+
       const medAry = rows
         .map((_, index) => {
           const medicine = medLst?.[index];
-          if (!medicine) return null; // Skip if no medicine is selected
-  
+          if (!medicine) return null;
+
           const duration = parseInt(
             (document.querySelector(`.duration-${index}`) as HTMLInputElement)?.value || "0"
           );
-  
+
           if (duration < 1) {
             toast({
               variant: "destructive",
@@ -161,7 +181,7 @@ const PatientDetails = () => {
             });
             throw new Error("Validation failed");
           }
-  
+
           return {
             medicine,
             dosageMorning: parseFloat(
@@ -177,28 +197,22 @@ const PatientDetails = () => {
             suggestion: (document.querySelector(`.suggestion-${index}`) as HTMLInputElement)?.value || "",
           };
         })
-        .filter(Boolean); // Remove null values
-  
-      // Ensure testNeeded and dietaryRemarks are not empty
-      const dietaryRemarks = dietary.trim() || "No recommendations provided.";
-      const testNeeded = tests.trim() || "No tests required.";
-  
-      // Submit the prescription
+        .filter(Boolean);
+
       const resp = await axios.post(
-        "http://localhost:8081/api/doctor/prescription/submit",
+        "https://uhs-backend.onrender.com/api/doctor/prescription/submit",
         {
-          diagnosis: diagnosis.trim(), // Ensure diagnosis is non-empty
-          dietaryRemarks, // Default value if empty
-          testNeeded, // Default value if empty
-          meds: medAry, // Can be an empty array
+          diagnosis,
+          dietaryRemarks: dietary,
+          testNeeded: tests,
+          meds: medAry,
         },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
-  
-      // Show success message and navigate
-      toast({ title: "Success", description: resp.data.message || "Prescription submitted successfully." });
+
+      toast({ title: "Success", description: resp.data });
       navigate("/doctor-dashboard");
     } catch (err: any) {
       if (err.message !== "Validation failed") {
@@ -211,10 +225,11 @@ const PatientDetails = () => {
       }
     }
   };
+
   const handleRelease = async () => {
     try {
       const resp = await axios.get(
-        "http://localhost:8081/api/doctor/releasePatient",
+        "https://uhs-backend.onrender.com/api/doctor/releasePatient",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -253,12 +268,12 @@ const PatientDetails = () => {
   };
 
   // Helper component for detail items
-  // const DetailItem = ({ label, value }: { label: string; value: string | number }) => (
-  //   <div className="flex flex-col">
-  //     <label className="text-sm font-medium text-indigo-600">{label}</label>
-  //     <p className="text-sm bg-indigo-50 p-2 rounded-md">{value || "-"}</p>
-  //   </div>
-  // );
+  const DetailItem = ({ label, value }: { label: string; value: string | number }) => (
+    <div className="flex flex-col">
+      <label className="text-sm font-medium text-indigo-600">{label}</label>
+      <p className="text-sm bg-indigo-50 p-2 rounded-md">{value || "-"}</p>
+    </div>
+  );
 
   return (
     <>
@@ -550,7 +565,7 @@ const PatientDetails = () => {
                 className="bg-slate-50 border-slate-200 h-32"
                 placeholder="Enter recommendations..."
                 value={dietary}
-                onChange={(e) => setDietary(e.target.value || "")}
+                onChange={(e) => setDietary(e.target.value)}
               />
             </div>
 
@@ -563,7 +578,7 @@ const PatientDetails = () => {
                 className="bg-slate-50 border-slate-200 h-32"
                 placeholder="Enter required tests..."
                 value={tests}
-                onChange={(e) => setTests(e.target.value || "")}
+                onChange={(e) => setTests(e.target.value)}
               />
             </div>
           </motion.div>
