@@ -15,8 +15,8 @@ const PatientDetails = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [diagnosis, setDiagnosis] = useState<string>("");
-  const [dietary, setDietary] = useState<string>("");
-  const [tests, setTests] = useState<string>("");
+  const [dietary, setDietary] = useState<string>("");  
+  const [tests, setTests] = useState<string>("");      
   const [medLst, setMedLst] = useState<Record<number, string>>({});
   const [rows, setRows] = useState([{ id: 1 }]);
   const [ndata, setNdata] = useState<any>({});
@@ -81,10 +81,10 @@ const PatientDetails = () => {
     const fetchData = async () => {
       try {
         const [patientResp, medResp] = await Promise.all([
-          axios.get("https://uhs-backend.onrender.com/api/doctor/getPatient", {
+          axios.get("http://localhost:8081/api/doctor/getPatient", {
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
           }),
-          axios.get("https://uhs-backend.onrender.com/api/doctor/stock/available", {
+          axios.get("http://localhost:8081/api/doctor/stock/available", {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
               "X-Latitude": localStorage.getItem("latitude"),
@@ -105,7 +105,7 @@ const PatientDetails = () => {
           allergies: response.medicalDetails.allergies,
           reason: response.reason,
           email: response.patient.email,
-          imageUrl: `https://uhs-backend.onrender.com/${response.patient.imageUrl}`,
+          imageUrl: `http://localhost:8081/${response.patient.imageUrl}`,
           docName: response.docName,
           height: response.medicalDetails.height,
           weight: response.medicalDetails.weight,
@@ -133,44 +133,88 @@ const PatientDetails = () => {
 
   const handleSubmit = async () => {
     try {
-      const medAry = rows.map((_, index) => ({
-        medicine: medLst?.[index],
-        dosageMorning: parseFloat((document.querySelector(`.dosage-morning-${index}`) as HTMLInputElement)?.value || "0"),
-        dosageAfternoon: parseFloat((document.querySelector(`.dosage-afternoon-${index}`) as HTMLInputElement)?.value || "0"),
-        dosageEvening: parseFloat((document.querySelector(`.dosage-evening-${index}`) as HTMLInputElement)?.value || "0"),
-        duration: parseInt((document.querySelector(`.duration-${index}`) as HTMLInputElement)?.value || "0"),
-        suggestion: (document.querySelector(`.suggestion-${index}`) as HTMLInputElement)?.value || "",
-      }));
-
+      if (!diagnosis.trim()) {
+        toast({
+          variant: "destructive",
+          title: "Validation Error",
+          description: "Diagnosis is required",
+          action: <ToastAction altText="Understand">OK</ToastAction>,
+        });
+        return;
+      }
+  
+      const medAry = rows
+        .map((_, index) => {
+          const medicine = medLst?.[index];
+          if (!medicine) return null; // Skip if no medicine is selected
+  
+          const duration = parseInt(
+            (document.querySelector(`.duration-${index}`) as HTMLInputElement)?.value || "0"
+          );
+  
+          if (duration < 1) {
+            toast({
+              variant: "destructive",
+              title: "Validation Error",
+              description: `Duration must be at least 1 day for ${medicine}`,
+              action: <ToastAction altText="Understand">OK</ToastAction>,
+            });
+            throw new Error("Validation failed");
+          }
+  
+          return {
+            medicine,
+            dosageMorning: parseFloat(
+              (document.querySelector(`.dosage-morning-${index}`) as HTMLInputElement)?.value || "0"
+            ),
+            dosageAfternoon: parseFloat(
+              (document.querySelector(`.dosage-afternoon-${index}`) as HTMLInputElement)?.value || "0"
+            ),
+            dosageEvening: parseFloat(
+              (document.querySelector(`.dosage-evening-${index}`) as HTMLInputElement)?.value || "0"
+            ),
+            duration,
+            suggestion: (document.querySelector(`.suggestion-${index}`) as HTMLInputElement)?.value || "",
+          };
+        })
+        .filter(Boolean); // Remove null values
+  
+      // Ensure testNeeded and dietaryRemarks are not empty
+      const dietaryRemarks = dietary.trim() || "No recommendations provided.";
+      const testNeeded = tests.trim() || "No tests required.";
+  
+      // Submit the prescription
       const resp = await axios.post(
-        "https://uhs-backend.onrender.com/api/doctor/prescription/submit",
+        "http://localhost:8081/api/doctor/prescription/submit",
         {
-          diagnosis,
-          dietaryRemarks: dietary,
-          testNeeded: tests,
-          meds: medAry,
+          diagnosis: diagnosis.trim(), // Ensure diagnosis is non-empty
+          dietaryRemarks, // Default value if empty
+          testNeeded, // Default value if empty
+          meds: medAry, // Can be an empty array
         },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
-
-      toast({ title: "Success", description: resp.data });
+  
+      // Show success message and navigate
+      toast({ title: "Success", description: resp.data.message || "Prescription submitted successfully." });
       navigate("/doctor-dashboard");
     } catch (err: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: err.response?.data?.message || "Failed to submit prescription.",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
-      });
+      if (err.message !== "Validation failed") {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: err.response?.data?.message || "Failed to submit prescription.",
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
+        });
+      }
     }
   };
-
   const handleRelease = async () => {
     try {
       const resp = await axios.get(
-        "https://uhs-backend.onrender.com/api/doctor/releasePatient",
+        "http://localhost:8081/api/doctor/releasePatient",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -209,6 +253,12 @@ const PatientDetails = () => {
   };
 
   // Helper component for detail items
+  // const DetailItem = ({ label, value }: { label: string; value: string | number }) => (
+  //   <div className="flex flex-col">
+  //     <label className="text-sm font-medium text-indigo-600">{label}</label>
+  //     <p className="text-sm bg-indigo-50 p-2 rounded-md">{value || "-"}</p>
+  //   </div>
+  // );
 
   return (
     <>
@@ -229,7 +279,7 @@ const PatientDetails = () => {
               <div className="flex items-center gap-4">
                 <img
                   className="w-24 h-24 rounded-xl border-2 border-indigo-100 object-cover"
-                  src={ "/default-user.jpg"}
+                  src={ndata.imageUrl || "/default-user.jpg"}
                   alt="Patient"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = "/default-user.jpg";
@@ -237,6 +287,7 @@ const PatientDetails = () => {
                 />
                 <div>
                   <h1 className="text-2xl font-bold text-indigo-800">{ndata.name}</h1>
+                  <p className="text-slate-500">University Health Services</p>
                 </div>
               </div>
               <div className="text-center md:text-right">
@@ -430,7 +481,7 @@ const PatientDetails = () => {
                           min="0"
                           step="0.5"
                           placeholder="0"
-                          className="text-center dosage-morning-${index}"
+                          className={`text-center dosage-morning-${index}`}
                         />
                       </div>
                       <div>
@@ -440,7 +491,7 @@ const PatientDetails = () => {
                           min="0"
                           step="0.5"
                           placeholder="0"
-                          className="text-center dosage-afternoon-${index}"
+                          className={`text-center dosage-afternoon-${index}`}
                         />
                       </div>
                       <div>
@@ -450,7 +501,7 @@ const PatientDetails = () => {
                           min="0"
                           step="0.5"
                           placeholder="0"
-                          className="text-center dosage-evening-${index}"
+                          className={`text-center dosage-evening-${index}`}
                         />
                       </div>
                     </div>
@@ -462,13 +513,13 @@ const PatientDetails = () => {
                         min="0"
                         step="1"
                         placeholder="0"
-                        className="duration-${index}"
+                        className={`duration-${index}`}
                       />
                     </div>
 
                     <div className="md:col-span-2">
                       <label className="text-sm font-medium text-slate-600">Notes</label>
-                      <Textarea className="resize-none suggestion-${index}" />
+                      <Textarea className={`resize-none suggestion-${index}`} />
                     </div>
                   </div>
                   <div className="flex justify-end mt-4">
@@ -498,7 +549,8 @@ const PatientDetails = () => {
               <Textarea
                 className="bg-slate-50 border-slate-200 h-32"
                 placeholder="Enter recommendations..."
-                onChange={(e) => setDietary(e.target.value)}
+                value={dietary}
+                onChange={(e) => setDietary(e.target.value || "")}
               />
             </div>
 
@@ -510,7 +562,8 @@ const PatientDetails = () => {
               <Textarea
                 className="bg-slate-50 border-slate-200 h-32"
                 placeholder="Enter required tests..."
-                onChange={(e) => setTests(e.target.value)}
+                value={tests}
+                onChange={(e) => setTests(e.target.value || "")}
               />
             </div>
           </motion.div>
