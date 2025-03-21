@@ -93,7 +93,7 @@ const MedicineStock = () => {
         console.log(editStock);
 
         await axios.post(
-          `https://uhs-backend.onrender.com/api/${role}/stock/editStock`,
+          `http://localhost:8081/api/${role}/stock/editStock`,
           editStock,
           {
             headers: {
@@ -133,7 +133,7 @@ const MedicineStock = () => {
       if (role === "ad") role = role.toUpperCase();
 
       const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/${role}/stock/`,
+        `http://localhost:8081/api/${role}/stock/`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -156,7 +156,7 @@ const MedicineStock = () => {
 
   const fetchLocations = async () => {
     try {
-      const resp = await axios.get("https://uhs-backend.onrender.com/api/location/");
+      const resp = await axios.get("http://localhost:8081/api/location/");
       if (resp.status === 200) {
         const data = resp.data;
         setLocations(data);
@@ -191,7 +191,7 @@ const MedicineStock = () => {
       if (role === "ad") role = role.toUpperCase();
 
       const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/${role}/export`,
+        `http://localhost:8081/api/${role}/export`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -285,7 +285,7 @@ const MedicineStock = () => {
         };
 
         await axios.post(
-          `https://uhs-backend.onrender.com/api/${role}/stock/addStock`,
+          `http://localhost:8081/api/${role}/stock/addStock`,
           formattedNewStock,
           {
             headers: {
@@ -322,7 +322,7 @@ const MedicineStock = () => {
     for (const batchNumber of selectedStocks) {
       try {
         await axios.delete(
-          `https://uhs-backend.onrender.com/api/${role}/stock/${batchNumber}`,
+          `http://localhost:8081/api/${role}/stock/${batchNumber}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

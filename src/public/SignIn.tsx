@@ -26,9 +26,9 @@ import { Eye, EyeOff, MapPin, Stethoscope, User, HeartPulse } from "lucide-react
 import { motion } from "framer-motion";
 
 const API_URLS = {
-  patient: "https://uhs-backend.onrender.com/api/auth/patient/signin",
-  doctor: "https://uhs-backend.onrender.com/api/auth/doctor/signin",
-  nursing_assistant: "https://uhs-backend.onrender.com/api/auth/ad/signin",
+  patient: "http://localhost:8081/api/auth/patient/signin",
+  doctor: "http://localhost:8081/api/auth/doctor/signin",
+  nursing_assistant: "http://localhost:8081/api/auth/ad/signin",
 };
 
 const DASHBOARD_ROUTES = {
@@ -83,10 +83,9 @@ const SignIn = () => {
         action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
-
+  
     const apiUrl = API_URLS[role as keyof typeof API_URLS];
-    const dashboardRoute = DASHBOARD_ROUTES[role as keyof typeof DASHBOARD_ROUTES];
-
+  
     try {
       const headers =
         role === "nursing_assistant"
@@ -95,29 +94,75 @@ const SignIn = () => {
               "X-Longitude": location.longitude,
             }
           : {};
-
+  
       const response = await axios.post(apiUrl, input, { headers });
       const { token, email, roles } = response.data;
-
+  
+      // Save tokens and info
       localStorage.setItem("token", token);
       localStorage.setItem("email", email);
       localStorage.setItem("roles", roles[0].replace("ROLE_", "").toLowerCase());
       localStorage.setItem("longitude", location.longitude);
       localStorage.setItem("latitude", location.latitude);
-
+  
       toast({
         variant: "default",
         title: "Login Successful",
         description: `Welcome back, ${role.replace("_", " ")}!`,
       });
-
-      setTimeout(() => navigate(dashboardRoute), 1000);
+  
+      if (role === "patient") {
+        let userDetails = null;
+  
+        try {
+          const profileRes = await axios.get(
+            "http://localhost:8081/api/patient/getAllDetails",
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+  
+          userDetails = profileRes.data;
+        } catch (error: any) {
+          // ✅ Gracefully handle 404 (profile not found)
+          if (error.response?.status === 404) {
+            userDetails = null;
+          } else {
+            return toast({
+              variant: "destructive",
+              title: "Error fetching profile",
+              description: error.response?.data?.message || "An error occurred while fetching profile",
+              action: <ToastAction altText="Try again">Try again</ToastAction>,
+            });
+          }
+        }
+  
+        // ✅ Profile check
+        const incompleteProfile =
+          !userDetails ||
+          !userDetails.height ||
+          !userDetails.weight ||
+          !userDetails.medicalHistory ||
+          !userDetails.familyMedicalHistory ||
+          !userDetails.currentAddress ||
+          !userDetails.residenceType ||
+          !userDetails.allergies;
+  
+        if (incompleteProfile) {
+          setTimeout(() => navigate("/patient-profile"), 1000);
+        } else {
+          setTimeout(() => navigate("/patient-dashboard"), 1000);
+        }
+      } else {
+        const dashboardRoute = DASHBOARD_ROUTES[role as keyof typeof DASHBOARD_ROUTES];
+        setTimeout(() => navigate(dashboardRoute), 1000);
+      }
     } catch (error: any) {
       const message =
         error.response?.status === 401
           ? "Incorrect email or password. Please try again."
           : error.response?.data?.message || "An error occurred.";
-
+  
       toast({
         variant: "destructive",
         title: "Sign In Failed",
@@ -126,11 +171,12 @@ const SignIn = () => {
       });
     }
   };
+  
 
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const resp = await axios.get("https://uhs-backend.onrender.com/locations");
+        const resp = await axios.get("http://localhost:8081/locations");
   
         // Access the array correctly
         const locations = resp.data._embedded?.locations;
