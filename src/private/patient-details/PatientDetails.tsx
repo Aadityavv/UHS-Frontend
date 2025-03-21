@@ -237,7 +237,6 @@ const PatientDetails = () => {
                 />
                 <div>
                   <h1 className="text-2xl font-bold text-indigo-800">{ndata.name}</h1>
-                  <p className="text-slate-500">University Health Services</p>
                 </div>
               </div>
               <div className="text-center md:text-right">

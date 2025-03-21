@@ -216,130 +216,187 @@ const UserProfile = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 sm:p-6 lg:p-8">
       <Toaster />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Profile Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col lg:flex-row gap-8"
+          className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200"
         >
-          {/* Left Sidebar */}
-          <div className="w-full lg:w-1/4 space-y-6">
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
-            >
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="relative shrink-0">
               {loading ? (
-                <div className="space-y-4">
-                  <Skeleton variant="circular" width={96} height={96} className="mx-auto" />
-                  <Skeleton variant="text" width={150} height={24} className="mx-auto" />
-                  <Skeleton variant="text" width={200} height={16} className="mx-auto" />
-                </div>
+                <Skeleton variant="circular" width={112} height={112} />
               ) : (
-                <div className="flex flex-col items-center">
-                  <div className="relative">
-                    <img
-                      src={img || "/default-user.jpg"}
-                      // src="/default-user.jpg"
-                      alt="Profile"
-                      className="w-24 h-24 rounded-2xl object-cover border-4 border-white shadow-lg"
-                    />
-                    <div className="absolute -bottom-2 -right-2 bg-indigo-600 p-1.5 rounded-full">
-                      <User className="h-5 w-5 text-white" />
-                    </div>
+                <>
+                  <img
+                    src={img || "/default-user.jpg"}
+                    alt="Profile"
+                    className="w-28 h-28 rounded-2xl object-cover border-4 border-white shadow-xl"
+                  />
+                  <div className="absolute -bottom-2 -right-2 bg-blue-600 p-2 rounded-full shadow-md">
+                    <User className="h-5 w-5 text-white" />
                   </div>
-                  <h2 className="mt-4 text-xl font-bold text-gray-900">
-                    {watch("name")}
-                  </h2>
-                  <p className="text-sm text-gray-500">{watch("patientId")}</p>
-                </div>
+                </>
               )}
-            </motion.div>
+            </div>
+            <div className="text-center md:text-left space-y-2">
+              {loading ? (
+                <>
+                  <Skeleton variant="text" width={240} height={36} className="mx-auto md:mx-0" />
+                  <Skeleton variant="text" width={200} height={24} className="mx-auto md:mx-0" />
+                </>
+              ) : (
+                <>
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    {watch("name")}
+                  </h1>
+                  <p className="text-gray-600 text-lg flex items-center justify-center md:justify-start gap-2">
+                    <ClipboardList className="h-5 w-5 text-blue-600" />
+                    {watch("patientId")}
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+        </motion.div>
 
-            <motion.div
-              className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              <button
-                onClick={handleCancel}
-                className="w-full flex items-center justify-between p-4 rounded-xl bg-indigo-50 hover:bg-indigo-100 transition-colors"
-              >
-                <span className="text-indigo-700 font-medium">Go Back</span>
-                <AlertCircle className="h-5 w-5 text-indigo-700" />
-              </button>
-            </motion.div>
+        {/* Main Form */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+        >
+          {/* Personal Details Card */}
+          <div className="lg:col-span-2 space-y-8">
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                <User className="h-6 w-6 text-blue-600" />
+                Personal Information
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {formFields.slice(0, 6).map((field) => (
+                  <div key={field.name} className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <field.icon className="h-4 w-4 text-gray-500" />
+                      {field.label}
+                    </label>
+                    <input
+                      {...register(field.name)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
+                      disabled={loading || field.disabled}
+                    />
+                    {errors[field.name] && (
+                      <p className="text-sm text-red-600">
+                        {errors[field.name]?.message as string}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Medical Information Card */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                <Heart className="h-6 w-6 text-red-600" />
+                Medical Details
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {formFields.slice(6, 12).map((field) => (
+                  <div key={field.name} className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <field.icon className="h-4 w-4 text-gray-500" />
+                      {field.label}
+                    </label>
+                    {field.type === 'select' ? (
+                      <select
+                        {...register(field.name)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
+                      >
+                        {field.options?.map(option => (
+                          <option key={option} value={option}>{option}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        {...register(field.name)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
+                      />
+                    )}
+                    {errors[field.name] && (
+                      <p className="text-sm text-red-600">
+                        {errors[field.name]?.message as string}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
-          {/* Main Content */}
-          <div className="flex-1">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
-            >
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">Edit Profile</h3>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {formFields.map((field) => (
-                    <div
-                      key={field.name}
-                      className={field.type === "textarea" ? "col-span-2" : ""}
-                    >
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {field.label}
-                      </label>
-                      <div className="relative">
-                        {field.type === "select" ? (
-                          <select
-                            {...register(field.name)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            disabled={loading || field.disabled}
-                          >
-                            <option value="">Select {field.label}</option>
-                            {field.options?.map((option) => (
-                              <option key={option} value={option}>
-                                {option}
-                              </option>
-                            ))}
-                          </select>
-                        ) : field.type === "textarea" ? (
-                          <textarea
-                            {...register(field.name)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            disabled={loading}
-                            rows={4}
-                          />
-                        ) : (
-                          <input
-                            type="text"
-                            {...register(field.name)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            disabled={loading || field.disabled}
-                          />
-                        )}
-                        {errors[field.name] && (
-                          <p className="text-sm text-red-600 mt-1">
-                            {errors[field.name]?.message as string}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+          {/* Address Section */}
+          <div className="lg:col-span-1 space-y-8">
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                <MapPin className="h-6 w-6 text-green-600" />
+                Residence Details
+              </h2>
+              <div className="space-y-6">
+                {formFields.slice(12).map((field) => (
+                  <div key={field.name} className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <field.icon className="h-4 w-4 text-gray-500" />
+                      {field.label}
+                    </label>
+                    {field.type === 'textarea' ? (
+                      <textarea
+                        {...register(field.name)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
+                        rows={4}
+                      />
+                    ) : (
+                      <input
+                        {...register(field.name)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
+                      />
+                    )}
+                    {errors[field.name] && (
+                      <p className="text-sm text-red-600">
+                        {errors[field.name]?.message as string}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
 
-                <div className="flex justify-end">
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                  >
-                    {isSubmitting ? "Saving..." : "Save Changes"}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
+            {/* Action Buttons */}
+            <div className="sticky bottom-6 bg-white rounded-2xl p-4 shadow-xl border border-gray-200">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="w-full px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 font-medium transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-medium transition-all disabled:opacity-50"
+                >
+                  {isSubmitting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Activity className="h-4 w-4 animate-pulse" />
+                      Saving...
+                    </span>
+                  ) : 'Save Changes'}
+                </button>
+              </div>
+            </div>
           </div>
         </motion.div>
       </div>
