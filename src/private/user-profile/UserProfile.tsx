@@ -264,11 +264,12 @@ const UserProfile = () => {
         </motion.div>
 
         {/* Main Form */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="grid grid-cols-1 lg:grid-cols-3 gap-8"
-        >
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+          >
           {/* Personal Details Card */}
           <div className="lg:col-span-2 space-y-8">
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
@@ -399,6 +400,8 @@ const UserProfile = () => {
             </div>
           </div>
         </motion.div>
+        </form>
+
       </div>
     </div>
   );
