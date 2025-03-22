@@ -6,38 +6,19 @@ import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { ToastAction } from "@/components/ui/toast";
 import { motion } from "framer-motion";
-import Skeleton from '@mui/material/Skeleton'; // Import Skeleton from Material-UI
-import { 
-  AlertCircle,
-  Stethoscope
-} from "lucide-react";
-// import { Calendar } from "@/components/ui/calendar"; // Added Calendar import
+import Skeleton from '@mui/material/Skeleton';
+import { AlertCircle, Stethoscope, ChevronRight } from "lucide-react";
 
 const DoctorDashboard = () => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const navigate = useNavigate();
   const { toast } = useToast();
   const [totalPatients, setTotalPatients] = useState(0);
   const [patientsLeft, setPatientsLeft] = useState(0);
   const [token, setToken] = useState("No Patient Assigned");
   const [inQueue, setInQueue] = useState(0);
-  const [status, setStatus] = useState<
-    "check-in" | "check-out" | "Available" | "Not Available"
-  >("check-out");
+  const [status, setStatus] = useState<"check-in" | "check-out" | "Available" | "Not Available">("check-out");
   const [loading, setLoading] = useState(true);
-
-  // const appointmentReasons = {
-  //   "Vaccination": 10,
-  //   "Eye Exam": 6,
-  //   "Blood Test": 5,
-  //   "Routine Checkup": 15,
-  //   "Physical Therapy": 4,
-  //   "Dental Cleaning": 8,
-  //   "Skin Check": 3,
-  //   "Allergy Consultation": 2,
-  //   "Follow-up Visit": 7,
-  //   "Emergency Visit": 1,
-  // };
-  
 
   const fetchPatientData = async () => {
     try {
@@ -232,7 +213,7 @@ const DoctorDashboard = () => {
     if (response.status == 200) {
       if (response.data) {
         setStatus("Available");
-      } else if(response) {
+      } else if (response) {
         setStatus("Not Available");
       }
     } else {
@@ -245,12 +226,10 @@ const DoctorDashboard = () => {
       });
     }
   };
-
   useEffect(() => {
     fetchPatientData();
     fetchTokenNum();
     fetchDoctorStatus();
-  
 
     const interval = setInterval(() => {
       fetchPatientData();
@@ -262,8 +241,7 @@ const DoctorDashboard = () => {
 
     const statusInterval = setInterval(() => {
       fetchDoctorStatus();
-    }, 30000); 
-
+    }, 30000);
 
     return () => {
       clearInterval(interval);
@@ -272,359 +250,346 @@ const DoctorDashboard = () => {
     };
   }, []);
 
+  // Add resize handler
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTime(new Date());
-    }, 1000);
-
-    return () => {
-      clearInterval(timer);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
     };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  return (
-    <>
-      <Toaster />
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col lg:flex-row gap-8"
-          >
-            {/* Left Sidebar */}
-            <div className="w-full lg:w-1/4 space-y-6">
-              {/* Status Card */}
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
-              >
-                {loading ? (
-                  <div className="space-y-4">
-                    <Skeleton variant="text" width={120} height={24} className="mb-4" />
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Skeleton variant="text" width={150} height={32} className="mb-2" />
-                        <Skeleton variant="text" width={100} height={20} />
-                      </div>
-                      <Skeleton variant="circular" width={56} height={56} />
+    return (
+      <>
+        <Toaster />
+        <div className="min-h-screen bg-gray-50">
+          {isMobile ? (
+            <>
+              {/* Mobile Top Bar */}
+              <div className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50 p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-indigo-100 p-2 rounded-lg">
+                      <Stethoscope className="h-6 w-6 text-indigo-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Doctor Dashboard</p>
+                      <p className="text-sm text-gray-500">
+                        {status === "Available" ? "Available" : "Not Available"}
+                      </p>
                     </div>
                   </div>
-                ) : (
-                  <>
-                    <h3 className="text-sm font-medium text-gray-500 mb-4">Current Status</h3>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-2xl font-bold mb-2">
-                          {status === "Available" ? "Available" : "Not Available"}
-                        </p>
-                        <div className="text-sm opacity-90">
-                          {status === "Available" ? "Ready to see patients" : "Not available for appointments"}
-                        </div>
-                      </div>
-                      <div className="bg-white/10 p-4 rounded-xl">
-                        <Stethoscope className="h-8 w-8" />
-                      </div>
-                    </div>
-                  </>
-                )}
-              </motion.div>
-
-              {/* Quick Actions */}
-              <motion.div
-                className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
-                <button
-                  onClick={handleCheckIn}
-                  className={`w-full flex items-center justify-between p-4 rounded-xl ${
-                    status === "Available"
-                      ? "bg-gray-800 cursor-not-allowed"
-                      : "bg-gradient-to-r from-[#2FC800] to-[#009534] hover:bg-green-600"
-                  } text-white font-medium`}
-                  disabled={status === "Available"}
-                >
-                  <span>{status === "Available" ? "Available" : "Check-In"}</span>
-                  <Stethoscope className="h-5 w-5" />
-                </button>
-                <button
-                  onClick={handleCheckOut}
-                  className={`w-full flex items-center justify-between p-4 rounded-xl ${
-                    status === "Not Available"
-                      ? "bg-gray-800 cursor-not-allowed"
-                      : "bg-gradient-to-r from-[#A00000] to-[#E00000] hover:bg-red-600"
-                  } text-white font-medium`}
-                  disabled={status === "Not Available"}
-                >
-                  <span>{status === "Not Available" ? "Not Available" : "Check-Out"}</span>
-                  <AlertCircle className="h-5 w-5" />
-                </button>
-              </motion.div>
-
-              {/* Calendar */}
-              {/* <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
-              >
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  className="rounded-md border bg-white shadow-lg"
-                />
-              </motion.div> */}
-            </div>
-
-            {/* Main Content */}
-            <div className="flex-1">
-              {/* Status Cards */}
-              <div className="grid md:grid-cols-2 gap-6 mb-8">
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer bg-gradient-to-r from-indigo-500 to-indigo-600"
-                  onClick={() => navigate("/patient-details")}
-                >
-                  <h3 className="text-lg font-semibold text-gray-100 mb-4 ">Patient Details</h3>
-                  <p className="text-sm text-gray-100">View and manage patient details.</p>
-                </motion.div>
-
-                <motion.div
-  whileHover={{ scale: 1.02 }}
-  className="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-2xl p-6 text-white"
->
-  {loading ? (
-    <>
-      <Skeleton variant="text" width={120} height={24} className="mb-4 bg-indigo-400" />
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex-1 grid grid-cols-2 gap-2">
-          <Skeleton variant="text" width="100%" height={40} className="bg-indigo-400" />
-          <Skeleton variant="text" width="100%" height={40} className="bg-indigo-400" />
-          <Skeleton variant="text" width="100%" height={40} className="bg-indigo-400" />
-          <Skeleton variant="text" width="100%" height={40} className="bg-indigo-400" />
-        </div>
-        <Skeleton variant="circular" width={56} height={56} className="bg-indigo-400" />
-      </div>
-    </>
-  ) : (
-    <>
-      <h3 className="text-lg font-semibold opacity-90 mb-2">Patients Overview</h3>
-      
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex-1 grid grid-cols-4 gap-2">
-          
-          <div>
-            <p className="text-lg font-bold">{inQueue}</p>
-            <p className="text-sm opacity-90">In Queue</p>
-          </div>
-          <div className="bg-white/10 p-2 rounded-lg">
-            <p className="text-lg font-bold">{totalPatients}</p>
-            <p className="text-xs opacity-90">Total Patients</p>
-          </div>
-          <div className="bg-white/10 p-2 rounded-lg">
-            <p className="text-lg font-bold">{patientsLeft}</p>
-            <p className="text-xs opacity-90">Patients Treated</p>
-          </div>
-          <div className="bg-white/10 p-2 rounded-lg">
-            <p className="text-lg font-bold">{token}</p>
-            <p className="text-xs opacity-90">Current Token</p>
-          </div>
-        </div>
-      </div>
-    </>
-  )}
-</motion.div>
+                  <div className="text-right">
+                    <p className="text-xl font-bold">{token}</p>
+                    <p className="text-xs text-gray-500">Current Token</p>
+                  </div>
+                </div>
               </div>
-
-              {/* Health Overview */}
-              {/* <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
-              >
-                {loading ? (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {[...Array(4)].map((_, index) => (
-                      <Skeleton key={index} variant="rectangular" width="100%" height={96} />
+    
+              {/* Mobile Main Content */}
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex flex-col gap-2"
+                >
+                  {/* Quick Stats */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-white p-4 rounded-xl shadow-sm">
+                      <p className="text-sm text-gray-500">Total Patients</p>
+                      <p className="text-2xl font-bold">{totalPatients}</p>
+                    </div>
+                    <div className="bg-white p-4 rounded-xl shadow-sm">
+                      <p className="text-sm text-gray-500">Patients Treated</p>
+                      <p className="text-2xl font-bold">{patientsLeft}</p>
+                    </div>
+                  </div>
+    
+                  {/* Check In/Out Buttons */}
+                  <div className="fixed bottom-20 right-4 z-50 flex flex-col gap-2">
+                    <button
+                      onClick={handleCheckIn}
+                      className={`p-3 rounded-full shadow-lg ${
+                        status === "Available"
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-green-500"
+                      } text-white`}
+                      style={{ width: '56px', height: '56px' }}
+                    >
+                      <Stethoscope className="h-6 w-6 mx-auto" />
+                    </button>
+                    <button
+                      onClick={handleCheckOut}
+                      className={`p-3 rounded-full shadow-lg ${
+                        status === "Not Available"
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-red-500"
+                      } text-white`}
+                      style={{ width: '56px', height: '56px' }}
+                    >
+                      <AlertCircle className="h-6 w-6 mx-auto" />
+                    </button>
+                  </div>
+    
+                  {/* Features List */}
+                  <div className="bg-white rounded-xl shadow-sm pb-1">
+                    {[
+                      { 
+                        title: "Patient Details",
+                        icon: <Stethoscope className="h-5 w-5 text-indigo-600" />,
+                        action: () => navigate("/patient-details")
+                      },
+                      
+                    ].map((feature, index) => (
+                      <div 
+                        key={index}
+                        onClick={feature.action}
+                        className="flex items-center justify-between p-4 border-b last:border-b-0 hover:bg-gray-50 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="bg-indigo-50 p-2 rounded-lg">
+                            {feature.icon}
+                          </div>
+                          <p className="font-medium">{feature.title}</p>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-gray-400" />
+                      </div>
                     ))}
                   </div>
-                ) : (
-                  <>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-6">Patient Overview</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="text-center p-4 bg-indigo-50 rounded-xl">
-                        <p className="text-sm text-gray-600 mb-1">Total Patients</p>
-                        <p className="font-medium">{totalPatients}</p>
-                      </div>
-                      <div className="text-center p-4 bg-emerald-50 rounded-xl">
-                        <p className="text-sm text-gray-600 mb-1">Patients Left</p>
-                        <p className="font-medium">{patientsLeft}</p>
-                      </div>
-                      <div className="text-center p-4 bg-amber-50 rounded-xl">
-                        <p className="text-sm text-gray-600 mb-1">In Queue</p>
-                        <p className="font-medium">{inQueue}</p>
-                      </div>
-                      <div className="text-center p-4 bg-rose-50 rounded-xl">
-                        <p className="text-sm text-gray-600 mb-1">Current Token</p>
-                        <p className="font-medium">{token}</p>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </motion.div> */}
-
-              {/* Additional Features */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8"
-              >
-
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 cursor-pointer"
-                  onClick={() => navigate("/medicine-stock")}
-                >
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Medical Stock</h3>
-                  <p className="text-sm text-gray-600">Check and manage medical stock.</p>
+    
+                  {/* Diagnosis Word Cloud */}
+                  <div className="mt-0">
+                    <DiagnosisWordCloud />
+                  </div>
                 </motion.div>
-
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 cursor-pointer"
-                  onClick={() => navigate("/analytics-dashboard")}
-                >
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">UHS Analysis</h3>
-                  <p className="text-sm text-gray-600">View analytics and reports.</p>
-                </motion.div>
-
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 cursor-pointer"
-                  onClick={() => navigate("/ambulance")}
-                >
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Ambulance Details</h3>
-                  <p className="text-sm text-gray-600">Manage ambulance services.</p>
-                </motion.div>
-
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 cursor-pointer"
-                  onClick={() => navigate("/emergency")}
-                >
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Emergency Contacts</h3>
-                  <p className="text-sm text-gray-600">Access emergency contact information.</p>
-                </motion.div>
-              </motion.div>
-
-            {/* Appointment Reasons Cloud */}
-            {/* <motion.div
-  initial={{ opacity: 0, y: 20 }}
-  animate={{ opacity: 1, y: 0 }}
-  className="mt-8 bg-gradient-to-br from-gray-50 to-white rounded-2xl p-6 shadow-lg border border-gray-200 backdrop-blur-sm"
->
-  <div className="mb-6 flex items-center justify-between">
-    <h3 className="text-xl font-bold text-gray-800">Diagnosis Word Cloud</h3>
-    <span className="text-sm text-gray-500">Frequency weighted display</span>
-  </div>
-
-  <div className="relative h-96 w-full bg-gradient-to-br from-white to-blue-50 rounded-xl p-4 shadow-inner">
-    {Object.entries(diagnosis).length > 0 ? (
-      Object.entries(diagnosis).map(([reason, count]) => {
-        const colorPalette = [
-          'bg-gradient-to-r from-purple-600 to-blue-600',
-          'bg-gradient-to-r from-green-600 to-emerald-600',
-          'bg-gradient-to-r from-red-600 to-orange-600',
-          'bg-gradient-to-r from-pink-600 to-rose-600',
-        ];
-        const randomRotation = Math.random() * 60 - 30; // Random rotation between -30 and 30 degrees
-        const randomX = Math.random() * 80 - 40; // Random horizontal position
-        const randomY = Math.random() * 80 - 40; // Random vertical position
-
-        return (
-          <motion.div
-  key={reason}
-  className="absolute cursor-pointer transition-transform duration-300 ease-in-out"
-  style={{
-    // Limit font size (min 14px, max 48px)
-    fontSize: `${Math.min(Math.max(14, 10 + count * 4), 48)}px`,
-
-    // Color variation (optional if you're using hue-rotate)
-    filter: `hue-rotate(${count * 15}deg)`,
-
-    // Clamp the positions to stay inside box (10% - 90%)
-    left: `${Math.min(Math.max(10, 50 + randomX), 90)}%`,
-    top: `${Math.min(Math.max(10, 50 + randomY), 90)}%`,
-
-    // Center & rotate randomly within -10 to 10 degrees
-    transform: `translate(-50%, -50%) rotate(${Math.min(Math.max(randomRotation, -10), 10)}deg)`,
-
-    // Optional: smoother word placement and hover z-index handling
-    zIndex: 10,
-  }}
-  initial={{ scale: 0, opacity: 0 }}
-  animate={{ scale: 1, opacity: 1 }}
-  transition={{ type: 'spring', stiffness: 80, damping: 10 }}
-  whileHover={{
-    scale: 1.2,
-    rotate: 0,
-    zIndex: 50,
-    transition: { duration: 0.3 },
-  }}
->
-  <span
-    className={`
-      ${colorPalette[count % colorPalette.length]} 
-      bg-clip-text 
-      text-transparent 
-      font-semibold 
-      tracking-wide
-    `}
-  >
-    {reason}
-    <span className="ml-2 text-xs font-medium text-gray-500">
-      {count}
-    </span>
-  </span>
-</motion.div>
-
-        )
-      })
-    ) : (
-      <div className="flex h-full items-center justify-center">
-        <motion.div
-          className="text-gray-400 text-lg"
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          {loading ? (
-            <Skeleton variant="text" width={240} height={32} />
+              </div>
+    
+              {/* Mobile Bottom Navigation */}
+              <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50">
+                <div className="grid grid-cols-4 gap-1 p-2">
+                  <button 
+                    onClick={() => navigate("/patient-details")}
+                    className="flex flex-col items-center justify-center p-2 text-gray-600 hover:text-indigo-600"
+                  >
+                    <Stethoscope className="h-5 w-5" />
+                    <span className="text-xs mt-1">Patients</span>
+                  </button>
+                  <button 
+                    onClick={() => navigate("/analytics-dashboard")}
+                    className="flex flex-col items-center justify-center p-2 text-gray-600 hover:text-indigo-600"
+                  >
+                    <Stethoscope className="h-5 w-5" />
+                    <span className="text-xs mt-1">Analytics</span>
+                  </button>
+                  <button 
+                    onClick={() => navigate("/medicine-stock")}
+                    className="flex flex-col items-center justify-center p-2 text-gray-600 hover:text-indigo-600"
+                  >
+                    <Stethoscope className="h-5 w-5" />
+                    <span className="text-xs mt-1">Stock</span>
+                  </button>
+                  <button 
+                    onClick={() => navigate("/emergency")}
+                    className="flex flex-col items-center justify-center p-2 text-gray-600 hover:text-indigo-600"
+                  >
+                    <AlertCircle className="h-5 w-5" />
+                    <span className="text-xs mt-1">Emergency</span>
+                  </button>
+                </div>
+              </div>
+            </>
           ) : (
-            "✨ Start adding diagnoses to generate cloud"
-          )}
-        </motion.div>
-      </div>
-    )}
-  </div>
+          <>
+            {/* Desktop View */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col lg:flex-row gap-8"
+              >
+                {/* Left Sidebar */}
+                <div className="w-full lg:w-1/4 space-y-6">
+                  {/* Status Card */}
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
+                  >
+                    {loading ? (
+                      <div className="space-y-4">
+                        <Skeleton variant="text" width={120} height={24} className="mb-4" />
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Skeleton variant="text" width={150} height={32} className="mb-2" />
+                            <Skeleton variant="text" width={100} height={20} />
+                          </div>
+                          <Skeleton variant="circular" width={56} height={56} />
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <h3 className="text-sm font-medium text-gray-500 mb-4">Current Status</h3>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-2xl font-bold mb-2">
+                              {status === "Available" ? "Available" : "Not Available"}
+                            </p>
+                            <div className="text-sm opacity-90">
+                              {status === "Available" ? "Ready to see patients" : "Not available for appointments"}
+                            </div>
+                          </div>
+                          <div className="bg-white/10 p-4 rounded-xl">
+                            <Stethoscope className="h-8 w-8" />
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </motion.div>
 
-  <div className="mt-6 text-right text-sm text-gray-500">
-    <span>Hover to interact • Size indicates frequency</span>
-  </div>
-            </motion.div> */}
+                  {/* Quick Actions */}
+                  <motion.div
+                    className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    <button
+                      onClick={handleCheckIn}
+                      className={`w-full flex items-center justify-between p-4 rounded-xl ${
+                        status === "Available"
+                          ? "bg-gray-800 cursor-not-allowed"
+                          : "bg-gradient-to-r from-[#2FC800] to-[#009534] hover:bg-green-600"
+                      } text-white font-medium`}
+                      disabled={status === "Available"}
+                    >
+                      <span>{status === "Available" ? "Available" : "Check-In"}</span>
+                      <Stethoscope className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={handleCheckOut}
+                      className={`w-full flex items-center justify-between p-4 rounded-xl ${
+                        status === "Not Available"
+                          ? "bg-gray-800 cursor-not-allowed"
+                          : "bg-gradient-to-r from-[#A00000] to-[#E00000] hover:bg-red-600"
+                      } text-white font-medium`}
+                      disabled={status === "Not Available"}
+                    >
+                      <span>{status === "Not Available" ? "Not Available" : "Check-Out"}</span>
+                      <AlertCircle className="h-5 w-5" />
+                    </button>
+                  </motion.div>
+                </div>
 
-<DiagnosisWordCloud />
+                {/* Main Content */}
+                <div className="flex-1">
+                  {/* Status Cards */}
+                  <div className="grid md:grid-cols-2 gap-6 mb-8">
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer bg-gradient-to-r from-indigo-500 to-indigo-600"
+                      onClick={() => navigate("/patient-details")}
+                    >
+                      <h3 className="text-lg font-semibold text-gray-100 mb-4 ">Patient Details</h3>
+                      <p className="text-sm text-gray-100">View and manage patient details.</p>
+                    </motion.div>
 
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      className="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-2xl p-6 text-white"
+                    >
+                      {loading ? (
+                        <>
+                          <Skeleton variant="text" width={120} height={24} className="mb-4 bg-indigo-400" />
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex-1 grid grid-cols-2 gap-2">
+                              <Skeleton variant="text" width="100%" height={40} className="bg-indigo-400" />
+                              <Skeleton variant="text" width="100%" height={40} className="bg-indigo-400" />
+                              <Skeleton variant="text" width="100%" height={40} className="bg-indigo-400" />
+                              <Skeleton variant="text" width="100%" height={40} className="bg-indigo-400" />
+                            </div>
+                            <Skeleton variant="circular" width={56} height={56} className="bg-indigo-400" />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <h3 className="text-lg font-semibold opacity-90 mb-2">Patients Overview</h3>
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex-1 grid grid-cols-4 gap-2">
+                              <div>
+                                <p className="text-lg font-bold">{inQueue}</p>
+                                <p className="text-sm opacity-90">In Queue</p>
+                              </div>
+                              <div className="bg-white/10 p-2 rounded-lg">
+                                <p className="text-lg font-bold">{totalPatients}</p>
+                                <p className="text-xs opacity-90">Total Patients</p>
+                              </div>
+                              <div className="bg-white/10 p-2 rounded-lg">
+                                <p className="text-lg font-bold">{patientsLeft}</p>
+                                <p className="text-xs opacity-90">Patients Treated</p>
+                              </div>
+                              <div className="bg-white/10 p-2 rounded-lg">
+                                <p className="text-lg font-bold">{token}</p>
+                                <p className="text-xs opacity-90">Current Token</p>
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </motion.div>
+                  </div>
+
+                  {/* Additional Features */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8"
+                  >
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 cursor-pointer"
+                      onClick={() => navigate("/medicine-stock")}
+                    >
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Medical Stock</h3>
+                      <p className="text-sm text-gray-600">Check and manage medical stock.</p>
+                    </motion.div>
+
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 cursor-pointer"
+                      onClick={() => navigate("/analytics-dashboard")}
+                    >
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">UHS Analysis</h3>
+                      <p className="text-sm text-gray-600">View analytics and reports.</p>
+                    </motion.div>
+
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 cursor-pointer"
+                      onClick={() => navigate("/ambulance")}
+                    >
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Ambulance Details</h3>
+                      <p className="text-sm text-gray-600">Manage ambulance services.</p>
+                    </motion.div>
+
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 cursor-pointer"
+                      onClick={() => navigate("/emergency")}
+                    >
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Emergency Contacts</h3>
+                      <p className="text-sm text-gray-600">Access emergency contact information.</p>
+                    </motion.div>
+                  </motion.div>
+
+                  {/* Diagnosis Word Cloud */}
+                  <DiagnosisWordCloud />
+                </div>
+              </motion.div>
             </div>
-          </motion.div>
-        </div>
+          </>
+        )}
       </div>
     </>
   );
 };
 
 export default DoctorDashboard;
-function setTime(_arg0: Date) {
-  throw new Error("Function not implemented.");
-}
-
