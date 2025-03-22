@@ -273,7 +273,7 @@ const AssistantDoctorDashboard = () => {
               </motion.div>
               <motion.div>
     <DiagnosisWordCloud />
-  </motion.div>
+    </motion.div>
             </div>
           </motion.div>
         </div>

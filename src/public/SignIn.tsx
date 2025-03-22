@@ -383,15 +383,6 @@ const SignIn = () => {
               <div className="text-center">
                 <h1 className="text-2xl font-bold text-gray-900">Sign In</h1>
                 <p className="text-gray-600 text-sm mt-1">Access your health services</p>
-              {/* TEMPORARY BUTTON */}
-                <button
-                onClick={() => navigate("/admin-portal")}
-                className="w-half p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 transition-colors"
-              >
-                <span className="text-emerald-700 font-sm">Temporary admin button</span>
-              </button>
-
-              {/* TEMPORARY BUTTON */}
               </div>
 
               <div className="grid grid-cols-3 gap-2">
