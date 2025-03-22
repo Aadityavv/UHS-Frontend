@@ -10,7 +10,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import Shared from "@/Shared";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import {
@@ -21,704 +20,531 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import "./PatientList.css";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Search, FileText, Stethoscope } from "lucide-react";
+
+interface Patient {
+  id: string;
+  email?: string;
+  name: string;
+  reason?: string;
+  aptId?: string;
+  doctorName?: string;
+  tokenNum?: string;
+  status: "Pending" | "Assigned" | "Appointed";
+  rawData: any;
+}
 
 const PatientList = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [patient, setPatient] = useState<
-    {
-      email: string;
-      name: string;
-      reason: string;
-      aptId: string;
-      Id: string;
-    }[]
-  >([]);
-  const [selectedButton, setSelectedButton] = useState("Pending");
-  const [reassignPat,setReassignPat] = useState({
-    doctorEmail:"",
-    patientEmail:""
-  });
+  const [patients, setPatients] = useState<Patient[]>([]);
   const [dialogData, setDialogData] = useState({
     pref_doc: "",
-    reason: "",
-    doc_reason: "",
     temperature: "",
     weight: "",
+    doctorEmail: "",
+    patientEmail: "",
   });
-  const [docData, setDocData] = useState<{
-    pref_doc: string;
-    doc_reason: string;
-  }>();
-  const [doctors, setDoctors] = useState<{ id: string; name: string }[]>([]);
-  const [currentPatientEmail, setCurrentPatientEmail] = useState("");
+  const [, setCurrentPatientEmail] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredPatient, setFilteredPatient] = useState(patient);
-  const [assignedData, setAssignedData] = useState<Array<{patientName:string, tokenNum:string,doctorName:string}>>([]);
+  const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]);
+  const [doctors, setDoctors] = useState<{ id: string; name: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
-  const fetchList = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("No authentication token found");
-      }
-
-      if (
-        !(localStorage.getItem("latitude") || localStorage.getItem("longitude"))
-      ) {
-        toast({
-          title: "Location Required",
-          description: "Please select a location before fetching data.",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const url =
-        selectedButton === "Pending"
-          ? "https://uhs-backend.onrender.com/api/AD/getPatientQueue"
-          : selectedButton === "Assigned" ? "https://uhs-backend.onrender.com/api/AD/getAssignedPatient" : "https://uhs-backend.onrender.com/api/AD/getCompletedQueue";
-
-      const response = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "X-Latitude": localStorage.getItem("latitude"),
-          "X-Longitude": localStorage.getItem("longitude"),
-        },
-      });
-
-      const fetchedData = response.data;
-      if(selectedButton === "Assigned"){
-        const formattedData = fetchedData.map((pat: any) => ({
-          patientName:pat.PatientName, 
-          tokenNum:pat.PatientToken,
-          doctorName:pat.doctorName
-        }));
-
-        setAssignedData(formattedData);
-      }else{
-        const formattedData = fetchedData.map((pat: any) => ({
-          email: pat.sapEmail,
-          name: pat.name,
-          reason: pat.reason,
-          aptId: pat.aptId,
-          Id: pat.Id,
-        }));
-        setPatient(formattedData);
-        setFilteredPatient(formattedData);
-      }
-        
-    } catch (error) {
-      handleError(error, "Failed to fetch patient list");
-    }
+  const encodeEmail = (email: string) => {
+    const [localPart, domain] = email.split("@");
+    return domain ? `${localPart}@${domain.replace(".", ",")}` : email;
   };
 
-  useEffect(() => {
-    fetchList();
-  }, [selectedButton]);
-
-  useEffect(() => {
-    if (searchQuery) {
-      const filtered = patient.filter(
-        (pat) =>
-          pat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          pat.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          pat.reason.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredPatient(filtered);
-    } else {
-      setFilteredPatient(patient);
-    }
-  }, [searchQuery, patient]);
-
-  const getAppointmentDetails = async (email: string) => {
-    const modifiedEmail = email.replace(/@.*?\./g, (match) =>
-      match.replace(/\./g, ",")
-    );
-    setCurrentPatientEmail(email);
+  const fetchAllPatients = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No authentication token found");
 
-      const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/AD/getAptForm/${modifiedEmail}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          timeout: 10000,
-        }
-      );
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "X-Latitude": localStorage.getItem("latitude"),
+        "X-Longitude": localStorage.getItem("longitude"),
+      };
 
-      const formatData = response.data;
-      setDocData({
-        pref_doc: formatData.pref_doc
-          ? formatData.pref_doc.name
-          : "No Preferred Doctor",
-        doc_reason: formatData.doc_reason || "",
-      });
+      const [pendingRes, assignedRes, appointedRes] = await Promise.all([
+        axios.get("https://uhs-backend.onrender.com/api/AD/getPatientQueue", { headers }),
+        axios.get("https://uhs-backend.onrender.com/api/AD/getAssignedPatient", { headers }),
+        axios.get("https://uhs-backend.onrender.com/api/AD/getCompletedQueue", { headers }),
+      ]);
 
-      await fetchAvailableDoctors();
+      const combinePatients = [
+        ...pendingRes.data.map((p: any) => ({
+          id: p.Id,
+          email: p.sapEmail,
+          name: p.name,
+          reason: p.reason,
+          aptId: p.aptId,
+          status: "Pending" as const,
+          rawData: p,
+        })),
+        ...assignedRes.data.map((p: any) => ({
+          id: p.PatientToken,
+          name: p.PatientName,
+          doctorName: p.doctorName,
+          tokenNum: p.PatientToken,
+          status: "Assigned" as const,
+          rawData: p,
+        })),
+        ...appointedRes.data.map((p: any) => ({
+          id: p.Id,
+          email: p.sapEmail,
+          name: p.name,
+          reason: p.reason,
+          aptId: p.aptId,
+          status: "Appointed" as const,
+          rawData: p,
+        })),
+      ];
+
+      setPatients(combinePatients);
+      setFilteredPatients(combinePatients);
     } catch (error) {
-      handleError(error, "Error fetching appointment details");
+      handleError(error, "Failed to fetch patients");
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchAllPatients();
+  }, []);
+
+  useEffect(() => {
+    const filtered = patients.filter((p) =>
+      Object.values(p).some((value) =>
+        value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+    setFilteredPatients(filtered);
+  }, [searchQuery, patients]);
 
   const fetchAvailableDoctors = async () => {
     try {
       const token = localStorage.getItem("token");
-      if (!token) throw new Error("No authentication token found");
-      if (
-        !(localStorage.getItem("latitude") || localStorage.getItem("longitude"))
-      ) {
-        toast({
-          title: "Location Required",
-          description: "Please select a location before fetching data.",
-          variant: "destructive",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
-        });
-        return;
-      }
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "X-Latitude": localStorage.getItem("latitude"),
+        "X-Longitude": localStorage.getItem("longitude"),
+      };
+
       const response = await axios.get(
         "https://uhs-backend.onrender.com/api/AD/getAvailableDoctors",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "X-Latitude": localStorage.getItem("latitude"),
-            "X-Longitude": localStorage.getItem("longitude"),
-          },
-        }
+        { headers }
       );
 
-      const doctorList = response.data.map((doctor: any) => ({
-        id: doctor.doctorId.toString(),
-        name: doctor.name,
-      }));
-      setDoctors(doctorList);
+      setDoctors(
+        response.data.map((d: any) => ({
+          id: d.doctorId.toString(),
+          name: d.name,
+        }))
+      );
     } catch (error) {
-      handleError(error, "Error fetching available doctors");
+      handleError(error, "Error fetching doctors");
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAction = async (action: string, email?: string) => {
+    if (!email) return;
 
     try {
       const token = localStorage.getItem("token");
-      if (!token) throw new Error("No authentication token found");
+      setSubmitting(true);
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "X-Latitude": localStorage.getItem("latitude"),
+        "X-Longitude": localStorage.getItem("longitude"),
+      };
 
-      const response = await axios.post(
-        "https://uhs-backend.onrender.com/api/AD/submitAppointment",
-        {
-          weight: dialogData.weight,
-          temperature: dialogData.temperature,
-          doctorAss: dialogData.pref_doc,
-          patEmail: currentPatientEmail,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+      if (action === "assign") {
+        const weight = parseFloat(dialogData.weight);
+        const temperature = parseFloat(dialogData.temperature);
+
+        if (isNaN(weight)) throw new Error("Weight must be a number");
+        if (isNaN(temperature)) throw new Error("Temperature must be a number");
+        if (weight <= 0 || weight > 300) throw new Error("Invalid weight value");
+        if (temperature < 90 || temperature > 110) throw new Error("Temperature out of range");
+
+        await axios.post(
+          "https://uhs-backend.onrender.com/api/AD/submitAppointment",
+          {
+            weight: weight,
+            temperature: temperature,
+            doctorAss: dialogData.pref_doc,
+            patEmail: email, // Use original email for assignment
           },
-        }
-      );
-
-      if (response.status === 200) {
-        toast({
-          title: "Success",
-          description: "Appointment details submitted successfully.",
-        });
-        window.location.reload();
-      } else {
-        throw new Error("Failed to submit appointment details.");
+          { headers }
+        );
+      } else if (action === "reassign") {
+        const modifiedEmail = encodeEmail(email);
+        await axios.post(
+          "https://uhs-backend.onrender.com/api/AD/reassign",
+          {
+            patientEmail: modifiedEmail,
+            doctorEmail: dialogData.doctorEmail,
+          },
+          { headers }
+        );
+      } else if (action === "reject") {
+        const modifiedEmail = encodeEmail(email);
+        await axios.get(
+          `https://uhs-backend.onrender.com/api/AD/rejectAppointment?email=${modifiedEmail}`,
+          { headers }
+        );
       }
+
+      toast({ title: `Action ${action} successful` });
+      fetchAllPatients();
     } catch (error) {
-      handleError(error, "Failed to submit appointment details");
-    }
-  };
-
-  const handleError = (error: any, defaultMessage: string) => {
-    let message = defaultMessage;
-    if (axios.isAxiosError(error)) {
-      if (error.response) {
-        message = `${error.response.data.message}`;
-      } else if (error.request) {
-        message =
-          "No response from server. Please check your network connection.";
-      } else {
-        message = error.message;
-      }
-    }
-    console.error(message, error);
-    toast({
-      title: "Error",
-      description: message,
-      variant: "destructive",
-      action: <ToastAction altText="Try again">Try again</ToastAction>,
-    });
-  };
-  const handleRejectAppointment = async (email: string) => {
-    try {
-      const token = localStorage.getItem("token");
-      const emailSent = email.substring(0,email.indexOf("@"))+email.substring(email.indexOf("@")).replace(".",",");
-      const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/AD/rejectAppointment?email=${emailSent}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (response.status === 200) {
-        toast({ title: "Appointment Rejected", description: response.data });
-        fetchList();
-      }
-    } catch (err) {
-      handleError(err, "Failed to reject appointment");
+      handleError(error, `Failed to ${action} appointment`);
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleCompleteAppointment = async (email: string) => {
     try {
       const token = localStorage.getItem("token");
-      const emailSent = email.substring(0,email.indexOf("@"))+email.substring(email.indexOf("@")).replace(".",",");
+      const modifiedEmail = encodeEmail(email);
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "X-Latitude": localStorage.getItem("latitude"),
+        "X-Longitude": localStorage.getItem("longitude"),
+      };
+
       const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/AD/completeAppointment/${emailSent}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        `https://uhs-backend.onrender.com/api/AD/completeAppointment/${modifiedEmail}`,
+        { headers }
       );
 
       toast({
         title: "Appointment Completed",
         description: response.data,
       });
-      fetchList();
-    } catch (err) {
-      handleError(err, "Failed to complete appointment");
+      fetchAllPatients(); // Refresh the patient list
+    } catch (error) {
+      handleError(error, "Failed to complete appointment");
     }
   };
 
-  const handleReassign = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleRejectAppointment = async (email: string) => {
     try {
       const token = localStorage.getItem("token");
-      if (!token) throw new Error("No authentication token found");
+      const modifiedEmail = encodeEmail(email);
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "X-Latitude": localStorage.getItem("latitude"),
+        "X-Longitude": localStorage.getItem("longitude"),
+      };
 
-      const response = await axios.post(
-        "https://uhs-backend.onrender.com/api/AD/reassign",
-        {
-          patientEmail:reassignPat.patientEmail,
-          doctorEmail:reassignPat.doctorEmail
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await axios.get(
+        `https://uhs-backend.onrender.com/api/AD/rejectAppointment?email=${modifiedEmail}`,
+        { headers }
       );
 
-      if (response.status === 200) {
-        toast({
-          title: "Success",
-          description: "Appointment details submitted successfully.",
-        });
-        window.location.reload();
-      } else {
-        throw new Error("Failed to submit appointment details.");
-      }
+      toast({
+        title: "Appointment Rejected",
+        description: response.data,
+      });
+      fetchAllPatients(); // Refresh the patient list
     } catch (error) {
-      handleError(error, "Failed to submit appointment details");
+      handleError(error, "Failed to reject appointment");
     }
-  }
+  };
 
+  const handleError = (error: any, message: string) => {
+    console.error(error);
+    toast({
+      title: "Error",
+      description: `${message}: ${error.message}`,
+      variant: "destructive",
+      action: <ToastAction altText="Try again">Try again</ToastAction>,
+    });
+  };
 
   return (
-    <>
+    <div className="bg-[#ECECEC] min-h-[84svh] p-8 space-y-8">
       <Toaster />
-      <div className="bg-[#ECECEC] min-h-[84svh] p-8 space-y-8 flex flex-col max-lg:min-h-[93svh] max-lg:p-4 max-lg:py-4">
-        <div className="flex justify-center items-center gap-2">
-          <button
-            onClick={() => setSelectedButton("Pending")}
-            className={`shadow-md px-4 py-2 rounded-md w-40 ${
-              selectedButton === "Pending"
-                ? "bg-gradient-to-r from-[#2061f5] to-[#13398f] text-white"
-                : "bg-gray-100 text-black"
-            }`}
-          >
-            Pending
-          </button>
-          <button
-            onClick={() => setSelectedButton("Assigned")}
-            className={`shadow-md px-4 py-2 rounded-md w-40 ${
-              selectedButton === "Assigned"
-                ? "bg-gradient-to-r from-[#2061f5] to-[#13398f] text-white"
-                : "bg-gray-100 text-black"
-            }`}
-          >
-            Assigned
-          </button>
-          <button
-            onClick={() => setSelectedButton("Appointed")}
-            className={`shadow-md px-4 py-2 rounded-md w-40 ${
-              selectedButton === "Appointed"
-                ? "bg-gradient-to-r from-[#2061f5] to-[#13398f] text-white"
-                : "bg-gray-100 text-black"
-            }`}
-          >
-            Appointed
-          </button>
-          
-        </div>
-        <div className="flex space-x-2 items-center">
-          {Shared.Search}
-          <Input
-            className="bg-white"
-            placeholder="Search patients..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <div className="h-full overflow-y-scroll">
-          {selectedButton !== "Assigned"?(<Table className="bg-white rounded-md">
-            <TableHeader>
-              <TableRow className="h-20">
-                <TableHead className="border text-black font-bold text-center">
-                  S.No.
-                </TableHead>
-                <TableHead className="border text-black font-bold text-center">
-                  Name
-                </TableHead>
-                <TableHead className="border text-black font-bold text-center">
-                  Email Id
-                </TableHead>
-                <TableHead className="border text-black font-bold text-center whitespace-nowrap">
-                  Reason for visit
-                </TableHead>
-                <TableHead className="border text-black font-bold text-center">
-                  Action
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredPatient.length > 0 ? (
-                filteredPatient.map((pat, index) => (
-                  <TableRow className="text-center" key={index}>
-                    <TableCell className="border">{index + 1}</TableCell>
-                    <TableCell className="border whitespace-nowrap">
-                      {pat.name}
-                    </TableCell>
-                    <TableCell className="border whitespace-nowrap">
-                      {pat.email}
-                    </TableCell>
-                    <TableCell className="border">{pat.reason}</TableCell>
-                    <TableCell className="border flex items-center justify-center">
-                      {selectedButton === "Pending" ? (
-                        <Dialog
-                          onOpenChange={(open) => {
-                            if (open) {
-                              getAppointmentDetails(pat.email);
-                            }
-                          }}
-                        >
-                          <DialogTrigger className="text-2xl">
-                            {Shared.Report}
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle className="font-medium text-center pb-3">
-                                Enter following details
-                              </DialogTitle>
-                              <DialogDescription>
-                                <form onSubmit={handleSubmit}>
-                                  <div className="form-group">
-                                    <label htmlFor="preferredDoctor">
-                                      Preferred Doctor
-                                    </label>
-                                    <input
-                                      type="text"
-                                      id="preferredDoctor"
-                                      name="preferredDoctor"
-                                      className="form-input"
-                                      placeholder="Enter preferred doctor's name"
-                                      value={docData?.pref_doc}
-                                      readOnly
-                                    />
-                                  </div>
-                                  <div className="form-group">
-                                    <label htmlFor="reason">
-                                      Reason for preference
-                                    </label>
-                                    <input
-                                      id="reason"
-                                      name="reason"
-                                      className="form-input"
-                                      placeholder="Enter reason"
-                                      value={docData?.doc_reason}
-                                      readOnly
-                                    />
-                                  </div>
-                                  <div className="form-group">
-                                    <label htmlFor="appointment">
-                                      Doctor Assigned*
-                                    </label>
-                                    <select
-                                      id="appointment"
-                                      name="appointment"
-                                      className="form-input"
-                                      value={dialogData.pref_doc}
-                                      onChange={(e) =>
-                                        setDialogData({
-                                          ...dialogData,
-                                          pref_doc: e.target.value,
-                                        })
-                                      }
-                                    >
-                                      <option value="">Select a doctor</option>
-                                      {doctors.map((doctor) => (
-                                        <option
-                                          key={doctor.id}
-                                          value={doctor.id}
-                                        >
-                                          {doctor.name}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  </div>
-
-                                  <div className="flex justify-between">
-                                    <div className="form-group">
-                                      <label
-                                        htmlFor="temperature"
-                                        className="whitespace-nowrap"
-                                      >
-                                        Current Temperature* (in °F)
-                                      </label>
-                                      <input
-                                        type="number"
-                                        id="temperature"
-                                        name="temperature"
-                                        min={0}
-                                        className="form-input"
-                                        placeholder="Enter temperature"
-                                        value={dialogData.temperature}
-                                        onChange={(e) =>
-                                          setDialogData({
-                                            ...dialogData,
-                                            temperature: e.target.value,
-                                          })
-                                        }
-                                      />
-                                    </div>
-                                    <div className="form-group">
-                                      <label htmlFor="weight">
-                                        Current Weight* (in Kg)
-                                      </label>
-                                      <input
-                                        type="number"
-                                        id="weight"
-                                        name="weight"
-                                        min={0}
-                                        step={0.01}
-                                        className="form-input"
-                                        placeholder="Enter weight"
-                                        value={dialogData.weight}
-                                        onChange={(e) =>
-                                          setDialogData({
-                                            ...dialogData,
-                                            weight: e.target.value,
-                                          })
-                                        }
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <button
-                                      type="button"
-                                      className="reject-button"
-                                      onClick={async () => {
-                                        try {
-                                          const token = localStorage.getItem("token");
-                                          const email = pat.email
-                                          const emailSent = email.substring(0,email.indexOf("@"))+email.substring(email.indexOf("@")).replace(".",",");
-                                          const response = await axios.get(
-                                            `https://uhs-backend.onrender.com/api/AD/rejectAppointment?email=${emailSent}`,
-                                            {
-                                              headers: {
-                                                Authorization: `Bearer ${token}`,
-                                              },
-                                            }
-                                          );
-
-                                          if (response.status === 200) {
-                                            toast({
-                                              title: "Appointment Rejected",
-                                              description: response.data,
-                                            });
-                                            window.location.reload();
-                                          }
-                                        } catch (error) {
-                                          console.error(
-                                            "Error Rejecting appointment details:",
-                                            error
-                                          );
-                                          handleError(
-                                            error,
-                                            "Failed to reject appointment"
-                                          );
-                                        }
-                                      }}
-                                    >
-                                      Reject
-                                    </button>
-                                    <button
-                                      type="submit"
-                                      className="submit-button"
-                                    >
-                                      Submit
-                                    </button>
-                                  </div>
-                                </form>
-                              </DialogDescription>
-                            </DialogHeader>
-                          </DialogContent>
-                        </Dialog>
-                      ) : (
-                        <div className="flex items-center gap-5 text-2xl">
-                          <button
-                            onClick={() =>
-                              navigate(`/appointed-prescription?id=${pat.aptId}`)
-                            }
-                          >
-                            {Shared.Prescription}
-                          </button>
-
-                          <button
-                            onClick={() => handleCompleteAppointment(pat.email)}
-                          >
-                            {Shared.SquareCheck}
-                          </button>
-                          <button
-                            onClick={() => handleRejectAppointment(pat.email)}
-                          >
-                            {Shared.SquareCross}
-                          </button>
-                          <Dialog
-                          onOpenChange={(open) => {
-                            if (open) {
-                              fetchAvailableDoctors();
-                              setReassignPat({
-                                ...reassignPat,
-                                patientEmail:pat.email
-                              })
-                            }
-                          }}
-                        >
-                          <DialogTrigger className="text-2xl">
-                            {Shared.Report}
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle className="font-medium text-center pb-3">
-                                Reassign Patient
-                              </DialogTitle>
-                              <DialogDescription>
-                                <form onSubmit={handleReassign}>
-                                  <div className="form-group">
-                                    <label htmlFor="appointment">
-                                      Doctor Assigned*
-                                    </label>
-                                    <select
-                                      id="appointment"
-                                      name="appointment"
-                                      className="form-input"
-                                      value={reassignPat.doctorEmail}
-                                      onChange={(e) =>
-                                        setReassignPat({
-                                          ...reassignPat,
-                                          doctorEmail: e.target.value,
-                                        })
-                                      }
-                                    >
-                                      <option value="">Select a doctor</option>
-                                      {doctors.map((doctor) => (
-                                        <option
-                                          key={doctor.id}
-                                          value={doctor.id}
-                                        >
-                                          {doctor.name}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    
-                                    <button
-                                      type="submit"
-                                      className="submit-button"
-                                    >
-                                      Submit
-                                    </button>
-                                  </div>
-                                </form>
-                              </DialogDescription>
-                            </DialogHeader>
-                          </DialogContent>
-                        </Dialog>
-                        </div>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow className="text-center">
-                  <TableCell colSpan={5} className="border py-5">
-                    No patient available!
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>):(<Table className="bg-white rounded-md">
-            <TableHeader>
-              <TableRow className="h-20">
-                <TableHead className="border text-black font-bold text-center">
-                  Doctor Name
-                </TableHead>
-                <TableHead className="border text-black font-bold text-center">
-                  Patient Name
-                </TableHead>
-                <TableHead className="border text-black font-bold text-center whitespace-nowrap">
-                  Token Number
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {assignedData.length > 0 ? (
-                assignedData.map((pat, index) => (
-                  <TableRow className="text-center" key={index}>
-                    <TableCell className="border whitespace-nowrap">
-                      {pat.doctorName}
-                    </TableCell>
-                    <TableCell className="border whitespace-nowrap">
-                      {pat.patientName}
-                    </TableCell>
-                    <TableCell className="border">{pat.tokenNum}</TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow className="text-center">
-                  <TableCell colSpan={5} className="border py-5">
-                    No patient available!
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>)}
-        </div>
+      <div className="flex space-x-2 items-center bg-white p-4 rounded-lg">
+        <Search className="text-gray-500" />
+        <Input
+          placeholder="Search patients..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="bg-transparent border-none focus-visible:ring-0"
+        />
       </div>
-    </>
+
+      {loading ? (
+        <div className="space-y-4">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-20 w-full bg-gray-200/50 animate-pulse rounded-lg" />
+          ))}
+        </div>
+      ) : (
+        <Table className="bg-white rounded-lg">
+          <TableHeader className="bg-gray-50">
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Reason</TableHead>
+              <TableHead>Doctor</TableHead>
+              <TableHead>Token</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredPatients.map((patient) => (
+              <TableRow key={patient.id}>
+                <TableCell className="font-medium">{patient.name}</TableCell>
+                <TableCell>{patient.email || "-"}</TableCell>
+                <TableCell>{patient.reason || "-"}</TableCell>
+                <TableCell>{patient.doctorName || "-"}</TableCell>
+                <TableCell>{patient.tokenNum || "-"}</TableCell>
+                <TableCell>
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      patient.status === "Pending"
+                        ? "bg-amber-100 text-amber-800"
+                        : patient.status === "Assigned"
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-green-100 text-green-800"
+                    }`}
+                  >
+                    {patient.status}
+                  </span>
+                </TableCell>
+                <TableCell className="space-x-2 flex justify-end">
+                  {patient.status === "Pending" && (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            if (patient.email) {
+                              setCurrentPatientEmail(patient.email);
+                              fetchAvailableDoctors();
+                            }
+                          }}
+                        >
+                          <Stethoscope className="mr-2 h-4 w-4" /> Assign
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Assign Doctor</DialogTitle>
+                          <DialogDescription>
+                            Assign a doctor to {patient.name}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            handleAction("assign", patient.email);
+                          }}
+                          className="space-y-4"
+                        >
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium">
+                              Select Doctor *
+                            </label>
+                            <select
+                              className="w-full p-2 border rounded-md"
+                              value={dialogData.pref_doc}
+                              onChange={(e) =>
+                                setDialogData({
+                                  ...dialogData,
+                                  pref_doc: e.target.value,
+                                })
+                              }
+                              required
+                            >
+                              <option value="">Choose a doctor</option>
+                              {doctors.map((doctor) => (
+                                <option key={doctor.id} value={doctor.id}>
+                                  {doctor.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <label className="block text-sm font-medium">
+                                Temperature (°F) *
+                              </label>
+                              <Input
+                                type="number"
+                                min="90"
+                                max="110"
+                                step="0.1"
+                                value={dialogData.temperature}
+                                onChange={(e) =>
+                                  setDialogData({
+                                    ...dialogData,
+                                    temperature: e.target.value,
+                                  })
+                                }
+                                required
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="block text-sm font-medium">
+                                Weight (kg) *
+                              </label>
+                              <Input
+                                type="number"
+                                min="0"
+                                step="0.1"
+                                value={dialogData.weight}
+                                onChange={(e) =>
+                                  setDialogData({
+                                    ...dialogData,
+                                    weight: e.target.value,
+                                  })
+                                }
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between">
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              onClick={() => handleAction("reject", patient.email)}
+                              disabled={submitting}
+                            >
+                              Reject
+                            </Button>
+                            <Button type="submit" disabled={submitting}>
+                              {submitting ? "Submitting..." : "Confirm"}
+                            </Button>
+                          </div>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  )}
+
+                  {/* {patient.status === "Assigned" && (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setDialogData({
+                              ...dialogData,
+                              patientEmail: patient.email || "",
+                            });
+                            fetchAvailableDoctors();
+                          }}
+                        >
+                          Reassign
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Reassign Patient</DialogTitle>
+                          <DialogDescription>
+                            Reassign {patient.name} to another doctor
+                          </DialogDescription>
+                        </DialogHeader>
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            handleAction("reassign", patient.email);
+                          }}
+                          className="space-y-4"
+                        >
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium">
+                              Select New Doctor *
+                            </label>
+                            <select
+                              className="w-full p-2 border rounded-md"
+                              value={dialogData.doctorEmail}
+                              onChange={(e) =>
+                                setDialogData({
+                                  ...dialogData,
+                                  doctorEmail: e.target.value,
+                                })
+                              }
+                              required
+                            >
+                              <option value="">Choose a doctor</option>
+                              {doctors.map((doctor) => (
+                                <option key={doctor.id} value={doctor.id}>
+                                  {doctor.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="flex justify-end space-x-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setDialogData({ ...dialogData, doctorEmail: "" })}
+                            >
+                              Cancel
+                            </Button>
+                            <Button type="submit" disabled={submitting}>
+                              {submitting ? "Updating..." : "Confirm Reassignment"}
+                            </Button>
+                          </div>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  )} */}
+
+                  {patient.status === "Appointed" && (
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => navigate(`/appointed-prescription?id=${patient.aptId}`)}
+                      >
+                        <FileText className="h-4 w-4 mr-2" /> Prescription
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleCompleteAppointment(patient.email || "")}
+                      >
+                        Complete
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleRejectAppointment(patient.email || "")}
+                      >
+                        Reject
+                      </Button>
+                    </div>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+
+      {!loading && filteredPatients.length === 0 && (
+        <div className="text-center py-12 text-gray-500">
+          No patients found matching your search
+        </div>
+      )}
+    </div>
   );
 };
 
