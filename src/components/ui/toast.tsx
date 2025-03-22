@@ -3,6 +3,7 @@ import * as ToastPrimitives from "@radix-ui/react-toast";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import { Cross2Icon } from "@radix-ui/react-icons";
+import { CheckCircleIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
 const ToastProvider = ToastPrimitives.Provider;
 
@@ -15,8 +16,7 @@ const ToastViewport = React.forwardRef<
     className={cn(
       "fixed top-0 right-0 z-[100] flex max-h-screen w-full flex-col-reverse p-2 sm:max-w-[320px] gap-1",
       className
-    )
-  }
+    )}
     {...props}
   />
 ));
@@ -29,7 +29,7 @@ const toastVariants = cva(
       variant: {
         default: "border bg-background backdrop-blur-sm text-foreground",
         destructive:
-          "destructive group border-red-100 bg-red-50 backdrop-blur-sm text-red-600",
+          "destructive group border-red-100 bg-red-50 backdrop-blur-sm text-red-600 dark:bg-red-900 dark:text-red-400",
       },
     },
     defaultVariants: {
@@ -42,16 +42,36 @@ const Toast = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
     VariantProps<typeof toastVariants>
->(({ className, variant, ...props }, ref) => {
+>(({ className, variant, children, ...props }, ref) => {
+  const icon = variant === "destructive" ? (
+    <ExclamationTriangleIcon className="h-5 w-5 text-red-600" />
+  ) : (
+    <CheckCircleIcon className="h-5 w-5 text-green-600" />
+  );
+
   return (
     <ToastPrimitives.Root
       ref={ref}
+      role={variant === "destructive" ? "alert" : "status"}
+      aria-live={variant === "destructive" ? "assertive" : "polite"}
+      duration={3000}
       className={cn(toastVariants({ variant }), className)}
-      duration={4000}
       {...props}
-    />
+    >
+      <div className="flex gap-2 items-start">
+        {icon}
+        <div className="flex-1">
+          {children} {/* ✅ children instead of props */}
+        </div>
+      </div>
+
+      <ToastClose />
+
+      <div className="absolute bottom-0 left-0 h-1 bg-indigo-500 animate-toastProgress" />
+    </ToastPrimitives.Root>
   );
 });
+
 Toast.displayName = ToastPrimitives.Root.displayName;
 
 const ToastAction = React.forwardRef<
@@ -111,8 +131,19 @@ const ToastDescription = React.forwardRef<
 ));
 ToastDescription.displayName = ToastPrimitives.Description.displayName;
 
-type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>;
+// Progress bar animation
+const style = document.createElement('style');
+style.innerHTML = `
+@keyframes toastProgress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+.animate-toastProgress {
+  animation: toastProgress 3s linear forwards;
+}`;
+document.head.appendChild(style);
 
+type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>;
 type ToastActionElement = React.ReactElement<typeof ToastAction>;
 
 export {
