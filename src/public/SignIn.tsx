@@ -104,6 +104,11 @@ const SignIn = () => {
       localStorage.setItem("roles", roles[0].replace("ROLE_", "").toLowerCase());
       localStorage.setItem("longitude", location.longitude);
       localStorage.setItem("latitude", location.latitude);
+      
+      localStorage.setItem("locationName", locations.find(loc => 
+        loc.latitude === location.latitude && 
+        loc.longitude === location.longitude
+      )?.locationName || "Unknown Location");
   
       toast({
         variant: "default",

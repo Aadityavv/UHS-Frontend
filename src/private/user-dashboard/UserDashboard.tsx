@@ -8,11 +8,11 @@ import dayjs from 'dayjs';
 import {
   Activity,
   Calendar,
-  ClipboardList,
   AlertCircle,
   Stethoscope,
   Pill,
-  User
+  User,
+  MapPin
 } from "lucide-react";
 import Skeleton from '@mui/material/Skeleton';
 import { ToastAction } from "@radix-ui/react-toast";
@@ -52,6 +52,7 @@ const UserDashboard = () => {
   const [activeMedications, setActiveMedications] = useState<Medication[]>([]);
   const [lastAppointmentDate, setLastAppointmentDate] = useState<string | null>(null);
   const [loadingMedications, setLoadingMedications] = useState(true);
+  const [locationName, setLocationName] = useState("");
 
   
   // ✅ New state for allergies and BMI
@@ -168,6 +169,9 @@ const UserDashboard = () => {
       navigate("/");
       return;
     }
+
+    const savedLocation = localStorage.getItem("locationName");
+    setLocationName(savedLocation || "Location not available");
 
     const fetchData = async () => {
       setLoading(true);
@@ -315,8 +319,8 @@ const UserDashboard = () => {
                       <span>{userDetails.bloodGroup || "N/A"}</span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
-                      <ClipboardList className="h-4 w-4 mr-2 text-indigo-600" />
-                      <span>Token: {status.tokenNo}</span>
+                      <MapPin className="h-4 w-4 mr-2 text-indigo-600" />
+                      <span>{locationName}</span>
                     </div>
                   </div>
                 </>
