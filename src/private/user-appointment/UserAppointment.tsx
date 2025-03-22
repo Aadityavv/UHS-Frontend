@@ -9,8 +9,8 @@ import dayjs from 'dayjs';
 import {
   Calendar,
   User,
-  ClipboardList,
-  Activity
+  Activity,
+  MapPin
 } from "lucide-react";
 import Skeleton from "@mui/material/Skeleton";
 import { ToastAction } from "@radix-ui/react-toast";
@@ -34,11 +34,13 @@ const UserAppointment = () => {
     imageUrl: "",
   });
 
-  const [status, setStatus] = useState({
+  const [, setStatus] = useState({
     appointmentStatus: "",
     doctorName: "",
     tokenNo: "",
   });
+
+  const [locationName, setLocationName] = useState("");
 
   // Fetch user, doctors, and status data
   useEffect(() => {
@@ -47,6 +49,9 @@ const UserAppointment = () => {
       navigate("/");
       return;
     }
+
+    const savedLocation = localStorage.getItem("locationName");
+    setLocationName(savedLocation || "Location not available");
 
     // const fetchData = async () => {
     //   try {
@@ -305,8 +310,8 @@ const UserAppointment = () => {
                       <span>{userDetails.bloodGroup || "N/A"}</span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
-                      <ClipboardList className="h-4 w-4 mr-2 text-indigo-600" />
-                      <span>Token: {status.tokenNo || "N/A"}</span>
+                      <MapPin className="h-4 w-4 mr-2 text-indigo-600" />
+                      <span>{locationName}</span>
                     </div>
                   </div>
                 </>
