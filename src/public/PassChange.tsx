@@ -122,7 +122,7 @@ const PassChange = () => {
               onClick={() => setShowPassword((prev) => !prev)}
               className="absolute right-3 top-8 text-gray-500 hover:text-indigo-500"
             >
-              {showPassword ? <EyeOff className="h-5 w-5 pt-2" /> : <Eye className="h-5 w-5 pt-2" />}
+              {showPassword ? <EyeOff className="h-5 w-5 mt-1" /> : <Eye className="h-5 w-5 mt-1" />}
             </button>
           </div>
 
@@ -144,7 +144,7 @@ const PassChange = () => {
               onClick={() => setShowRepeatPassword((prev) => !prev)}
               className="absolute right-3 top-8 text-gray-500 hover:text-indigo-500"
             >
-              {showRepeatPassword ? <EyeOff className="h-5 w-5 pt-2" /> : <Eye className="h-5 w-5 pt-2" />}
+              {showRepeatPassword ? <EyeOff className="h-5 w-5 mt-1" /> : <Eye className="h-5 w-5 mt-1" />}
             </button>
           </div>
 
