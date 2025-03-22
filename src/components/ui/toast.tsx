@@ -15,7 +15,8 @@ const ToastViewport = React.forwardRef<
     className={cn(
       "fixed top-0 right-0 z-[100] flex max-h-screen w-full flex-col-reverse p-2 sm:max-w-[320px] gap-1",
       className
-    )}
+    )
+  }
     {...props}
   />
 ));
@@ -46,6 +47,7 @@ const Toast = React.forwardRef<
     <ToastPrimitives.Root
       ref={ref}
       className={cn(toastVariants({ variant }), className)}
+      duration={4000}
       {...props}
     />
   );
