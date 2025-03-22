@@ -74,6 +74,11 @@ const SignIn = () => {
     }
   };
 
+  const [passRole, setPassRole] = useState<string>("patient");
+  const [recoveryEmail, setRecoveryEmail] = useState("");
+  const [resetProcess, setResetProcess] = useState("Submit");
+
+
   const handleSignIn = async () => {
     if (location.latitude === "-1" || location.longitude === "-1") {
       return toast({
@@ -176,6 +181,57 @@ const SignIn = () => {
       });
     }
   };
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+  
+    if (!recoveryEmail) {
+      return toast({
+        variant: "destructive",
+        title: "Missing Email",
+        description: "Please enter your registered email.",
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
+      });
+    }
+  
+    setResetProcess("Loading...");
+  
+    const formattedEmail =
+      recoveryEmail.substring(0, recoveryEmail.indexOf("@")) +
+      recoveryEmail.substring(recoveryEmail.indexOf("@")).replace(/\./g, ",")
+
+  
+    try {
+      const response = await axios.get(
+        `https://uhs-backend.onrender.com/api/auth/passwordChangeRequest?email=${formattedEmail}&role=${passRole}`
+      );
+  
+      if (response.status === 200) {
+        toast({
+          variant: "default",
+          title: "Reset Link Sent",
+          description: response.data,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Request Unsuccessful",
+          description: response.data.message,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
+        });
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Request Failed",
+        description: error.response?.data?.message || "Something went wrong",
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
+      });
+    } finally {
+      setResetProcess("Submit");
+    }
+  };
+  
   
 
   useEffect(() => {
@@ -444,43 +500,55 @@ const SignIn = () => {
                 </p>
               )}
               <Dialog>
-                <DialogTrigger asChild>
-                  <button className="text-sm text-indigo-600 hover:underline font-medium">
-                    Forgot password?
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="rounded-lg">
-                  <DialogTitle className="text-lg">Password Recovery</DialogTitle>
-                  <DialogDescription>
-                    <form className="space-y-3">
-                      <div>
-                        <Label className="text-sm">Account Type</Label>
-                        <div className="grid grid-cols-3 gap-2 mt-1">
-                          {ROLES.map(({ value, label }) => (
-                            <Button
-                              key={value}
-                              variant={role === value ? "default" : "outline"}
-                              onClick={() => setRole(value)}
-                              className="h-8 text-xs"
-                            >
-                              {label}
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                      <div>
-                        <Label className="text-sm">Registered Email</Label>
-                        <Input
-                          type="email"
-                          placeholder="Enter email"
-                          className="mt-1 h-8 text-sm"
-                        />
-                      </div>
-                      <Button className="w-full h-8 text-sm">Reset Password</Button>
-                    </form>
-                  </DialogDescription>
-                </DialogContent>
-              </Dialog>
+  <DialogTrigger asChild>
+    <button className="text-sm text-indigo-600 hover:underline font-medium">
+      Forgot password?
+    </button>
+  </DialogTrigger>
+  <DialogContent className="rounded-lg">
+    <DialogTitle className="text-lg">Password Recovery</DialogTitle>
+    <DialogDescription>
+      <form className="space-y-3" onSubmit={handlePasswordReset}>
+        <div>
+          <Label className="text-sm">Account Type</Label>
+          <div className="grid grid-cols-3 gap-2 mt-1">
+            {ROLES.map(({ value, label }) => (
+              <Button
+                key={value}
+                type="button"
+                variant={passRole === value ? "default" : "outline"}
+                onClick={() => setPassRole(value)}
+                className="h-8 text-xs"
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <Label className="text-sm">Registered Email</Label>
+          <Input
+            type="email"
+            placeholder="Enter email"
+            value={recoveryEmail}
+            onChange={(e) => setRecoveryEmail(e.target.value)}
+            className="mt-1 h-8 text-sm"
+          />
+        </div>
+
+        <Button
+          type={resetProcess === "Submit" ? "submit" : "button"}
+          disabled={resetProcess !== "Submit"}
+          className="w-full h-8 text-sm"
+        >
+          {resetProcess}
+        </Button>
+      </form>
+    </DialogDescription>
+  </DialogContent>
+</Dialog>
+
             </div>
           </motion.div>
         </div>
