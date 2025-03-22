@@ -129,12 +129,12 @@ const PassChange = () => {
           {/* Repeat Password */}
           <div className="relative">
             <Label htmlFor="repeatPassword" className="text-white text-sm">
-              Repeat Password
+              Confirm Password
             </Label>
             <Input
               type={showRepeatPassword ? "text" : "password"}
               id="repeatPassword"
-              placeholder="Repeat Password"
+              placeholder="Confirm Password"
               value={input.repeatPassword}
               onChange={onInputChange}
               className="mt-1 h-10 pr-10 bg-white rounded-md text-black"
