@@ -163,14 +163,6 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/doctor-check-in-out",
-        element: (
-          <DoctorCheckInLayout>
-            <DoctorCheckIn />
-          </DoctorCheckInLayout>
-        ),
-      },
-      {
         path: "/doctor-prescription",
         element: (
           <CommonPrescriptionLayout prevRef="/patient-details">
@@ -199,6 +191,14 @@ const router = createBrowserRouter([
           <AssistantDoctorDashboardLayout>
             <AssistantDoctorDashboard />
           </AssistantDoctorDashboardLayout>
+        ),
+      },
+      {
+        path: "/doctor-check-in-out",
+        element: (
+          <DoctorCheckInLayout>
+            <DoctorCheckIn />
+          </DoctorCheckInLayout>
         ),
       },
       {
