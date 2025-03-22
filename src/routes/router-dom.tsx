@@ -92,14 +92,6 @@ const router = createBrowserRouter([
           </NewAssistantDoctorLayout>
         ),
       },
-      {
-        path: "/analytics-dashboard",
-        element: (
-          <AnalyticsDashboardLayout>
-            <AnalyticsDashboard />
-          </AnalyticsDashboardLayout>
-        ),
-      },
     ],
   },
 
@@ -218,14 +210,6 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/medicine-stock",
-        element: (
-          <MedicineStockLayout>
-            <MedicineStock />
-          </MedicineStockLayout>
-        ),
-      },
-      {
         path: "/patient-list",
         element: (
           <PatientListLayout>
@@ -296,6 +280,21 @@ const router = createBrowserRouter([
           </CommonPrescriptionLayout>
         ),
       },
+      
+    ],
+  },
+
+  {
+    element: <ProtectedRoute allowedRoles={["doctor", "ad","admin"]} />,
+    children: [
+      {
+        path: "/medicine-stock",
+        element: (
+          <MedicineStockLayout>
+            <MedicineStock />
+          </MedicineStockLayout>
+        ),
+      },
       {
         path: "/analytics-dashboard",
         element: (
@@ -304,8 +303,9 @@ const router = createBrowserRouter([
           </AnalyticsDashboardLayout>
         ),
       },
-    ],
-  },
+      
+    ]
+  }
 ]);
 
 export default router;
