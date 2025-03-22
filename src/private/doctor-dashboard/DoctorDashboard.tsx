@@ -296,11 +296,11 @@ const DoctorDashboard = () => {
                 >
                   {/* Quick Stats */}
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white p-4 rounded-xl shadow-sm">
+                    <div className="bg-white p-4 rounded-xl border shadow-lg">
                       <p className="text-sm text-gray-500">Total Patients</p>
                       <p className="text-2xl font-bold">{totalPatients}</p>
                     </div>
-                    <div className="bg-white p-4 rounded-xl shadow-sm">
+                    <div className="bg-white p-4 rounded-xl border shadow-lg">
                       <p className="text-sm text-gray-500">Patients Treated</p>
                       <p className="text-2xl font-bold">{patientsLeft}</p>
                     </div>
@@ -333,7 +333,7 @@ const DoctorDashboard = () => {
                   </div>
     
                   {/* Features List */}
-                  <div className="bg-white rounded-xl shadow-sm pb-1">
+                  <div className="bg-white rounded-xl shadow-lg border pb-1 mt-2">
                     {[
                       { 
                         title: "Patient Details",
