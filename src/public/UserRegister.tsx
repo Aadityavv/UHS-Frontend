@@ -120,7 +120,14 @@ const formSchema = z
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
     message: "Passwords do not match",
-  });
+  })
+  .refine(
+    (data) => data.phoneNumber !== data.emergencyContact,
+    {
+      message: "Emergency contact cannot be the same as phone number",
+      path: ["emergencyContact"], 
+    }
+  );
 
 const UserRegister = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
