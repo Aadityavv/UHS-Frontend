@@ -506,15 +506,22 @@ const DoctorDashboard = () => {
                       onClick={() => navigate("/patient-details")}
                     >
                       <h3 className={`text-lg font-semibold ${
-                        token !== "No Patient Assigned" ? "text-gray-900" : "text-gray-100"
-                      } mb-4`}>Patient Details</h3>
-                      <p className={`text-sm ${
-                        token !== "No Patient Assigned" ? "text-gray-600" : "text-gray-100"
-                      }`}>View and manage patient details.</p>
-
-                      <p className={`text-sm ${
-                        token !== "No Patient Assigned" ? "text-gray-600" : "text-gray-100"
-                      }`}>Token: {token}.</p>
+  token !== "No Patient Assigned" ? "text-gray-900" : "text-gray-100"
+} mb-4`}>
+  Patient Details
+</h3>
+<p className={`text-sm ${
+  token !== "No Patient Assigned" ? "text-gray-600" : "text-gray-100"
+}`}>
+  View and manage patient details.
+</p>
+{token !== "No Patient Assigned" && (
+  <p className={`text-sm ${
+    token !== "No Patient Assigned" ? "text-gray-600" : "text-gray-100"
+  }`}>
+    Token: {token}
+  </p>
+)}
                     </motion.div>
 
                     <motion.div
