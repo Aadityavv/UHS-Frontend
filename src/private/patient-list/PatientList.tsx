@@ -156,6 +156,8 @@ const PatientList = () => {
 
   useEffect(() => {
     fetchAllPatients();
+    const interval = setInterval(fetchAllPatients, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -493,7 +495,7 @@ const PatientList = () => {
                 <div className="mt-4 space-y-2 text-sm">
                   <p><strong>Reason:</strong> {patient.reason || "-"}</p>
                   <p><strong>Preferred Doctor:</strong> {patient.preferredDoctor || "-"}</p>
-                  <p><strong>Doctor:</strong> {patient.doctorName || "-"}</p>
+                  <p><strong>Assigned Doctor:</strong> {patient.doctorName || "-"}</p>
                   <p><strong>Token:</strong> {patient.tokenNum || "-"}</p>
                 </div>
                 <div className="mt-4 flex space-x-2">
