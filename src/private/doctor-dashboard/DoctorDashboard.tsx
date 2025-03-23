@@ -273,25 +273,31 @@ const DoctorDashboard = () => {
         {isMobile ? (
           <>
             {/* Mobile Top Bar */}
-            <div className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50 p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="bg-indigo-100 p-2 rounded-lg">
-                    <Stethoscope className="h-6 w-6 text-indigo-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Doctor Dashboard</p>
-                    <p className="text-sm text-gray-500">
-                      {status === "Available" ? "Available" : "Not Available"}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-xl font-bold">{token}</p>
-                  <p className="text-xs text-gray-500">Token Assigned</p>
-                </div>
-              </div>
-            </div>
+            <div
+  className={`fixed top-0 left-0 right-0 bg-white shadow-sm z-50 ${
+    token === "No Patient Assigned" ? "pt-4" : "pt-4"
+  } px-4 pb-2`}
+>
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-3">
+      <div className="bg-indigo-100 p-2 rounded-lg">
+        <Stethoscope className="h-6 w-6 text-indigo-600" />
+      </div>
+      <div>
+        <p className="font-medium">Doctor Dashboard</p>
+        <p className="text-sm text-gray-500">
+          {status === "Available" ? "Available" : "Not Available"}
+        </p>
+      </div>
+    </div>
+    {token !== "No Patient Assigned" && (
+      <div className="text-right">
+        <p className="text-xl font-bold">{token}</p>
+        <p className="text-xs text-gray-500">Token Assigned</p>
+      </div>
+    )}
+  </div>
+</div>
 
             {/* Mobile Main Content */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24">
