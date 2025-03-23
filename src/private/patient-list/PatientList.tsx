@@ -162,9 +162,7 @@ const PatientList = () => {
 
   useEffect(() => {
     const filtered = patients.filter((p) =>
-      Object.values(p).some((value) =>
-        value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      p.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredPatients(filtered);
   }, [searchQuery, patients]);
