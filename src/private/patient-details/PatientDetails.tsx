@@ -146,6 +146,7 @@ const PatientDetails = () => {
 
   const handleSubmit = async () => {
     try {
+      // Validate Diagnosis
       if (!diagnosis.trim()) {
         toast({
           variant: "destructive",
@@ -155,37 +156,66 @@ const PatientDetails = () => {
         });
         return;
       }
-
-          if (!dietary.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Validation Error",
-        description: "Recommendations are required",
-        action: <ToastAction altText="Understand">OK</ToastAction>,
-      });
-      return;
-    }
-
-    if (!tests.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Validation Error",
-        description: "Required tests are needed",
-        action: <ToastAction altText="Understand">OK</ToastAction>,
-      });
-      return;
-    }
-
+  
+      // Validate Recommendations
+      if (!dietary.trim()) {
+        toast({
+          variant: "destructive",
+          title: "Validation Error",
+          description: "Recommendations are required",
+          action: <ToastAction altText="Understand">OK</ToastAction>,
+        });
+        return;
+      }
+  
+      // Validate Tests
+      if (!tests.trim()) {
+        toast({
+          variant: "destructive",
+          title: "Validation Error",
+          description: "Required tests are needed",
+          action: <ToastAction altText="Understand">OK</ToastAction>,
+        });
+        return;
+      }
+  
+      // Validate Medications
       const medAry = rows
         .map((_, index) => {
-          const medicine = medLst?.[index];
-          if (!medicine) return null;
-
-          const duration = parseInt(
-            (document.querySelector(`.duration-${index}`) as HTMLInputElement)?.value || "0"
-          );
-
-          if (duration < 1) {
+          const medicine = medLst?.[index]; // medicineName from selectedMedicine
+          const durationValue = (document.querySelector(`.duration-${index}`) as HTMLInputElement)?.value || "0";
+          const dosageMorning = (document.querySelector(`.dosage-morning-${index}`) as HTMLInputElement)?.value || "0";
+          const dosageAfternoon = (document.querySelector(`.dosage-afternoon-${index}`) as HTMLInputElement)?.value || "0";
+          const dosageEvening = (document.querySelector(`.dosage-evening-${index}`) as HTMLInputElement)?.value || "0";
+          const suggestion = (document.querySelector(`.suggestion-${index}`) as HTMLInputElement)?.value || "";
+  
+          // Check if any field is filled in (duration or dosage)
+          const isAnyFieldFilled =
+            parseFloat(durationValue) > 0 ||
+            parseFloat(dosageMorning) > 0 ||
+            parseFloat(dosageAfternoon) > 0 ||
+            parseFloat(dosageEvening) > 0 ||
+            suggestion.trim() !== "";
+  
+          // If fields are filled but medicine is NOT selected
+          if (isAnyFieldFilled && !medicine) {
+            toast({
+              variant: "destructive",
+              title: "Validation Error",
+              description: `Choose medicine for row ${index + 1}`,
+              action: <ToastAction altText="Understand">OK</ToastAction>,
+            });
+            throw new Error("Validation failed");
+          }
+  
+          // If everything is empty and no medicine, skip adding to meds array
+          if (!isAnyFieldFilled && !medicine) {
+            return null; // This row gets skipped
+          }
+  
+          // If medicine is selected and duration isn't valid
+          const duration = parseInt(durationValue);
+          if (medicine && duration < 1) {
             toast({
               variant: "destructive",
               title: "Validation Error",
@@ -194,37 +224,32 @@ const PatientDetails = () => {
             });
             throw new Error("Validation failed");
           }
-
+  
           return {
             medicine,
-            dosageMorning: parseFloat(
-              (document.querySelector(`.dosage-morning-${index}`) as HTMLInputElement)?.value || "0"
-            ),
-            dosageAfternoon: parseFloat(
-              (document.querySelector(`.dosage-afternoon-${index}`) as HTMLInputElement)?.value || "0"
-            ),
-            dosageEvening: parseFloat(
-              (document.querySelector(`.dosage-evening-${index}`) as HTMLInputElement)?.value || "0"
-            ),
+            dosageMorning: parseFloat(dosageMorning),
+            dosageAfternoon: parseFloat(dosageAfternoon),
+            dosageEvening: parseFloat(dosageEvening),
             duration,
-            suggestion: (document.querySelector(`.suggestion-${index}`) as HTMLInputElement)?.value || "",
+            suggestion,
           };
         })
-        .filter(Boolean);
-
+        .filter(Boolean); // Remove any null rows that are completely empty
+  
+      // Submit to backend
       const resp = await axios.post(
         "https://uhs-backend.onrender.com/api/doctor/prescription/submit",
         {
           diagnosis,
           dietaryRemarks: dietary,
           testNeeded: tests,
-          meds: medAry,
+          meds: medAry, // Could be an empty array and it's fine
         },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
-
+  
       toast({ title: "Success", description: resp.data });
       navigate("/doctor-dashboard");
     } catch (err: any) {
@@ -238,6 +263,7 @@ const PatientDetails = () => {
       }
     }
   };
+  
 
   const handleRelease = async () => {
     try {
