@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Search, FileText, Stethoscope } from "lucide-react";
+import { Search, FileText, Stethoscope, RefreshCcw } from "lucide-react";
 
 interface Patient {
   id: string;
@@ -31,6 +31,8 @@ interface Patient {
   reason?: string;
   aptId?: string;
   doctorName?: string;
+  preferredDoctor?: string;
+  reasonForPref?: string;
   tokenNum?: string;
   status: "Pending" | "Assigned" | "Appointed";
   rawData: any;
@@ -39,20 +41,19 @@ interface Patient {
 const PatientList = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]);
   const [dialogData, setDialogData] = useState({
     pref_doc: "",
     temperature: "",
     weight: "",
-    doctorEmail: "",
-    patientEmail: "",
   });
-  const [, setCurrentPatientEmail] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [doctors, setDoctors] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const encodeEmail = (email: string) => {
     const [localPart, domain] = email.split("@");
@@ -61,6 +62,7 @@ const PatientList = () => {
 
   const fetchAllPatients = async () => {
     try {
+      setLoading(true);
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No authentication token found");
 
@@ -76,41 +78,79 @@ const PatientList = () => {
         axios.get("https://uhs-backend.onrender.com/api/AD/getCompletedQueue", { headers }),
       ]);
 
-      const combinePatients = [
-        ...pendingRes.data.map((p: any) => ({
-          id: p.Id,
-          email: p.sapEmail,
-          name: p.name,
-          reason: p.reason,
-          aptId: p.aptId,
-          status: "Pending" as const,
-          rawData: p,
-        })),
-        ...assignedRes.data.map((p: any) => ({
-          id: p.PatientToken,
-          name: p.PatientName,
-          doctorName: p.doctorName,
-          tokenNum: p.PatientToken,
-          status: "Assigned" as const,
-          rawData: p,
-        })),
-        ...appointedRes.data.map((p: any) => ({
-          id: p.Id,
-          email: p.sapEmail,
-          name: p.name,
-          reason: p.reason,
-          aptId: p.aptId,
-          status: "Appointed" as const,
-          rawData: p,
-        })),
-      ];
+      const pendingPatients = await Promise.all(
+        pendingRes.data.map(async (p: any) => {
+          const { preferredDoctor, reasonForPref } = await fetchAppointmentDetails(p.sapEmail);
+          return {
+            id: p.Id,
+            email: p.sapEmail,
+            name: p.name,
+            reason: p.reason,
+            aptId: p.aptId,
+            status: "Pending" as const,
+            doctorName: "",
+            preferredDoctor,
+            reasonForPref,
+            rawData: p,
+          };
+        })
+      );
 
+      const assignedPatients = assignedRes.data.map((p: any) => ({
+        id: p.PatientToken,
+        name: p.PatientName,
+        email: p.sapEmail,
+        reason: p.reason,
+        aptId: p.aptId,
+        tokenNum: p.PatientToken,
+        doctorName: p.doctorName,
+        preferredDoctor: "-",
+        reasonForPref: "-",
+        status: "Assigned" as const,
+        rawData: p,
+      }));
+
+      const appointedPatients = appointedRes.data.map((p: any) => ({
+        id: p.Id,
+        email: p.sapEmail,
+        name: p.name,
+        reason: p.reason,
+        aptId: p.aptId,
+        doctorName: p.doctorName,
+        preferredDoctor: "-",
+        reasonForPref: "-",
+        status: "Appointed" as const,
+        rawData: p,
+      }));
+
+      const combinePatients = [...pendingPatients, ...assignedPatients, ...appointedPatients];
       setPatients(combinePatients);
       setFilteredPatients(combinePatients);
     } catch (error) {
       handleError(error, "Failed to fetch patients");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAppointmentDetails = async (email: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      const modifiedEmail = encodeEmail(email);
+      const response = await axios.get(
+        `https://uhs-backend.onrender.com/api/AD/getAptForm/${modifiedEmail}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const data = response.data;
+      return {
+        preferredDoctor: data.pref_doc?.name || "No Preferred Doctor",
+        reasonForPref: data.doc_reason || "-",
+      };
+    } catch (error) {
+      return { preferredDoctor: "-", reasonForPref: "-" };
     }
   };
 
@@ -152,56 +192,51 @@ const PatientList = () => {
     }
   };
 
-  const handleAction = async (action: string, email?: string) => {
-    if (!email) return;
+  const handleAction = async (action: string, patient: Patient | null) => {
+    if (!patient || !patient.email) return;
+
+    const token = localStorage.getItem("token");
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "X-Latitude": localStorage.getItem("latitude"),
+      "X-Longitude": localStorage.getItem("longitude"),
+    };
 
     try {
-      const token = localStorage.getItem("token");
       setSubmitting(true);
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        "X-Latitude": localStorage.getItem("latitude"),
-        "X-Longitude": localStorage.getItem("longitude"),
-      };
 
       if (action === "assign") {
         const weight = parseFloat(dialogData.weight);
         const temperature = parseFloat(dialogData.temperature);
 
-        if (isNaN(weight)) throw new Error("Weight must be a number");
-        if (isNaN(temperature)) throw new Error("Temperature must be a number");
-        if (weight <= 0 || weight > 300) throw new Error("Invalid weight value");
-        if (temperature < 90 || temperature > 110) throw new Error("Temperature out of range");
+        if (isNaN(weight) || weight <= 0 || weight > 300) {
+          throw new Error("Invalid weight value");
+        }
+        if (isNaN(temperature) || temperature < 90 || temperature > 110) {
+          throw new Error("Temperature out of range");
+        }
 
         await axios.post(
           "https://uhs-backend.onrender.com/api/AD/submitAppointment",
           {
-            weight: weight,
-            temperature: temperature,
+            weight,
+            temperature,
             doctorAss: dialogData.pref_doc,
-            patEmail: email, // Use original email for assignment
+            patEmail: patient.email,
           },
           { headers }
         );
-      } else if (action === "reassign") {
-        const modifiedEmail = encodeEmail(email);
-        await axios.post(
-          "https://uhs-backend.onrender.com/api/AD/reassign",
-          {
-            patientEmail: modifiedEmail,
-            doctorEmail: dialogData.doctorEmail,
-          },
-          { headers }
-        );
+
+        toast({ title: `Patient assigned successfully!` });
       } else if (action === "reject") {
-        const modifiedEmail = encodeEmail(email);
+        const modifiedEmail = encodeEmail(patient.email);
         await axios.get(
           `https://uhs-backend.onrender.com/api/AD/rejectAppointment?email=${modifiedEmail}`,
           { headers }
         );
+        toast({ title: "Appointment Rejected" });
       }
 
-      toast({ title: `Action ${action} successful` });
       fetchAllPatients();
     } catch (error) {
       handleError(error, `Failed to ${action} appointment`);
@@ -220,43 +255,15 @@ const PatientList = () => {
         "X-Longitude": localStorage.getItem("longitude"),
       };
 
-      const response = await axios.get(
+      await axios.get(
         `https://uhs-backend.onrender.com/api/AD/completeAppointment/${modifiedEmail}`,
         { headers }
       );
 
-      toast({
-        title: "Appointment Completed",
-        description: response.data,
-      });
-      fetchAllPatients(); // Refresh the patient list
+      toast({ title: "Appointment Completed" });
+      fetchAllPatients();
     } catch (error) {
       handleError(error, "Failed to complete appointment");
-    }
-  };
-
-  const handleRejectAppointment = async (email: string) => {
-    try {
-      const token = localStorage.getItem("token");
-      const modifiedEmail = encodeEmail(email);
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        "X-Latitude": localStorage.getItem("latitude"),
-        "X-Longitude": localStorage.getItem("longitude"),
-      };
-
-      const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/AD/rejectAppointment?email=${modifiedEmail}`,
-        { headers }
-      );
-
-      toast({
-        title: "Appointment Rejected",
-        description: response.data,
-      });
-      fetchAllPatients(); // Refresh the patient list
-    } catch (error) {
-      handleError(error, "Failed to reject appointment");
     }
   };
 
@@ -271,8 +278,9 @@ const PatientList = () => {
   };
 
   return (
-    <div className="bg-[#ECECEC] min-h-[84svh] p-8 space-y-8">
+    <div className="bg-[#ECECEC] min-h-[84svh] p-4 md:p-8 space-y-8">
       <Toaster />
+
       <div className="flex space-x-2 items-center bg-white p-4 rounded-lg">
         <Search className="text-gray-500" />
         <Input
@@ -281,6 +289,9 @@ const PatientList = () => {
           onChange={(e) => setSearchQuery(e.target.value)}
           className="bg-transparent border-none focus-visible:ring-0"
         />
+        <Button variant="outline" onClick={fetchAllPatients}>
+          <RefreshCcw className="h-4 w-4 mr-2" /> Refresh
+        </Button>
       </div>
 
       {loading ? (
@@ -290,27 +301,183 @@ const PatientList = () => {
           ))}
         </div>
       ) : (
-        <Table className="bg-white rounded-lg">
-          <TableHeader className="bg-gray-50">
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Reason</TableHead>
-              <TableHead>Doctor</TableHead>
-              <TableHead>Token</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+        <>
+          {/* DESKTOP */}
+          <div className="hidden md:block">
+            <Table className="bg-white rounded-lg">
+              <TableHeader className="bg-gray-50">
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Reason</TableHead>
+                  <TableHead>Preferred Doctor</TableHead>
+                  <TableHead>Doctor</TableHead>
+                  <TableHead>Token</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredPatients.map((patient) => (
+                  <TableRow key={patient.id}>
+                    <TableCell>{patient.name}</TableCell>
+                    <TableCell>{patient.email || "-"}</TableCell>
+                    <TableCell>{patient.reason || "-"}</TableCell>
+                    <TableCell>{patient.preferredDoctor || "-"}</TableCell>
+                    <TableCell>{patient.doctorName || "-"}</TableCell>
+                    <TableCell>{patient.tokenNum || "-"}</TableCell>
+                    <TableCell>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          patient.status === "Pending"
+                            ? "bg-amber-100 text-amber-800"
+                            : patient.status === "Assigned"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-green-100 text-green-800"
+                        }`}
+                      >
+                        {patient.status}
+                      </span>
+                    </TableCell>
+                    <TableCell className="space-x-2 flex justify-end">
+                      {patient.status === "Pending" && (
+                        <Dialog
+                          onOpenChange={(open) => {
+                            if (open) {
+                              setSelectedPatient(patient);
+                              fetchAvailableDoctors();
+                            }
+                          }}
+                        >
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <Stethoscope className="mr-2 h-4 w-4" /> Assign
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-md">
+                            <DialogHeader>
+                              <DialogTitle>Assign Doctor</DialogTitle>
+                              <DialogDescription>
+                                Assign a doctor to {patient.name}
+                                <br />
+                                <strong>Preferred Doctor:</strong> {patient.preferredDoctor}
+                                <br />
+                                <strong>Reason For Preference:</strong> {patient.reasonForPref}
+                              </DialogDescription>
+                            </DialogHeader>
+                            <form
+                              onSubmit={(e) => {
+                                e.preventDefault();
+                                handleAction("assign", selectedPatient);
+                              }}
+                              className="space-y-4"
+                            >
+                              <div>
+                                <label>Select Doctor *</label>
+                                <select
+                                  className="w-full p-2 border rounded-md"
+                                  value={dialogData.pref_doc}
+                                  onChange={(e) =>
+                                    setDialogData({ ...dialogData, pref_doc: e.target.value })
+                                  }
+                                  required
+                                >
+                                  <option value="">Choose a doctor</option>
+                                  {doctors.map((doctor) => (
+                                    <option key={doctor.id} value={doctor.id}>
+                                      {doctor.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <label>Temperature (°F) *</label>
+                                  <Input
+                                    type="number"
+                                    min="90"
+                                    max="110"
+                                    step="0.1"
+                                    value={dialogData.temperature}
+                                    onChange={(e) =>
+                                      setDialogData({ ...dialogData, temperature: e.target.value })
+                                    }
+                                    required
+                                  />
+                                </div>
+                                <div>
+                                  <label>Weight (kg) *</label>
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    step="0.1"
+                                    value={dialogData.weight}
+                                    onChange={(e) =>
+                                      setDialogData({ ...dialogData, weight: e.target.value })
+                                    }
+                                    required
+                                  />
+                                </div>
+                              </div>
+                              <div className="flex justify-between">
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  onClick={() => handleAction("reject", selectedPatient)}
+                                  disabled={submitting}
+                                >
+                                  Reject
+                                </Button>
+                                <Button type="submit" disabled={submitting}>
+                                  {submitting ? "Submitting..." : "Confirm"}
+                                </Button>
+                              </div>
+                            </form>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+
+                      {patient.status === "Appointed" && (
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/appointed-prescription?id=${patient.aptId}`)}
+                          >
+                            <FileText className="h-4 w-4 mr-2" /> Prescription
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCompleteAppointment(patient.email || "")}
+                          >
+                            Complete
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleAction("reject", patient)}
+                          >
+                            Reject
+                          </Button>
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* MOBILE */}
+          <div className="md:hidden space-y-4">
             {filteredPatients.map((patient) => (
-              <TableRow key={patient.id}>
-                <TableCell className="font-medium">{patient.name}</TableCell>
-                <TableCell>{patient.email || "-"}</TableCell>
-                <TableCell>{patient.reason || "-"}</TableCell>
-                <TableCell>{patient.doctorName || "-"}</TableCell>
-                <TableCell>{patient.tokenNum || "-"}</TableCell>
-                <TableCell>
+              <div key={patient.id} className="bg-white p-4 rounded-lg shadow-sm">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="font-medium">{patient.name}</p>
+                    <p className="text-sm text-gray-500">{patient.email || "-"}</p>
+                  </div>
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-medium ${
                       patient.status === "Pending"
@@ -322,21 +489,25 @@ const PatientList = () => {
                   >
                     {patient.status}
                   </span>
-                </TableCell>
-                <TableCell className="space-x-2 flex justify-end">
+                </div>
+                <div className="mt-4 space-y-2 text-sm">
+                  <p><strong>Reason:</strong> {patient.reason || "-"}</p>
+                  <p><strong>Preferred Doctor:</strong> {patient.preferredDoctor || "-"}</p>
+                  <p><strong>Doctor:</strong> {patient.doctorName || "-"}</p>
+                  <p><strong>Token:</strong> {patient.tokenNum || "-"}</p>
+                </div>
+                <div className="mt-4 flex space-x-2">
                   {patient.status === "Pending" && (
-                    <Dialog>
+                    <Dialog
+                      onOpenChange={(open) => {
+                        if (open) {
+                          setSelectedPatient(patient);
+                          fetchAvailableDoctors();
+                        }
+                      }}
+                    >
                       <DialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            if (patient.email) {
-                              setCurrentPatientEmail(patient.email);
-                              fetchAvailableDoctors();
-                            }
-                          }}
-                        >
+                        <Button variant="outline" size="sm">
                           <Stethoscope className="mr-2 h-4 w-4" /> Assign
                         </Button>
                       </DialogTrigger>
@@ -345,27 +516,26 @@ const PatientList = () => {
                           <DialogTitle>Assign Doctor</DialogTitle>
                           <DialogDescription>
                             Assign a doctor to {patient.name}
+                            <br />
+                            <strong>Preferred Doctor:</strong> {patient.preferredDoctor}
+                            <br />
+                            <strong>Reason For Preference:</strong> {patient.reasonForPref}
                           </DialogDescription>
                         </DialogHeader>
                         <form
                           onSubmit={(e) => {
                             e.preventDefault();
-                            handleAction("assign", patient.email);
+                            handleAction("assign", selectedPatient);
                           }}
                           className="space-y-4"
                         >
-                          <div className="space-y-2">
-                            <label className="block text-sm font-medium">
-                              Select Doctor *
-                            </label>
+                          <div>
+                            <label>Select Doctor *</label>
                             <select
                               className="w-full p-2 border rounded-md"
                               value={dialogData.pref_doc}
                               onChange={(e) =>
-                                setDialogData({
-                                  ...dialogData,
-                                  pref_doc: e.target.value,
-                                })
+                                setDialogData({ ...dialogData, pref_doc: e.target.value })
                               }
                               required
                             >
@@ -377,12 +547,9 @@ const PatientList = () => {
                               ))}
                             </select>
                           </div>
-
                           <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <label className="block text-sm font-medium">
-                                Temperature (°F) *
-                              </label>
+                            <div>
+                              <label>Temperature (°F) *</label>
                               <Input
                                 type="number"
                                 min="90"
@@ -390,39 +557,30 @@ const PatientList = () => {
                                 step="0.1"
                                 value={dialogData.temperature}
                                 onChange={(e) =>
-                                  setDialogData({
-                                    ...dialogData,
-                                    temperature: e.target.value,
-                                  })
+                                  setDialogData({ ...dialogData, temperature: e.target.value })
                                 }
                                 required
                               />
                             </div>
-                            <div className="space-y-2">
-                              <label className="block text-sm font-medium">
-                                Weight (kg) *
-                              </label>
+                            <div>
+                              <label>Weight (kg) *</label>
                               <Input
                                 type="number"
                                 min="0"
                                 step="0.1"
                                 value={dialogData.weight}
                                 onChange={(e) =>
-                                  setDialogData({
-                                    ...dialogData,
-                                    weight: e.target.value,
-                                  })
+                                  setDialogData({ ...dialogData, weight: e.target.value })
                                 }
                                 required
                               />
                             </div>
                           </div>
-
                           <div className="flex justify-between">
                             <Button
                               type="button"
                               variant="destructive"
-                              onClick={() => handleAction("reject", patient.email)}
+                              onClick={() => handleAction("reject", selectedPatient)}
                               disabled={submitting}
                             >
                               Reject
@@ -435,77 +593,6 @@ const PatientList = () => {
                       </DialogContent>
                     </Dialog>
                   )}
-
-                  {/* {patient.status === "Assigned" && (
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setDialogData({
-                              ...dialogData,
-                              patientEmail: patient.email || "",
-                            });
-                            fetchAvailableDoctors();
-                          }}
-                        >
-                          Reassign
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-md">
-                        <DialogHeader>
-                          <DialogTitle>Reassign Patient</DialogTitle>
-                          <DialogDescription>
-                            Reassign {patient.name} to another doctor
-                          </DialogDescription>
-                        </DialogHeader>
-                        <form
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                            handleAction("reassign", patient.email);
-                          }}
-                          className="space-y-4"
-                        >
-                          <div className="space-y-2">
-                            <label className="block text-sm font-medium">
-                              Select New Doctor *
-                            </label>
-                            <select
-                              className="w-full p-2 border rounded-md"
-                              value={dialogData.doctorEmail}
-                              onChange={(e) =>
-                                setDialogData({
-                                  ...dialogData,
-                                  doctorEmail: e.target.value,
-                                })
-                              }
-                              required
-                            >
-                              <option value="">Choose a doctor</option>
-                              {doctors.map((doctor) => (
-                                <option key={doctor.id} value={doctor.id}>
-                                  {doctor.name}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          <div className="flex justify-end space-x-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => setDialogData({ ...dialogData, doctorEmail: "" })}
-                            >
-                              Cancel
-                            </Button>
-                            <Button type="submit" disabled={submitting}>
-                              {submitting ? "Updating..." : "Confirm Reassignment"}
-                            </Button>
-                          </div>
-                        </form>
-                      </DialogContent>
-                    </Dialog>
-                  )} */}
 
                   {patient.status === "Appointed" && (
                     <div className="flex space-x-2">
@@ -526,23 +613,17 @@ const PatientList = () => {
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => handleRejectAppointment(patient.email || "")}
+                        onClick={() => handleAction("reject", patient)}
                       >
                         Reject
                       </Button>
                     </div>
                   )}
-                </TableCell>
-              </TableRow>
+                </div>
+              </div>
             ))}
-          </TableBody>
-        </Table>
-      )}
-
-      {!loading && filteredPatients.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
-          No patients found matching your search
-        </div>
+          </div>
+        </>
       )}
     </div>
   );
