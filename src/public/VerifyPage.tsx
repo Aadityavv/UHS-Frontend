@@ -49,7 +49,7 @@ const VerifyPage: React.FC = () => {
           setLoading(false);
 
           setTimeout(() => {
-            navigate("/login");
+            navigate("/");
           }, 3000);
         } else {
           const errorText = await response.text();
@@ -103,7 +103,7 @@ const VerifyPage: React.FC = () => {
             <h2 className="text-xl font-semibold text-white mb-4">{status}</h2>
             {status.includes("successfully") && (
               <Button
-                onClick={() => navigate("/login")}
+                onClick={() => navigate("/")}
                 className="w-full mt-4 h-10 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition duration-300"
               >
                 Go to Login
