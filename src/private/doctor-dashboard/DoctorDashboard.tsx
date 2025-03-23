@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ToastAction } from "@/components/ui/toast";
 import { motion } from "framer-motion";
 import Skeleton from '@mui/material/Skeleton';
-import { AlertCircle, Stethoscope, ChevronRight } from "lucide-react";
+import { AlertCircle, Stethoscope, ChevronRight, LogOut } from "lucide-react";
 
 const DoctorDashboard = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
@@ -226,6 +226,12 @@ const DoctorDashboard = () => {
       });
     }
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
+  };
+
   useEffect(() => {
     fetchPatientData();
     fetchTokenNum();
@@ -233,15 +239,15 @@ const DoctorDashboard = () => {
 
     const interval = setInterval(() => {
       fetchPatientData();
-    }, 30000);
+    }, 20000); // Refresh every 20 seconds
 
     const tokenInterval = setInterval(() => {
       fetchTokenNum();
-    }, 30000);
+    }, 20000); // Refresh every 20 seconds
 
     const statusInterval = setInterval(() => {
       fetchDoctorStatus();
-    }, 30000);
+    }, 20000); // Refresh every 20 seconds
 
     return () => {
       clearInterval(interval);
@@ -260,146 +266,149 @@ const DoctorDashboard = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-    return (
-      <>
-        <Toaster />
-        <div className="min-h-screen bg-gray-50">
-          {isMobile ? (
-            <>
-              {/* Mobile Top Bar */}
-              <div className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-indigo-100 p-2 rounded-lg">
-                      <Stethoscope className="h-6 w-6 text-indigo-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium">Doctor Dashboard</p>
-                      <p className="text-sm text-gray-500">
-                        {status === "Available" ? "Available" : "Not Available"}
-                      </p>
-                    </div>
+  return (
+    <>
+      <Toaster />
+      <div className="min-h-screen bg-gray-50">
+        {isMobile ? (
+          <>
+            {/* Mobile Top Bar */}
+            <div className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50 p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-indigo-100 p-2 rounded-lg">
+                    <Stethoscope className="h-6 w-6 text-indigo-600" />
                   </div>
-                  <div className="text-right">
-                    <p className="text-xl font-bold">{token}</p>
-                    <p className="text-xs text-gray-500">Current Token</p>
+                  <div>
+                    <p className="font-medium">Doctor Dashboard</p>
+                    <p className="text-sm text-gray-500">
+                      {status === "Available" ? "Available" : "Not Available"}
+                    </p>
                   </div>
                 </div>
+                <div className="text-right">
+                  <p className="text-xl font-bold">{token}</p>
+                  <p className="text-xs text-gray-500">Token Assigned</p>
+                </div>
               </div>
-    
-              {/* Mobile Main Content */}
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex flex-col gap-2"
+            </div>
+
+            {/* Mobile Main Content */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col gap-2"
+              >
+                {/* Quick Stats */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-white p-4 rounded-xl shadow-sm">
+                    <p className="text-sm text-gray-500">Total Patients</p>
+                    <p className="text-2xl font-bold">{totalPatients}</p>
+                  </div>
+                  <div className="bg-white p-4 rounded-xl shadow-sm">
+                    <p className="text-sm text-gray-500">Patients Treated</p>
+                    <p className="text-2xl font-bold">{patientsLeft}</p>
+                  </div>
+                </div>
+
+                {/* Check In/Out Buttons */}
+                <div className="fixed bottom-20 right-4 z-50 flex flex-col gap-2">
+                  <button
+                    onClick={handleCheckIn}
+                    className={`p-3 rounded-full shadow-lg ${
+                      status === "Available"
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-green-500"
+                    } text-white`}
+                    style={{ width: '56px', height: '56px' }}
+                  >
+                    <Stethoscope className="h-6 w-6 mx-auto" />
+                  </button>
+                  <button
+                    onClick={handleCheckOut}
+                    className={`p-3 rounded-full shadow-lg ${
+                      status === "Not Available"
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-red-500"
+                    } text-white`}
+                    style={{ width: '56px', height: '56px' }}
+                  >
+                    <AlertCircle className="h-6 w-6 mx-auto" />
+                  </button>
+                </div>
+
+                {/* Features List */}
+                <div className="bg-white rounded-xl shadow-sm">
+  {[
+    { 
+      title: "Patient Details",
+      icon: <Stethoscope className="h-5 w-5 text-indigo-600" />,
+      action: () => navigate("/patient-details")
+    },
+  ].map((feature, index) => (
+    <div 
+      key={index}
+      onClick={feature.action}
+      className={`flex items-center justify-between rounded-xl p-4 mt-4 border-b last:border-b-0 hover:bg-gray-50 cursor-pointer ${
+        token !== "No Patient Assigned" ? "bg-green-500" : "bg-indigo-400"
+      }`}
+    >
+      <div className="flex items-center gap-3">
+        <div className={`p-2 rounded-lg ${
+          token !== "No Patient Assigned" ? "bg-green-50" : "bg-indigo-50"
+        }`}>
+          {feature.icon}
+        </div>
+        <p className="font-medium">{feature.title}</p>
+      </div>
+      <ChevronRight className="h-5 w-5 text-black-400" />
+    </div>
+  ))}
+</div>
+
+                {/* Diagnosis Word Cloud */}
+                <div className="mt-0">
+                  <DiagnosisWordCloud />
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Mobile Bottom Navigation */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50">
+              <div className="grid grid-cols-4 gap-1 p-2">
+                <button 
+                  onClick={() => navigate("/analytics-dashboard")}
+                  className="flex flex-col items-center justify-center p-2 text-gray-600 hover:text-indigo-600"
                 >
-                  {/* Quick Stats */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white p-4 rounded-xl border shadow-lg">
-                      <p className="text-sm text-gray-500">Total Patients</p>
-                      <p className="text-2xl font-bold">{totalPatients}</p>
-                    </div>
-                    <div className="bg-white p-4 rounded-xl border shadow-lg">
-                      <p className="text-sm text-gray-500">Patients Treated</p>
-                      <p className="text-2xl font-bold">{patientsLeft}</p>
-                    </div>
-                  </div>
-    
-                  {/* Check In/Out Buttons */}
-                  <div className="fixed bottom-20 right-4 z-50 flex flex-col gap-2">
-                    <button
-                      onClick={handleCheckIn}
-                      className={`p-3 rounded-full shadow-lg ${
-                        status === "Available"
-                          ? "bg-gray-400 cursor-not-allowed"
-                          : "bg-green-500"
-                      } text-white`}
-                      style={{ width: '56px', height: '56px' }}
-                    >
-                      <Stethoscope className="h-6 w-6 mx-auto" />
-                    </button>
-                    <button
-                      onClick={handleCheckOut}
-                      className={`p-3 rounded-full shadow-lg ${
-                        status === "Not Available"
-                          ? "bg-gray-400 cursor-not-allowed"
-                          : "bg-red-500"
-                      } text-white`}
-                      style={{ width: '56px', height: '56px' }}
-                    >
-                      <AlertCircle className="h-6 w-6 mx-auto" />
-                    </button>
-                  </div>
-    
-                  {/* Features List */}
-                  <div className="bg-white rounded-xl shadow-lg border pb-1 mt-2">
-                    {[
-                      { 
-                        title: "Patient Details",
-                        icon: <Stethoscope className="h-5 w-5 text-indigo-600" />,
-                        action: () => navigate("/patient-details")
-                      },
-                      
-                    ].map((feature, index) => (
-                      <div 
-                        key={index}
-                        onClick={feature.action}
-                        className="flex items-center justify-between p-4 border-b last:border-b-0 hover:bg-gray-50 cursor-pointer"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="bg-indigo-50 p-2 rounded-lg">
-                            {feature.icon}
-                          </div>
-                          <p className="font-medium">{feature.title}</p>
-                        </div>
-                        <ChevronRight className="h-5 w-5 text-gray-400" />
-                      </div>
-                    ))}
-                  </div>
-    
-                  {/* Diagnosis Word Cloud */}
-                  <div className="mt-0">
-                    <DiagnosisWordCloud />
-                  </div>
-                </motion.div>
+                  <Stethoscope className="h-5 w-5" />
+                  <span className="text-xs mt-1">Analytics</span>
+                </button>
+                <button 
+                  onClick={() => navigate("/medicine-stock")}
+                  className="flex flex-col items-center justify-center p-2 text-gray-600 hover:text-indigo-600"
+                >
+                  <Stethoscope className="h-5 w-5" />
+                  <span className="text-xs mt-1">Stock</span>
+                </button>
+                <button 
+                  onClick={() => navigate("/emergency")}
+                  className="flex flex-col items-center justify-center p-2 text-gray-600 hover:text-indigo-600"
+                >
+                  <AlertCircle className="h-5 w-5" />
+                  <span className="text-xs mt-1">Emergency</span>
+                </button>
+                <button 
+                  onClick={handleLogout} // Updated to use handleLogout
+                  className="flex flex-col items-center justify-center p-2 text-gray-600 hover:text-indigo-600"
+                >
+                  <LogOut className="h-5 w-5" /> {/* Added LogOut icon */}
+                  <span className="text-xs mt-1">Logout</span>
+                </button>
               </div>
-    
-              {/* Mobile Bottom Navigation */}
-              <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50">
-                <div className="grid grid-cols-4 gap-1 p-2">
-                  <button 
-                    onClick={() => navigate("/patient-details")}
-                    className="flex flex-col items-center justify-center p-2 text-gray-600 hover:text-indigo-600"
-                  >
-                    <Stethoscope className="h-5 w-5" />
-                    <span className="text-xs mt-1">Patients</span>
-                  </button>
-                  <button 
-                    onClick={() => navigate("/analytics-dashboard")}
-                    className="flex flex-col items-center justify-center p-2 text-gray-600 hover:text-indigo-600"
-                  >
-                    <Stethoscope className="h-5 w-5" />
-                    <span className="text-xs mt-1">Analytics</span>
-                  </button>
-                  <button 
-                    onClick={() => navigate("/medicine-stock")}
-                    className="flex flex-col items-center justify-center p-2 text-gray-600 hover:text-indigo-600"
-                  >
-                    <Stethoscope className="h-5 w-5" />
-                    <span className="text-xs mt-1">Stock</span>
-                  </button>
-                  <button 
-                    onClick={() => navigate("/emergency")}
-                    className="flex flex-col items-center justify-center p-2 text-gray-600 hover:text-indigo-600"
-                  >
-                    <AlertCircle className="h-5 w-5" />
-                    <span className="text-xs mt-1">Emergency</span>
-                  </button>
-                </div>
-              </div>
-            </>
-          ) : (
+            </div>
+          </>
+        ) : (
           <>
             {/* Desktop View */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -485,11 +494,21 @@ const DoctorDashboard = () => {
                   <div className="grid md:grid-cols-2 gap-6 mb-8">
                     <motion.div
                       whileHover={{ scale: 1.02 }}
-                      className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer bg-gradient-to-r from-indigo-500 to-indigo-600"
+                      className={`rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer ${
+                        token !== "No Patient Assigned" ? "bg-gradient-to-r from-green-500 to-green-500" : "bg-gradient-to-r from-indigo-500 to-indigo-600"
+                      }`}
                       onClick={() => navigate("/patient-details")}
                     >
-                      <h3 className="text-lg font-semibold text-gray-100 mb-4 ">Patient Details</h3>
-                      <p className="text-sm text-gray-100">View and manage patient details.</p>
+                      <h3 className={`text-lg font-semibold ${
+                        token !== "No Patient Assigned" ? "text-gray-900" : "text-gray-100"
+                      } mb-4`}>Patient Details</h3>
+                      <p className={`text-sm ${
+                        token !== "No Patient Assigned" ? "text-gray-600" : "text-gray-100"
+                      }`}>View and manage patient details.</p>
+
+                      <p className={`text-sm ${
+                        token !== "No Patient Assigned" ? "text-gray-600" : "text-gray-100"
+                      }`}>Token: {token}.</p>
                     </motion.div>
 
                     <motion.div

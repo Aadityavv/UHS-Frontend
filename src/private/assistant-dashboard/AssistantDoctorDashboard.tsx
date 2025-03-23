@@ -15,9 +15,11 @@ import {
   BookOpen,
   Syringe,
   CalendarIcon,
-  LogOut,
+  ChevronRight,
+  Users,
 } from "lucide-react";
-import { BottomNavigation, BottomNavigationAction } from "@mui/material";
+import { BottomNavigation, BottomNavigationAction, Fab } from "@mui/material";
+import { Add } from "@mui/icons-material";
 
 const AssistantDoctorDashboard = () => {
   const navigate = useNavigate();
@@ -138,103 +140,124 @@ const AssistantDoctorDashboard = () => {
     },
   ];
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
-  };
 
   return (
     <>
       <Toaster />
-
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        {isMobile ? (
+      <div className="min-h-screen bg-gray-50">
+        {/* Mobile-Specific Elements */}
+        {isMobile && (
+          
           <>
-            <div className="p-4 mt-2 space-y-4 pb-24">
-              <div className="flex justify-between gap-4">
-                <div className="bg-indigo-100 w-full rounded-lg p-4 text-center shadow">
-                  <p className="text-xs text-gray-500">Total Patients</p>
-                  <p className="text-lg font-bold">{isLoading ? "..." : totalPatients}</p>
-                </div>
-                <div className="bg-emerald-100 w-full rounded-lg p-4 text-center shadow">
-                  <p className="text-xs text-gray-500">In Queue</p>
-                  <p className="text-lg font-bold">{isLoading ? "..." : inQueue}</p>
-                </div>
-                <div className="bg-amber-100 w-full rounded-lg p-4 text-center shadow">
-                  <p className="text-xs text-gray-500">Treated</p>
-                  <p className="text-lg font-bold">{isLoading ? "..." : patientsLeft}</p>
-                </div>
-              </div>
-
+            {/* Feature List */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg p-4 flex items-center justify-between shadow cursor-pointer"
-                onClick={() => navigate("/patient-list")}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col gap-2"
               >
-                <div>
-                  <p className="text-2xl font-bold">{inQueue}</p>
-                  <p className="text-sm">Patients in Queue</p>
-                </div>
-                <HeartPulse className="h-8 w-8" />
-              </motion.div>
-
-              <div className="grid grid-cols-2 gap-4">
-                {services.map((service) => (
-                  <div
-                    key={service.title}
-                    className={`rounded-lg p-4 ${service.bgColor} flex flex-col items-center justify-center shadow cursor-pointer`}
-                    onClick={() => navigate(service.navigate)}
-                  >
-                    {service.icon}
-                    <p className="text-sm font-semibold text-center">{service.title}</p>
+                <div className="w-full space-y-6">
+                {/* Patient Stats Grid */}
+                <div className="grid grid-cols-3 gap-3 pb-4">
+                  <div className="text-center p-3 bg-indigo-50 rounded-lg">
+                    <p className="text-xs text-gray-600 mb-1">Total Patients</p>
+                    <p className="text-md font-medium">{isLoading ? "..." : totalPatients}</p>
                   </div>
-                ))}
-
-                {/* <div
-                  className="rounded-lg p-4 bg-green-50 flex flex-col items-center justify-center shadow cursor-pointer"
-                  onClick={() => navigate("/medicine-stock")}
-                >
-                  <Pill className="h-6 w-6 text-green-600 mb-2" />
-                  <p className="text-sm font-semibold text-center">Medical Stock</p>
+                  <div className="text-center p-3 bg-emerald-50 rounded-lg">
+                    <p className="text-xs text-gray-600 mb-1">In Queue</p>
+                    <p className="text-md font-medium">{isLoading ? "..." : inQueue}</p>
+                  </div>
+                  <div className="text-center p-3 bg-amber-50 rounded-lg">
+                    <p className="text-xs text-gray-600 mb-1">Treated</p>
+                    <p className="text-md font-medium">{isLoading ? "..." : patientsLeft}</p>
+                  </div>
                 </div>
-                <div
-                  className="rounded-lg p-4 bg-yellow-50 flex flex-col items-center justify-center shadow cursor-pointer"
-                  onClick={() => navigate("/Analytics-Dashboard")}
-                >
-                  <BookOpen className="h-6 w-6 text-yellow-600 mb-2" />
-                  <p className="text-sm font-semibold text-center">UHS Analytics</p>
-                </div> */}
               </div>
 
-              <motion.div>
-                <DiagnosisWordCloud />
-              </motion.div>
-            </div>
 
-            {/* <div className="fixed bottom-24 right-4 z-50 flex flex-col gap-3">
+                {/* Features List */}
+                <div className="bg-white rounded-xl shadow-sm pb-1">
+                  {[
+                    {
+                      title: "Patient List",
+                      icon: <Users className="h-5 w-5 text-indigo-600" />,
+                      action: () => navigate("/patient-list"),
+                    },
+                    {
+                      title: "Doctor Availability",
+                      icon: <Stethoscope className="h-5 w-5 text-blue-600" />,
+                      action: () => navigate("/doctor-check-in-out"),
+                    },
+                    {
+                      title: "Patient Log Book",
+                      icon: <BookOpen className="h-5 w-5 text-purple-600" />,
+                      action: () => navigate("/patient-logs"),
+                    },
+                    {
+                      title: "Ad-Hoc Treatment",
+                      icon: <Syringe className="h-5 w-5 text-green-600" />,
+                      action: () => navigate("/adhoc"),
+                    },
+                  ].map((feature, index) => (
+                    <div
+                      key={index}
+                      onClick={feature.action}
+                      className="flex items-center justify-between p-4 border-b last:border-b-0 hover:bg-gray-50 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="bg-indigo-50 p-2 rounded-lg">
+                          {feature.icon}
+                        </div>
+                        <p className="font-medium">{feature.title}</p>
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-gray-400" />
+                    </div>
+                  ))}
+                </div>
+                <div className="fixed bottom-24 right-4 z-50 flex flex-col gap-1">
+              {/* Patient List FAB */}
               <Fab
                 color="primary"
                 aria-label="patients"
                 onClick={() => navigate("/patient-list")}
-                sx={{ backgroundColor: "#3B82F6", "&:hover": { backgroundColor: "#2563EB" } }}
+                sx={{
+                  backgroundColor: "#3B82F6",
+                  "&:hover": { backgroundColor: "#2563EB" },
+                }}
               >
                 <Users className="text-white" />
               </Fab>
 
+              {/* Ad-Hoc FAB */}
               <Fab
                 color="primary"
                 aria-label="add"
                 onClick={() => navigate("/adhoc")}
-                sx={{ backgroundColor: "#3B82F6", "&:hover": { backgroundColor: "#2563EB" } }}
+                sx={{
+                  backgroundColor: "#3B82F6",
+                  "&:hover": { backgroundColor: "#2563EB" },
+                }}
               >
                 <Add className="text-white" />
               </Fab>
-            </div> */}
+            </div>
 
-            <div className="fixed bottom-0 w-full">
+                {/* Diagnosis Word Cloud */}
+                <div className="mt-0">
+                  <DiagnosisWordCloud />
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Sticky Bottom Navigation */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50">
               <BottomNavigation
                 showLabels
-                sx={{ bgcolor: "white", borderTop: "1px solid #e5e7eb", height: "64px" }}
+                sx={{
+                  bgcolor: "white",
+                  borderTop: "1px solid #e5e7eb",
+                  height: "64px",
+                }}
               >
                 <BottomNavigationAction
                   label="Emergency"
@@ -247,24 +270,36 @@ const AssistantDoctorDashboard = () => {
                   onClick={() => navigate("/Ambulance")}
                 />
                 <BottomNavigationAction
-                  label="Logout"
-                  icon={<LogOut className="h-5 w-5 text-gray-600" />}
-                  onClick={handleLogout}
+                  label="Stock"
+                  icon={<Pill className="h-5 w-5 text-green-600" />}
+                  onClick={() => navigate("/medicine-stock")}
+                />
+                <BottomNavigationAction
+                  label="Analytics"
+                  icon={<BookOpen className="h-5 w-5 text-yellow-600" />}
+                  onClick={() => navigate("/Analytics-Dashboard")}
                 />
               </BottomNavigation>
             </div>
+
+           
           </>
-        ) : (
-          <div className="max-w-7xl mx-1 px-4 sm:px-6 lg:px-8 py-8">
+        )}
+
+        {/* Desktop View */}
+        {!isMobile && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="flex flex-col lg:flex-row gap-8"
             >
-              <div className="w-full lg:w-72 space-y-6">
+              {/* Sticky Sidebar */}
+              <div className="w-full lg:w-72 space-y-6 sticky top-8">
+                {/* Sidebar Content */}
                 <motion.div
                   whileHover={{ scale: 1.02 }}
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-4 text-white shadow"
+                  className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-4 text-white"
                 >
                   <div className="flex items-center justify-between">
                     <div>
@@ -277,7 +312,7 @@ const AssistantDoctorDashboard = () => {
 
                 <motion.div
                   whileHover={{ scale: 1.02 }}
-                  className="bg-white rounded-2xl p-4 shadow border border-gray-100"
+                  className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <CalendarIcon className="h-5 w-5 text-blue-600" />
@@ -293,7 +328,7 @@ const AssistantDoctorDashboard = () => {
                   </p>
                 </motion.div>
 
-                <motion.div className="bg-white rounded-2xl p-4 shadow border border-gray-100">
+                <motion.div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
                   <h3 className="text-md font-semibold text-gray-900 mb-4">Patient Overview</h3>
                   <div className="grid grid-cols-1 gap-3">
                     <div className="text-center p-3 bg-indigo-50 rounded-lg">
@@ -310,39 +345,11 @@ const AssistantDoctorDashboard = () => {
                     </div>
                   </div>
                 </motion.div>
-
-                <div className="grid md:grid-cols-1 gap-6">
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    className="bg-white rounded-2xl p-6 shadow border border-gray-100 cursor-pointer"
-                    onClick={() => navigate("/Emergency")}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <AlertCircle className="h-6 w-6 text-red-600 mb-2" />
-                        <h3 className="text-xl font-bold text-gray-800 mb-2">Emergency Contacts</h3>
-                        <p className="text-sm text-gray-600">Critical response numbers</p>
-                      </div>
-                    </div>
-                  </motion.div>
-
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    className="bg-white rounded-2xl p-6 shadow border border-gray-100 cursor-pointer"
-                    onClick={() => navigate("/Ambulance")}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Ambulance className="h-6 w-6 text-blue-600 mb-2" />
-                        <h3 className="text-xl font-bold text-gray-800 mb-2">Ambulance Details</h3>
-                        <p className="text-sm text-gray-600">Emergency vehicle status</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                </div>
               </div>
 
+              {/* Main Content */}
               <div className="flex-1">
+                {/* Main Content */}
                 <div className="grid md:grid-cols-2 gap-6 mb-8">
                   <motion.div
                     whileHover={{ scale: 1.02 }}
@@ -373,6 +380,7 @@ const AssistantDoctorDashboard = () => {
                   </motion.div>
                 </div>
 
+                {/* Services Grid */}
                 <motion.div className="rounded-2xl p-6 shadow-md mb-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 gap-4">
                     {services.map((service) => (
@@ -396,6 +404,7 @@ const AssistantDoctorDashboard = () => {
                   </div>
                 </motion.div>
 
+                {/* Diagnosis Word Cloud */}
                 <motion.div>
                   <DiagnosisWordCloud />
                 </motion.div>
