@@ -163,7 +163,6 @@ const UserDashboard = () => {
 
   const fetchCurrentTokenNumber = useCallback(async () => {
     const token = localStorage.getItem("token");
-    console.log("Token:"+token)
     if (!token) {
       console.warn("Missing token for fetching current token number.");
       return;
@@ -190,12 +189,6 @@ const UserDashboard = () => {
       }
     } catch (error: unknown) {
       console.error("Error fetching current token number:", error);
-      toast({
-        title: "Error",
-        description: "Couldn't fetch current token number",
-        variant: "destructive",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
-      });
     }
   }, [toast]);
 
