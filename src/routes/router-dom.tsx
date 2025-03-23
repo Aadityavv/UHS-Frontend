@@ -56,6 +56,7 @@ import Ambulance from "@/private/ambulance/Ambulance";
 import AmbulanceLayout from "@/private/ambulance/AmbulanceLayout";
 import CommonPrescription from "@/private/common-prescription/CommonPrescription";
 import CommonPrescriptionLayout from "@/private/common-prescription/CommonPrescriptionLayout";
+import VerifyPage from "@/public/VerifyPage";
 
 const router = createBrowserRouter([
   // PUBLIC ROUTES
@@ -63,6 +64,8 @@ const router = createBrowserRouter([
   { path: "/admin-portal", element: <AdminSignIn /> },
   { path: "/register", element: <UserRegister /> },
   { path: "/pass-change", element: <PassChange /> },
+  { path: "/verify", element: <VerifyPage /> },
+
 
   // ADMIN PROTECTED ROUTES
   {
