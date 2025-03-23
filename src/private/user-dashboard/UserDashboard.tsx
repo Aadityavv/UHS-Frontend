@@ -36,6 +36,7 @@ const UserDashboard = () => {
     appointmentStatus: "",
     doctorName: "",
     tokenNo: "",
+    currentTokenNo: "", // New state for current token number
   });
 
   const [userDetails, setUserDetails] = useState({
@@ -45,7 +46,7 @@ const UserDashboard = () => {
     phoneNumber: "",
     bloodGroup: "",
     imageUrl: "",
-    allergies:"",
+    allergies: "",
   });
 
   const [loading, setLoading] = useState(true);
@@ -54,7 +55,6 @@ const UserDashboard = () => {
   const [loadingMedications, setLoadingMedications] = useState(true);
   const [locationName, setLocationName] = useState("");
 
-  
   // ✅ New state for allergies and BMI
   const [allergies, setAllergies] = useState<string>("N/A");
   const [bmi, setBmi] = useState<string>("N/A");
@@ -115,7 +115,6 @@ const UserDashboard = () => {
     }
   }, [toast, userDetails.email]);
 
-
   const fetchActiveMedications = useCallback(async () => {
     const token = localStorage.getItem("token");
 
@@ -138,7 +137,6 @@ const UserDashboard = () => {
           }
         }
       );
-      
 
       if (response?.data) {
         const uniqueMedications = Array.from(
@@ -163,6 +161,44 @@ const UserDashboard = () => {
     }
   }, [toast, userDetails.email]);
 
+  const fetchCurrentTokenNumber = useCallback(async () => {
+    const token = localStorage.getItem("token");
+    console.log("Token:"+token)
+    if (!token) {
+      console.warn("Missing token for fetching current token number.");
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        `http://localhost:8081/api/current-appointment/current-token`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      console.log("RESPONSE FULL DATA", response.data);
+
+
+      if (response?.data) {
+        setStatus(prevStatus => ({
+          ...prevStatus,
+          currentTokenNo: response.data,
+        }));
+      }
+    } catch (error: unknown) {
+      console.error("Error fetching current token number:", error);
+      toast({
+        title: "Error",
+        description: "Couldn't fetch current token number",
+        variant: "destructive",
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
+      });
+    }
+  }, [toast]);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -176,22 +212,22 @@ const UserDashboard = () => {
     const fetchData = async () => {
       setLoading(true);
       setLoadingMedications(true);
-    
+
       const token = localStorage.getItem("token");
       if (!token) {
         navigate("/");
         return;
       }
-    
+
       const headers = { Authorization: `Bearer ${token}` };
-    
+
       try {
         const [userRes, statusRes, lastAppointmentRes] = await Promise.allSettled([
           axios.get("https://uhs-backend.onrender.com/api/patient/", { headers }),
           axios.get("https://uhs-backend.onrender.com/api/patient/getStatus", { headers }),
           axios.get("https://uhs-backend.onrender.com/api/patient/lastAppointmentDate", { headers }),
         ]);
-    
+
         // Handle User Details ✅
         if (userRes.status === "fulfilled" && userRes.value?.data) {
           const userData = userRes.value.data;
@@ -199,7 +235,7 @@ const UserDashboard = () => {
         } else if (userRes.status === "rejected") {
           const errorReason = (userRes as PromiseRejectedResult).reason;
           console.error("Failed to fetch user details:", errorReason);
-        
+
           toast({
             title: "Error",
             description: "Failed to fetch user details.",
@@ -209,7 +245,7 @@ const UserDashboard = () => {
 
           return; // if no user data, we can't continue
         }
-    
+
         // Handle Status ✅
         if (statusRes.status === "fulfilled" && statusRes.value?.data) {
           const data = statusRes.value.data;
@@ -217,6 +253,7 @@ const UserDashboard = () => {
             appointmentStatus: data.Appointment ? "Queued" : "NA",
             doctorName: data.Doctor ? data.DoctorName : "Not Appointed",
             tokenNo: data.TokenNo || "N/A",
+            currentTokenNo: data.currentTokenNo || "...", // Set current token number
           });
         } else {
           console.warn("No appointment status available (might be no active appointment).");
@@ -224,9 +261,10 @@ const UserDashboard = () => {
             appointmentStatus: "NA",
             doctorName: "Not Appointed",
             tokenNo: "N/A",
+            currentTokenNo: "N/A", // Set current token number
           });
         }
-    
+
         // Handle Last Appointment ✅
         if (lastAppointmentRes.status === "fulfilled" && lastAppointmentRes.value?.data) {
           const formattedDate = dayjs(lastAppointmentRes.value.data).format("DD/MM/YYYY");
@@ -235,10 +273,10 @@ const UserDashboard = () => {
           console.warn("No last appointment date found.");
           setLastAppointmentDate(null);
         }
-    
+
         // Additional data fetching
-        await Promise.all([fetchActiveMedications(), fetchMedicalDetails()]);
-    
+        await Promise.all([fetchActiveMedications(), fetchMedicalDetails(), fetchCurrentTokenNumber()]);
+
       } catch (error) {
         console.error("Dashboard data fetch error:", error);
         toast({
@@ -252,10 +290,9 @@ const UserDashboard = () => {
         setLoadingMedications(false);
       }
     };
-    
 
     fetchData();
-  }, [navigate, toast, fetchActiveMedications]);
+  }, [navigate, toast, fetchActiveMedications, fetchMedicalDetails, fetchCurrentTokenNumber]);
 
   console.log(userDetails);
 
@@ -407,7 +444,7 @@ const UserDashboard = () => {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="font-semibold text-gray-700">Current Token Number:</span>
-                    <span className="font-semibold text-indigo-600">{status.tokenNo}</span>
+                    <span className="font-semibold text-indigo-600">{status.currentTokenNo}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="font-semibold text-gray-700">Doctor Assigned:</span>
@@ -432,22 +469,22 @@ const UserDashboard = () => {
                   </p>
                 </div>
                 <div className="text-center p-4 bg-emerald-50 rounded-xl">
-                    <p className="text-sm text-gray-600 mb-1">Active medications</p>
+                  <p className="text-sm text-gray-600 mb-1">Active medications</p>
 
-                    {loadingMedications ? (
-                      <p className="font-medium">Loading...</p>
-                    ) : activeMedications.length > 0 ? (
-                      <ul className="font-medium space-y-1 text-sm text-gray-700">
-                        {activeMedications.map((med) => (
-                          <li key={med.pres_medicine_id} className="capitalize">
-                            {med.medicineName}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="font-medium">No Active Medications</p>
-                    )}
-                  </div>
+                  {loadingMedications ? (
+                    <p className="font-medium">Loading...</p>
+                  ) : activeMedications.length > 0 ? (
+                    <ul className="font-medium space-y-1 text-sm text-gray-700">
+                      {activeMedications.map((med) => (
+                        <li key={med.pres_medicine_id} className="capitalize">
+                          {med.medicineName}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="font-medium">No Active Medications</p>
+                  )}
+                </div>
 
                 <div className="text-center p-4 bg-amber-50 rounded-xl">
                   <p className="text-sm text-gray-600 mb-1">Allergies</p>
