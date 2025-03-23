@@ -171,7 +171,7 @@ const UserDashboard = () => {
 
     try {
       const response = await axios.get(
-        `http://localhost:8081/api/current-appointment/current-token`,
+        `https://uhs-backend.onrender.com/api/current-appointment/current-token`,
         {
           headers: {
             Authorization: `Bearer ${token}`
