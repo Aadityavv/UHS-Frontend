@@ -167,7 +167,7 @@ const AdminSignIn = () => {
                   <Input
                     type="email"
                     id="email"
-                    placeholder="admin@upes.ac.in"
+                    placeholder="Admin ID"
                     value={input.email}
                     onChange={onInputChange}
                     className="mt-1 h-9 rounded-lg text-sm"
