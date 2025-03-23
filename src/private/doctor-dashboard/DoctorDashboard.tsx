@@ -501,23 +501,23 @@ const DoctorDashboard = () => {
                     <motion.div
                       whileHover={{ scale: 1.02 }}
                       className={`rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer ${
-                        token !== "No Patient Assigned" ? "bg-gradient-to-r from-green-500 to-green-500" : "bg-gradient-to-r from-indigo-500 to-indigo-600"
+                        token !== "No Patient Assigned" ? "bg-gradient-to-r from-[#2FC800] to-[#009534] hover:bg-green-600" : "bg-gradient-to-r from-indigo-500 to-indigo-600"
                       }`}
                       onClick={() => navigate("/patient-details")}
                     >
                       <h3 className={`text-lg font-semibold ${
-  token !== "No Patient Assigned" ? "text-gray-900" : "text-gray-100"
+  token !== "No Patient Assigned" ? "text-white" : "text-gray-100"
 } mb-4`}>
   Patient Details
 </h3>
 <p className={`text-sm ${
-  token !== "No Patient Assigned" ? "text-gray-600" : "text-gray-100"
+  token !== "No Patient Assigned" ? "text-white" : "text-gray-100"
 }`}>
   View and manage patient details.
 </p>
 {token !== "No Patient Assigned" && (
   <p className={`text-sm ${
-    token !== "No Patient Assigned" ? "text-gray-600" : "text-gray-100"
+    token !== "No Patient Assigned" ? "text-white" : "text-gray-100"
   }`}>
     Token: {token}
   </p>

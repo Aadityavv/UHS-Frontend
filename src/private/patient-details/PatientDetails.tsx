@@ -25,6 +25,7 @@ const PatientDetails = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const [, setIsMobile] = useState(window.innerWidth <= 768);
+  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
 
   // Date formatting function
   const formatDate = (dateString: string) => {
@@ -35,6 +36,10 @@ const PatientDetails = () => {
     const year = date.getFullYear().toString().slice(-2);
     return `${day}/${month}/${year}`;
   };
+  
+  const [currentDate, setCurrentDate] = useState(formatDate(new Date().toISOString())); // State for current date
+
+  
 
   // Animation variants
   const staggerContainer = {
@@ -67,6 +72,16 @@ const PatientDetails = () => {
     const age_dt = new Date(diff_ms);
     return Math.abs(age_dt.getUTCFullYear() - 1970);
   };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      setCurrentTime(now.toLocaleTimeString()); // Update current time
+      setCurrentDate(formatDate(now.toISOString())); // Update current date
+    }, 1000); // Update every second
+
+    return () => clearInterval(interval); // Cleanup interval on unmount
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -296,13 +311,13 @@ const PatientDetails = () => {
                 />
                 <div>
                   <h1 className="text-2xl font-bold text-indigo-800">{ndata.name}</h1>
-                  <p className="text-slate-500">University Health Services</p>
+                  <p className="text-slate-500">Patient</p>
                 </div>
               </div>
               <div className="text-center md:text-right">
                 <div className="space-y-1 text-md font-medium">
-                  <div className="text-indigo-600">{ndata.date}</div>
-                  <div className="text-slate-500">{ndata.time}</div>
+                  <div className="text-indigo-600">{currentDate}</div>
+                  <div className="text-slate-500">{currentTime}</div>
                 </div>
               </div>
             </div>
