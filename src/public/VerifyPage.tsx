@@ -50,17 +50,37 @@ const VerifyPage: React.FC = () => {
 
           setTimeout(() => {
             navigate("/");
-          }, 3000);
+          }, 5000);
         } else {
-          const errorText = await response.text();
-          console.log(errorText)
-          setStatus(`Verification failed: ${errorText}`);
-          toast({
-            variant: "destructive",
-            title: "Verification Failed",
-            description: "Invalid or Expired Verification Link"
-          });
-          setLoading(false);
+            const errorText = await response.text();
+            console.log(errorText); // Log the raw response text for debugging
+            
+            try {
+              // Parse the errorText as JSON
+              const errorData = JSON.parse(errorText);
+            
+              // Set the status using the `message` property from the parsed JSON
+              setStatus(`Verification failed: ${errorData.message}`);
+            
+              // Show a toast notification
+              toast({
+                variant: "destructive",
+                title: "Verification Failed",
+                description: errorData.message || "Invalid or Expired Verification Link",
+              });
+            } catch (error) {
+              // Handle cases where errorText is not valid JSON
+              console.error("Failed to parse error response:", error);
+              setStatus("Verification failed: An unknown error occurred.");
+            
+              toast({
+                variant: "destructive",
+                title: "Verification Failed",
+                description: "An unknown error occurred.",
+              });
+            }
+            
+            setLoading(false);
         }
       } catch (error) {
         console.error("Verification error:", error);
