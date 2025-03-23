@@ -36,10 +36,8 @@ const PatientDetails = () => {
     const year = date.getFullYear().toString().slice(-2);
     return `${day}/${month}/${year}`;
   };
-  
-  const [currentDate, setCurrentDate] = useState(formatDate(new Date().toISOString())); // State for current date
 
-  
+  const [currentDate, setCurrentDate] = useState(formatDate(new Date().toISOString())); // State for current date
 
   // Animation variants
   const staggerContainer = {
