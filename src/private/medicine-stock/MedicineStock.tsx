@@ -498,6 +498,8 @@ const handleEditInputChange = (
   }
 
   const renderDesktopView = () => (
+    <>
+    <div>
     <Table className="border-none">
       <TableHeader className="bg-gray-50">
         <TableRow>
@@ -748,6 +750,8 @@ const handleEditInputChange = (
         )}
       </TableBody>
     </Table>
+    </div>
+    </>
   );
 
   const renderMobileView = () => (
@@ -981,65 +985,62 @@ const handleEditInputChange = (
               </button>
             </div>
 
-            {/* Delete Button (Mobile) - Added at the top */}
-{isMobile && selectedStocks.size > 0 && (
-  <div className="flex justify-start mb-4">
-    <button
-      onClick={handleDelete}
-      className="bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-red-700 transition-colors"
-    >
-      <Trash2 className="h-5 w-5" />
-      Delete Selected ({selectedStocks.size})
-    </button>
+           {/* Filters Section */}
+<div className="grid md:grid-cols-3 gap-4">
+  <div className="bg-white p-2 rounded-lg shadow-sm border border-gray-100 flex items-center">
+    <Search className="h-5 w-5 text-gray-400 ml-2" />
+    <Input
+      className="border-0 focus-visible:ring-0"
+      placeholder="Search medicine..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+    />
   </div>
-)}
 
-            {/* Filters Section */}
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="bg-white p-2 rounded-lg shadow-sm border border-gray-100 flex items-center">
-                <Search className="h-5 w-5 text-gray-400 ml-2" />
-                <Input
-                  className="border-0 focus-visible:ring-0"
-                  placeholder="Search medicine..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
+  <Select
+    value={selectedLocationFilter}
+    onValueChange={setSelectedLocationFilter}
+  >
+    <SelectTrigger className="bg-white text-black h-full">
+      <div className="flex items-center gap-2">
+        <Sliders className="h-5 w-5 text-gray-400" />
+        <SelectValue placeholder="Filter by Location" />
+      </div>
+    </SelectTrigger>
+    <SelectContent className="bg-white text-black">
+      <SelectGroup>
+        <SelectItem value="all">All Locations</SelectItem>
+        {locations.map((loc) => (
+          <SelectItem key={loc.locId} value={loc.locationName}>
+            {loc.locationName}
+          </SelectItem>
+        ))}
+      </SelectGroup>
+    </SelectContent>
+  </Select>
 
-              <Select
-                value={selectedLocationFilter}
-                onValueChange={setSelectedLocationFilter}
-              >
-                <SelectTrigger className="bg-white text-black h-full">
-                  <div className="flex items-center gap-2">
-                    <Sliders className="h-5 w-5 text-gray-400" />
-                    <SelectValue placeholder="Filter by Location" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent className="bg-white text-black">
-                  <SelectGroup>
-                    <SelectItem value="all">All Locations</SelectItem>
-                    {locations.map((loc) => (
-                      <SelectItem key={loc.locId} value={loc.locationName}>
-                        {loc.locationName}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-
-              <div className="flex items-center gap-2">
-                {selectedStocks.size === 0 && !editStock && !newStock && (
-                  <button
-                    onClick={handleAddNewRow}
-                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors flex-1"
-                  >
-                    <Plus className="h-5 w-5" />
-                    Add New
-                  </button>
-                )}
-              </div>
-            </div>
+  <div className="flex items-center gap-2">
+    {selectedStocks.size > 0 ? (
+      <button
+        onClick={handleDelete}
+        className="bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-red-700 transition-colors flex-1"
+      >
+        <Trash2 className="h-5 w-5" />
+        Delete Selected ({selectedStocks.size})
+      </button>
+    ) : (
+      !editStock && !newStock && (
+        <button
+          onClick={handleAddNewRow}
+          className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors flex-1"
+        >
+          <Plus className="h-5 w-5" />
+          Add New
+        </button>
+      )
+    )}
+  </div>
+</div>
 
             {/* Table Section */}
             <motion.div
@@ -1056,19 +1057,6 @@ const handleEditInputChange = (
                 </div>
               )}
             </motion.div>
-
-            {/* Action Buttons */}
-            <div className="flex items-center gap-3">
-              {selectedStocks.size > 0 && (
-                <button
-                  onClick={handleDelete}
-                  className="bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-red-700 transition-colors"
-                >
-                  <Trash2 className="h-5 w-5" />
-                  Delete Selected ({selectedStocks.size})
-                </button>
-              )}
-            </div>
           </motion.div>
         </div>
       </div>
