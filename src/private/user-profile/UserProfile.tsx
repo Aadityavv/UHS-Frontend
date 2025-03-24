@@ -73,23 +73,23 @@ const UserProfile = () => {
     const fetchUserDetails = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:8081/api/patient/getAllDetails",
+          "https://uhs-backend.onrender.com/api/patient/getAllDetails",
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
         const data = res.data;
         updateFormValues(data);
-        setImg(`http://localhost:8081/api//${data.imageUrl}`);
+        setImg(`https://uhs-backend.onrender.com/api//${data.imageUrl}`);
       } catch (error: any) {
         if (error.response?.status === 404) {
           try {
             const resBackup = await axios.get(
-              "http://localhost:8081/api/patient/",
+              "https://uhs-backend.onrender.com/api/patient/",
               { headers: { Authorization: `Bearer ${token}` } }
             );
             const dataBackup = resBackup.data;
             updateFormValues(dataBackup);
-            setImg(`http://localhost:8081/api//${dataBackup.imageUrl}`);
+            setImg(`https://uhs-backend.onrender.com/api//${dataBackup.imageUrl}`);
             toast({
               title: "Required!",
               description: "Set Height, Weight, Family History, Medical History, Allergies, Address Type, and Current Address.",
@@ -147,7 +147,7 @@ const UserProfile = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        "http://localhost:8081/api/patient/update",
+        "https://uhs-backend.onrender.com/api/patient/update",
         {
           currentAddress: data.currentAddress,
           medicalHistory: data.medicalHistory,

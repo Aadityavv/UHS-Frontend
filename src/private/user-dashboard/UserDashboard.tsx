@@ -79,7 +79,7 @@ const UserDashboard = () => {
 
     try {
       const response = await axios.get(
-        `http://localhost:8081/api/medical-details/email/${userDetails.email}`,
+        `https://uhs-backend.onrender.com/api/medical-details/email/${userDetails.email}`,
         // {
         //   headers: {
         //     Authorization: `Bearer ${token}`
@@ -130,7 +130,7 @@ const UserDashboard = () => {
 
     try {
       const response = await axios.get<Medication[]>(
-        `http://localhost:8081/api/patient/medications/active/${encodedEmail}`,
+        `https://uhs-backend.onrender.com/api/patient/medications/active/${encodedEmail}`,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -170,7 +170,7 @@ const UserDashboard = () => {
 
     try {
       const response = await axios.get(
-        `http://localhost:8081/api/current-appointment/current-token`,
+        `https://uhs-backend.onrender.com/api/current-appointment/current-token`,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -216,9 +216,9 @@ const UserDashboard = () => {
 
       try {
         const [userRes, statusRes, lastAppointmentRes] = await Promise.allSettled([
-          axios.get("http://localhost:8081/api/patient/", { headers }),
-          axios.get("http://localhost:8081/api/patient/getStatus", { headers }),
-          axios.get("http://localhost:8081/api/patient/lastAppointmentDate", { headers }),
+          axios.get("https://uhs-backend.onrender.com/api/patient/", { headers }),
+          axios.get("https://uhs-backend.onrender.com/api/patient/getStatus", { headers }),
+          axios.get("https://uhs-backend.onrender.com/api/patient/lastAppointmentDate", { headers }),
         ]);
 
         // Handle User Details ✅

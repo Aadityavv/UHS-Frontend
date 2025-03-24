@@ -29,7 +29,7 @@ const TokenPage = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8081/api/AD/getTokenData",
+          "https://uhs-backend.onrender.com/api/AD/getTokenData",
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
