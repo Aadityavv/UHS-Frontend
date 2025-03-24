@@ -45,6 +45,13 @@ interface Stock {
   company: string;
 }
 
+const capitalize = (text: string): string => {
+  if (!text) return "";
+  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+};
+
+
+
 const useMobile = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
@@ -90,15 +97,23 @@ const MedicineStock = () => {
     setEditStock(stock);
   };
 
-  const handleLocationChange = (value: string) => {
+  const handleLocationChange = (value: string, isEditMode = false) => {
     const selectedLocation = locations.find(
       (loc) => loc.locationName === value
     );
+  
     if (selectedLocation) {
-      setLocation(selectedLocation.locId);
+      if (isEditMode && editStock) {
+        setEditStock({
+          ...editStock,
+          location: selectedLocation,
+        });
+      } else {
+        setLocation(selectedLocation.locId);
+      }
     }
   };
-
+  
   const handleSaveEdit = async () => {
     if (editStock) {
       try {
@@ -110,7 +125,7 @@ const MedicineStock = () => {
         console.log(editStock);
 
         await axios.post(
-          `https://uhs-backend.onrender.com/api/${role}/stock/editStock`,
+          `http://localhost:8081/api/${role}/stock/editStock`,
           editStock,
           {
             headers: {
@@ -150,7 +165,7 @@ const MedicineStock = () => {
       if (role === "ad") role = role.toUpperCase();
 
       const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/${role}/stock/`,
+        `http://localhost:8081/api/${role}/stock/`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -173,7 +188,7 @@ const MedicineStock = () => {
 
   const fetchLocations = async () => {
     try {
-      const resp = await axios.get("https://uhs-backend.onrender.com/api/location/");
+      const resp = await axios.get("http://localhost:8081/api/location/");
       if (resp.status === 200) {
         const data = resp.data;
         setLocations(data);
@@ -208,7 +223,7 @@ const MedicineStock = () => {
       if (role === "ad") role = role.toUpperCase();
 
       const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/${role}/export`,
+        `http://localhost:8081/api/${role}/export`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -266,12 +281,40 @@ const MedicineStock = () => {
     field: keyof Stock
   ) => {
     if (newStock) {
+      const value =
+        field === "medicineName" ||
+        field === "medicineType" ||
+        field === "composition" ||
+        field === "company"
+          ? capitalize(e.target.value)
+          : e.target.value;
+  
       setNewStock({
         ...newStock,
-        [field]: e.target.value,
+        [field]: value,
       });
     }
   };
+const handleEditInputChange = (
+  e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  field: keyof Stock
+) => {
+  if (editStock) {
+    const value =
+      field === "medicineName" ||
+      field === "medicineType" ||
+      field === "composition" ||
+      field === "company"
+        ? capitalize(e.target.value)
+        : e.target.value;
+
+    setEditStock({
+      ...editStock,
+      [field]: value,
+    });
+  }
+};
+  
 
   const formatExpirationDateForDisplay = (dateString: string): string => {
     const date = new Date(dateString);
@@ -305,7 +348,7 @@ const MedicineStock = () => {
         };
   
         await axios.post(
-          `https://uhs-backend.onrender.com/api/${role}/stock/addStock`,
+          `http://localhost:8081/api/${role}/stock/addStock`,
           numericStock,
           {
             headers: {
@@ -343,7 +386,7 @@ const MedicineStock = () => {
     for (const batchNumber of selectedStocks) {
       try {
         await axios.delete(
-          `https://uhs-backend.onrender.com/api/${role}/stock/${batchNumber}`,
+          `http://localhost:8081/api/${role}/stock/${batchNumber}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -484,14 +527,10 @@ const MedicineStock = () => {
             <TableCell className="text-gray-700">
               {editStock?.id === stock.id ? (
                 <Input
-                  value={editStock.batchNumber.toString()}
-                  onChange={(e) =>
-                    setEditStock({
-                      ...editStock,
-                      batchNumber: e.target.value,
-                    })
-                  }
-                />
+                value={editStock.batchNumber.toString()}
+                onChange={(e) => handleEditInputChange(e, "batchNumber")}
+              />
+              
               ) : (
                 stock.batchNumber
               )}
@@ -499,29 +538,21 @@ const MedicineStock = () => {
             <TableCell className="text-gray-700">
               {editStock?.id === stock.id ? (
                 <Input
-                  value={editStock.medicineName}
-                  onChange={(e) =>
-                    setEditStock({
-                      ...editStock,
-                      medicineName: e.target.value,
-                    })
-                  }
-                />
+                value={editStock.medicineName}
+                onChange={(e) => handleEditInputChange(e, "medicineName")}
+              />
+              
               ) : (
                 stock.medicineName
               )}
             </TableCell>
             <TableCell className="text-gray-700">
               {editStock?.id === stock.id ? (
-                <Input
-                  value={editStock.composition}
-                  onChange={(e) =>
-                    setEditStock({
-                      ...editStock,
-                      composition: e.target.value,
-                    })
-                  }
-                />
+               <Input
+               value={editStock.composition}
+               onChange={(e) => handleEditInputChange(e, "composition")}
+             />
+             
               ) : (
                 stock.composition
               )}
@@ -529,14 +560,10 @@ const MedicineStock = () => {
             <TableCell className="text-gray-700">
               {editStock?.id === stock.id ? (
                 <Input
-                  value={editStock.quantity.toString()}
-                  onChange={(e) =>
-                    setEditStock({
-                      ...editStock,
-                      quantity: e.target.value,
-                    })
-                  }
-                />
+                value={editStock.quantity.toString()}
+                onChange={(e) => handleEditInputChange(e, "quantity")}
+              />
+              
               ) : (
                 stock.quantity
               )}
@@ -544,14 +571,10 @@ const MedicineStock = () => {
             <TableCell className="text-gray-700">
               {editStock?.id === stock.id ? (
                 <Input
-                  value={editStock.medicineType}
-                  onChange={(e) =>
-                    setEditStock({
-                      ...editStock,
-                      medicineType: e.target.value,
-                    })
-                  }
-                />
+                value={editStock.medicineType}
+                onChange={(e) => handleEditInputChange(e, "medicineType")}
+              />
+              
               ) : (
                 stock.medicineType
               )}
@@ -575,21 +598,37 @@ const MedicineStock = () => {
             <TableCell className="text-gray-700">
               {editStock?.id === stock.id ? (
                 <Input
-                  value={editStock.company}
-                  onChange={(e) =>
-                    setEditStock({
-                      ...editStock,
-                      company: e.target.value,
-                    })
-                  }
-                />
+                value={editStock.company}
+                onChange={(e) => handleEditInputChange(e, "company")}
+              />
+              
               ) : (
                 stock.company
               )}
             </TableCell>
             <TableCell className="text-gray-700">
-              {stock.location?.locationName || "N/A"}
-            </TableCell>
+  {editStock?.id === stock.id ? (
+    <Select
+      onValueChange={(value) => handleLocationChange(value, true)}
+    >
+      <SelectTrigger>
+        <SelectValue
+          placeholder={editStock.location?.locationName || "Select location"}
+        />
+      </SelectTrigger>
+      <SelectContent>
+        {locations.map((loc) => (
+          <SelectItem key={loc.locId} value={loc.locationName}>
+            {loc.locationName}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  ) : (
+    stock.location?.locationName || "N/A"
+  )}
+</TableCell>
+
             <TableCell className="text-gray-700">
               {editStock?.id === stock.id ? (
                 <div className="flex gap-2">
