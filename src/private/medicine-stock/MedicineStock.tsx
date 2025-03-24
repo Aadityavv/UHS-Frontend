@@ -157,6 +157,27 @@ const MedicineStock = () => {
     }
   };
 
+  const shouldHighlightStock = (stock: Stock): boolean => {
+    const quantity = Number(stock.quantity);
+    if (!isNaN(quantity) && quantity < 50) {
+      return true;
+    }
+  
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const expirationDate = new Date(stock.expirationDate);
+    expirationDate.setHours(0, 0, 0, 0);
+  
+    if (isNaN(expirationDate.getTime())) {
+      return false;
+    }
+  
+    const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
+    const thirtyDaysFromNow = new Date(today.getTime() + thirtyDaysInMs);
+  
+    return expirationDate <= thirtyDaysFromNow;
+  };
+
   const fetchStocks = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -477,7 +498,7 @@ const handleEditInputChange = (
   const renderDesktopView = () => (
     <Table className="border-none">
       <TableHeader className="bg-gray-50">
-        <TableRow className="hover:bg-transparent">
+        <TableRow>
           <TableHead className="w-[5%] text-gray-600 font-semibold">
             Select
           </TableHead>
@@ -515,7 +536,10 @@ const handleEditInputChange = (
       </TableHeader>
       <TableBody>
         {filteredStocks.map((stock) => (
-          <TableRow key={stock.id} className="hover:bg-gray-50">
+          <TableRow 
+            key={stock.id} 
+            className={`hover:bg-gray-50 ${shouldHighlightStock(stock) ? 'bg-red-300' : ''}`}
+          >
             <TableCell>
               <input
                 type="checkbox"
@@ -527,10 +551,9 @@ const handleEditInputChange = (
             <TableCell className="text-gray-700">
               {editStock?.id === stock.id ? (
                 <Input
-                value={editStock.batchNumber.toString()}
-                onChange={(e) => handleEditInputChange(e, "batchNumber")}
-              />
-              
+                  value={editStock.batchNumber.toString()}
+                  onChange={(e) => handleEditInputChange(e, "batchNumber")}
+                />
               ) : (
                 stock.batchNumber
               )}
@@ -538,21 +561,19 @@ const handleEditInputChange = (
             <TableCell className="text-gray-700">
               {editStock?.id === stock.id ? (
                 <Input
-                value={editStock.medicineName}
-                onChange={(e) => handleEditInputChange(e, "medicineName")}
-              />
-              
+                  value={editStock.medicineName}
+                  onChange={(e) => handleEditInputChange(e, "medicineName")}
+                />
               ) : (
                 stock.medicineName
               )}
             </TableCell>
             <TableCell className="text-gray-700">
               {editStock?.id === stock.id ? (
-               <Input
-               value={editStock.composition}
-               onChange={(e) => handleEditInputChange(e, "composition")}
-             />
-             
+                <Input
+                  value={editStock.composition}
+                  onChange={(e) => handleEditInputChange(e, "composition")}
+                />
               ) : (
                 stock.composition
               )}
@@ -560,10 +581,9 @@ const handleEditInputChange = (
             <TableCell className="text-gray-700">
               {editStock?.id === stock.id ? (
                 <Input
-                value={editStock.quantity.toString()}
-                onChange={(e) => handleEditInputChange(e, "quantity")}
-              />
-              
+                  value={editStock.quantity.toString()}
+                  onChange={(e) => handleEditInputChange(e, "quantity")}
+                />
               ) : (
                 stock.quantity
               )}
@@ -571,10 +591,9 @@ const handleEditInputChange = (
             <TableCell className="text-gray-700">
               {editStock?.id === stock.id ? (
                 <Input
-                value={editStock.medicineType}
-                onChange={(e) => handleEditInputChange(e, "medicineType")}
-              />
-              
+                  value={editStock.medicineType}
+                  onChange={(e) => handleEditInputChange(e, "medicineType")}
+                />
               ) : (
                 stock.medicineType
               )}
@@ -598,37 +617,35 @@ const handleEditInputChange = (
             <TableCell className="text-gray-700">
               {editStock?.id === stock.id ? (
                 <Input
-                value={editStock.company}
-                onChange={(e) => handleEditInputChange(e, "company")}
-              />
-              
+                  value={editStock.company}
+                  onChange={(e) => handleEditInputChange(e, "company")}
+                />
               ) : (
                 stock.company
               )}
             </TableCell>
             <TableCell className="text-gray-700">
-  {editStock?.id === stock.id ? (
-    <Select
-      onValueChange={(value) => handleLocationChange(value, true)}
-    >
-      <SelectTrigger>
-        <SelectValue
-          placeholder={editStock.location?.locationName || "Select location"}
-        />
-      </SelectTrigger>
-      <SelectContent>
-        {locations.map((loc) => (
-          <SelectItem key={loc.locId} value={loc.locationName}>
-            {loc.locationName}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  ) : (
-    stock.location?.locationName || "N/A"
-  )}
-</TableCell>
-
+              {editStock?.id === stock.id ? (
+                <Select
+                  onValueChange={(value) => handleLocationChange(value, true)}
+                >
+                  <SelectTrigger>
+                    <SelectValue
+                      placeholder={editStock.location?.locationName || "Select location"}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {locations.map((loc) => (
+                      <SelectItem key={loc.locId} value={loc.locationName}>
+                        {loc.locationName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                stock.location?.locationName || "N/A"
+              )}
+            </TableCell>
             <TableCell className="text-gray-700">
               {editStock?.id === stock.id ? (
                 <div className="flex gap-2">
@@ -652,7 +669,7 @@ const handleEditInputChange = (
             </TableCell>
           </TableRow>
         ))}
-
+  
         {newStock && (
           <TableRow className="bg-blue-50">
             <TableCell></TableCell>
@@ -735,8 +752,8 @@ const handleEditInputChange = (
     <div className="space-y-4">
       {filteredStocks.map((stock) => (
         <div
-          key={stock.id}
-          className="bg-white p-4 rounded-lg shadow-sm border border-gray-100"
+          key={stock.id} 
+  className={`${shouldHighlightStock(stock) ? 'bg-red-50' : 'bg-white'} p-4 rounded-lg shadow-sm border border-gray-100`}
         >
           <div className="space-y-2">
             <div className="flex justify-between">
