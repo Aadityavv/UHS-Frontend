@@ -190,7 +190,7 @@ const CommonPrescription = () => {
               </div>
               <div className="text-center md:text-right hidden sm:block">
                 <div className="space-y-1 text-md font-bold">
-                  
+                <div className="text-slate-500">{ndata?.date}</div>
                   <div className="text-slate-500">{ndata?.time}</div>
                 </div>
               </div>

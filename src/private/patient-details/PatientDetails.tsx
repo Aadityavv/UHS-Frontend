@@ -124,7 +124,7 @@ const PatientDetails = () => {
           weight: response.medicalDetails.weight,
           temp: response.temp,
           designation: response.designation,
-          date: formatDate(response.date), // Use formatted date
+          date: formatDate(currentDate), // Use formatted date
           time: response.time,
           residenceType: response.medicalDetails.residenceType,
         };
