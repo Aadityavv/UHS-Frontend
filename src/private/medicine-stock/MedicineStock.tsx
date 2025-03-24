@@ -157,25 +157,27 @@ const MedicineStock = () => {
     }
   };
 
-  const shouldHighlightStock = (stock: Stock): boolean => {
+  const getRowHighlightColor = (stock: Stock): string => {
     const quantity = Number(stock.quantity);
-    if (!isNaN(quantity) && quantity < 50) {
-      return true;
-    }
-  
+    const isLowQuantity = !isNaN(quantity) && quantity < 50;
+    
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const expirationDate = new Date(stock.expirationDate);
     expirationDate.setHours(0, 0, 0, 0);
-  
-    if (isNaN(expirationDate.getTime())) {
-      return false;
-    }
-  
+    
     const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
     const thirtyDaysFromNow = new Date(today.getTime() + thirtyDaysInMs);
+    const isExpiringSoon = !isNaN(expirationDate.getTime()) && expirationDate <= thirtyDaysFromNow;
   
-    return expirationDate <= thirtyDaysFromNow;
+    if (isLowQuantity && isExpiringSoon) {
+      return 'bg-blue-100 hover:bg-blue-200'; // Blue for both conditions
+    } else if (isLowQuantity) {
+      return 'bg-red-100 hover:bg-red-200'; // Red for low quantity only
+    } else if (isExpiringSoon) {
+      return 'bg-yellow-100 hover:bg-yellow-200'; // Yellow for expiring soon only
+    }
+    return 'hover:bg-gray-50'; // Default hover color
   };
 
   const fetchStocks = async () => {
@@ -538,7 +540,7 @@ const handleEditInputChange = (
         {filteredStocks.map((stock) => (
           <TableRow 
             key={stock.id} 
-            className={`hover:bg-gray-50 ${shouldHighlightStock(stock) ? 'bg-red-300' : ''}`}
+            className={`${getRowHighlightColor(stock)}`}
           >
             <TableCell>
               <input
@@ -752,56 +754,206 @@ const handleEditInputChange = (
     <div className="space-y-4">
       {filteredStocks.map((stock) => (
         <div
-          key={stock.id} 
-  className={`${shouldHighlightStock(stock) ? 'bg-red-50' : 'bg-white'} p-4 rounded-lg shadow-sm border border-gray-100`}
+          key={stock.id}
+          className={`${getRowHighlightColor(stock).replace('hover:', '')} p-4 rounded-lg shadow-sm border border-gray-100`}
         >
           <div className="space-y-2">
+            {/* Select Checkbox */}
+            <div className="flex justify-between items-center">
+              <span className="font-semibold">Select</span>
+              <input
+                type="checkbox"
+                className="h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                checked={selectedStocks.has(stock.id)}
+                onChange={() => handleSelectStock(stock.id)}
+              />
+            </div>
+  
+            {/* Batch Number */}
             <div className="flex justify-between">
               <span className="font-semibold">Batch No.</span>
-              <span>{stock.batchNumber}</span>
+              {editStock?.id === stock.id ? (
+                <Input
+                  className="w-1/2"
+                  value={editStock.batchNumber.toString()}
+                  onChange={(e) => handleEditInputChange(e, "batchNumber")}
+                />
+              ) : (
+                <span>{stock.batchNumber}</span>
+              )}
             </div>
+  
+            {/* Medicine Name */}
             <div className="flex justify-between">
               <span className="font-semibold">Medicine</span>
-              <span>{stock.medicineName}</span>
+              {editStock?.id === stock.id ? (
+                <Input
+                  className="w-1/2"
+                  value={editStock.medicineName}
+                  onChange={(e) => handleEditInputChange(e, "medicineName")}
+                />
+              ) : (
+                <span>{stock.medicineName}</span>
+              )}
             </div>
+  
+            {/* Composition */}
             <div className="flex justify-between">
               <span className="font-semibold">Composition</span>
-              <span>{stock.composition}</span>
+              {editStock?.id === stock.id ? (
+                <Input
+                  className="w-1/2"
+                  value={editStock.composition}
+                  onChange={(e) => handleEditInputChange(e, "composition")}
+                />
+              ) : (
+                <span>{stock.composition}</span>
+              )}
             </div>
+  
+            {/* Quantity */}
             <div className="flex justify-between">
               <span className="font-semibold">Quantity</span>
-              <span>{stock.quantity}</span>
+              {editStock?.id === stock.id ? (
+                <Input
+                  className="w-1/2"
+                  value={editStock.quantity.toString()}
+                  onChange={(e) => handleEditInputChange(e, "quantity")}
+                />
+              ) : (
+                <span>{stock.quantity}</span>
+              )}
             </div>
+  
+            {/* Medicine Type */}
             <div className="flex justify-between">
               <span className="font-semibold">Type</span>
-              <span>{stock.medicineType}</span>
+              {editStock?.id === stock.id ? (
+                <Input
+                  className="w-1/2"
+                  value={editStock.medicineType}
+                  onChange={(e) => handleEditInputChange(e, "medicineType")}
+                />
+              ) : (
+                <span>{stock.medicineType}</span>
+              )}
             </div>
+  
+            {/* Expiry Date */}
             <div className="flex justify-between">
               <span className="font-semibold">Expiry</span>
-              <span>
-                {formatExpirationDateForDisplay(stock.expirationDate)}
-              </span>
+              {editStock?.id === stock.id ? (
+                <Input
+                  className="w-1/2"
+                  type="date"
+                  value={editStock.expirationDate}
+                  onChange={(e) =>
+                    setEditStock({
+                      ...editStock,
+                      expirationDate: e.target.value,
+                    })
+                  }
+                />
+              ) : (
+                <span>{formatExpirationDateForDisplay(stock.expirationDate)}</span>
+              )}
             </div>
+  
+            {/* Company */}
             <div className="flex justify-between">
               <span className="font-semibold">Company</span>
-              <span>{stock.company}</span>
+              {editStock?.id === stock.id ? (
+                <Input
+                  className="w-1/2"
+                  value={editStock.company}
+                  onChange={(e) => handleEditInputChange(e, "company")}
+                />
+              ) : (
+                <span>{stock.company}</span>
+              )}
             </div>
+  
+            {/* Location */}
             <div className="flex justify-between">
               <span className="font-semibold">Location</span>
-              <span>{stock.location?.locationName || "N/A"}</span>
+              {editStock?.id === stock.id ? (
+                <Select
+                  onValueChange={(value) => handleLocationChange(value, true)}
+                >
+                  <SelectTrigger className="w-1/2">
+                    <SelectValue
+                      placeholder={editStock.location?.locationName || "Select location"}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {locations.map((loc) => (
+                      <SelectItem key={loc.locId} value={loc.locationName}>
+                        {loc.locationName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <span>{stock.location?.locationName || "N/A"}</span>
+              )}
             </div>
+  
+            {/* Actions */}
             <div className="flex justify-between">
               <span className="font-semibold">Actions</span>
               <div className="flex gap-2">
-                <Pencil
-                  className="h-5 w-5 text-blue-600 cursor-pointer"
-                  onClick={() => handleEdit(stock)}
-                />
+                {editStock?.id === stock.id ? (
+                  <>
+                    <Save
+                      className="h-5 w-5 text-green-600 cursor-pointer"
+                      onClick={handleSaveEdit}
+                    />
+                    <X
+                      className="h-5 w-5 text-red-600 cursor-pointer"
+                      onClick={handleCancel}
+                    />
+                  </>
+                ) : (
+                  <Pencil
+                    className="h-5 w-5 text-blue-600 cursor-pointer"
+                    onClick={() => handleEdit(stock)}
+                  />
+                )}
               </div>
             </div>
           </div>
         </div>
       ))}
+  
+      {/* New Stock Row for Mobile */}
+      {newStock && (
+        <div className="bg-blue-50 p-4 rounded-lg shadow-sm border border-gray-100">
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="font-semibold">Batch No.</span>
+              <Input
+                className="w-1/2"
+                value={newStock.batchNumber.toString()}
+                onChange={(e) => handleInputChange(e, "batchNumber")}
+              />
+            </div>
+            {/* Add other fields similarly */}
+            <div className="flex justify-between">
+              <span className="font-semibold">Actions</span>
+              <div className="flex gap-2">
+                <Save
+                  className="h-5 w-5 text-green-600 cursor-pointer"
+                  onClick={handleSave}
+                />
+                <X
+                  className="h-5 w-5 text-red-600 cursor-pointer"
+                  onClick={handleCancel}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -828,6 +980,19 @@ const handleEditInputChange = (
                 Export Excel
               </button>
             </div>
+
+            {/* Delete Button (Mobile) - Added at the top */}
+{isMobile && selectedStocks.size > 0 && (
+  <div className="flex justify-start mb-4">
+    <button
+      onClick={handleDelete}
+      className="bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-red-700 transition-colors"
+    >
+      <Trash2 className="h-5 w-5" />
+      Delete Selected ({selectedStocks.size})
+    </button>
+  </div>
+)}
 
             {/* Filters Section */}
             <div className="grid md:grid-cols-3 gap-4">
