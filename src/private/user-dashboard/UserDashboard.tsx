@@ -163,34 +163,63 @@ const UserDashboard = () => {
 
   const fetchCurrentTokenNumber = useCallback(async () => {
     const token = localStorage.getItem("token");
+    const locationId = localStorage.getItem("locationId");
+    console.log("LOCATION IS "+locationId)
+    
     if (!token) {
       console.warn("Missing token for fetching current token number.");
       return;
     }
-
+  
+    if (!locationId) {
+      console.warn("Location ID not found in localStorage");
+      setStatus(prev => ({ ...prev, currentTokenNo: "N/A (No Location)" }));
+      return;
+    }
+  
     try {
       const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/current-appointment/current-token`,
+        `https://uhs-backend.onrender.com/api/current-appointment/current-token?locationId=${locationId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`
-          }
+          },
+          timeout: 5000 // Add timeout to prevent hanging
         }
       );
-
-      console.log("RESPONSE FULL DATA", response.data);
-
-
-      if (response?.data) {
-        setStatus(prevStatus => ({
-          ...prevStatus,
-          currentTokenNo: response.data,
-        }));
-      }
-    } catch (error: unknown) {
+  
+      setStatus(prevStatus => ({
+        ...prevStatus,
+        currentTokenNo: response.data || "N/A", // Handle empty response
+      }));
+    } catch (error) {
       console.error("Error fetching current token number:", error);
+      setStatus(prevStatus => ({
+        ...prevStatus,
+        currentTokenNo: "N/A (Error)",
+      }));
     }
-  }, [toast]);
+  }, []);
+  
+  // Initialize and refresh current token periodically
+  useEffect(() => {
+    // Fetch immediately on mount
+    fetchCurrentTokenNumber();
+    
+    // Then set up periodic refresh
+    const interval = setInterval(fetchCurrentTokenNumber, 30000);
+    
+    // Cleanup interval on unmount
+    return () => clearInterval(interval);
+  }, [fetchCurrentTokenNumber]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchCurrentTokenNumber();
+    }, 30000); // Refresh every 30 seconds
+  
+    return () => clearInterval(interval);
+  }, [fetchCurrentTokenNumber]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -254,7 +283,7 @@ const UserDashboard = () => {
             appointmentStatus: "NA",
             doctorName: "Not Appointed",
             tokenNo: "N/A",
-            currentTokenNo: "N/A", // Set current token number
+            currentTokenNo: "...", // Set current token number
           });
         }
 

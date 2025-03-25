@@ -50,11 +50,12 @@ const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<string>("patient");
   const [location, setLocation] = useState({
+
     latitude: "-1",
     longitude: "-1",
   });
   const [locations, setLocations] = useState<
-    Array<{ locationName: string; latitude: string; longitude: string }>
+    Array<{id:string; locationName: string; latitude: string; longitude: string }>
   >([]);
 
   const onInputChange: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -71,6 +72,7 @@ const SignIn = () => {
         latitude: selectedLocation.latitude,
         longitude: selectedLocation.longitude,
       });
+      localStorage.setItem("locationId", selectedLocation.id);
     }
   };
 
@@ -114,6 +116,7 @@ const SignIn = () => {
         loc.latitude === location.latitude && 
         loc.longitude === location.longitude
       )?.locationName || "Unknown Location");
+      
   
       toast({
         variant: "default",
@@ -246,12 +249,14 @@ const SignIn = () => {
           console.log("Fetched locations:", locations);
   
           // Map the lat/long values to strings if needed
-          const formattedLocations = locations.map((loc: { locationName: any; latitude: { toString: () => any; }; longitude: { toString: () => any; }; }) => ({
+          const formattedLocations = locations.map((loc: any)=> ({ 
+
+            id: loc._links.self.href.split('/').pop(), 
             locationName: loc.locationName,
             latitude: loc.latitude.toString(),
             longitude: loc.longitude.toString()
           }));
-  
+  console.log("Location is "+formattedLocations.id)
           setLocations(formattedLocations); // ✅ Fixed
         } else {
           throw new Error("No locations found");
