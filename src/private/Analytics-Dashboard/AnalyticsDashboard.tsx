@@ -1,3 +1,5 @@
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { useState, useEffect } from "react";
 import {
   BarChart,
@@ -386,6 +388,90 @@ const AnalyticsDashboard = () => {
     </div>
   );
 
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    let y = 20;
+  
+    doc.setFontSize(18);
+    doc.text("UHS Full Analytics Report", 14, y);
+    doc.setFontSize(12);
+    y += 10;
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, y);
+    y += 10;
+  
+    const addSection = (title: string, headers: string[], rows: any[][]) => {
+      doc.setFontSize(14);
+      doc.text(title, 14, y);
+      autoTable(doc, {
+        startY: y + 5,
+        head: [headers],
+        body: rows,
+        margin: { top: 10 },
+      });
+ // Type-safe way to access finalY
+ if (doc.lastAutoTable && typeof doc.lastAutoTable.finalY === "number") {
+  y = doc.lastAutoTable.finalY + 10;
+} else {
+  y += 30; // fallback if somehow finalY is unavailable
+}
+};
+  
+    // Daily Visits
+    addSection(
+      "Daily Patient Visits",
+      ["Day", "Bidholi", "Kandoli", "Total"],
+      dailyData.map((d) => [d.day, d.bidholi, d.kandoli, d.bidholi + d.kandoli])
+    );
+  
+    // Monthly Visits
+    addSection(
+      "Monthly Patient Visits",
+      ["Month", "Bidholi", "Kandoli", "Total"],
+      monthlyData.map((d) => [d.month, d.bidholi, d.kandoli, d.bidholi + d.kandoli])
+    );
+  
+    // Yearly Visits
+    addSection(
+      "Yearly Patient Visits",
+      ["Year", "Bidholi", "Kandoli", "Total"],
+      yearlyData.map((d) => [d.year, d.bidholi, d.kandoli, d.bidholi + d.kandoli])
+    );
+  
+    // Top Medicines
+    addSection(
+      "Top Medicines",
+      ["Medicine", "Bidholi", "Kandoli", "Total"],
+      medicineData.map((d) => [d.medicine, d.bidholi, d.kandoli, d.bidholi + d.kandoli])
+    );
+  
+    // Doctor Distribution
+    addSection(
+      "Doctor-wise Patient Distribution",
+      ["Doctor", "Patient Count"],
+      doctorData.map((d) => [d.name, d.patientCount])
+    );
+  
+    // Residence Distribution
+    addSection(
+      "Residence-wise Patient Distribution",
+      ["Type", "Count"],
+      residenceData.map((r) => [r.type, r.count])
+    );
+  
+    // School-wise Distribution
+    addSection(
+      "School-wise Patient Distribution",
+      ["School", "Patient Count"],
+      schoolData.map((s) => [s.name, s.count])
+    );
+  
+    // Save the PDF
+    doc.save("UHS_Full_Analytics_Report.pdf");
+  };
+  
+
+  
+
   return (
     <>
       <Toaster />
@@ -405,7 +491,7 @@ const AnalyticsDashboard = () => {
               <Calendar className="w-4 h-4" />
               Last 30 Days
             </Button>
-            <Button>Export Report</Button>
+            <Button onClick={handleExportPDF}>Export Report</Button>
           </div>
         </div>
 
@@ -520,65 +606,6 @@ const AnalyticsDashboard = () => {
               </div>
             </ChartContainer>
           </div>
-
-{/* Doctor Distribution */}
-{/* <div>
-  <ChartContainer
-    title="Doctor Distribution"
-    loading={loading}
-    className="h-full"
-  >
-    <ResponsiveContainer width="100%" height="100%">
-      <PieChart>
-        <Pie
-          data={doctorData}
-          cx="50%"
-          cy="50%"
-          innerRadius={60}
-          outerRadius={80}
-          paddingAngle={2}
-          dataKey="patientCount"
-          nameKey="name"
-          label={false}
-        >
-          {doctorData.map((_, index) => (
-            <Cell
-              key={`cell-${index}`}
-              fill={COLORS[index % COLORS.length]}
-            />
-          ))}
-        </Pie>
-        <Tooltip 
-          content={<CustomTooltip />}
-          wrapperStyle={{
-            zIndex: 1000,
-            pointerEvents: 'auto'
-          }}
-        />
-        <Legend
-          layout="vertical"
-          align="right"
-          verticalAlign="middle"
-          wrapperStyle={{
-            paddingLeft: 16,
-            fontSize: 12,
-          }}
-          formatter={(value, entry, index) => (
-            <div className="flex items-center gap-2">
-              <div 
-                className="w-3 h-3 rounded-full" 
-                style={{ backgroundColor: COLORS[index % COLORS.length] }}
-              />
-              <span className="truncate max-w-[120px]">
-                {value} ({((entry.payload?.percent || 0) * 100).toFixed(0)}%)
-              </span>
-            </div>
-          )}
-        />
-      </PieChart>
-    </ResponsiveContainer>
-  </ChartContainer>
-</div> */}
 
 {/* Doctor Distribution */}
 <div>
