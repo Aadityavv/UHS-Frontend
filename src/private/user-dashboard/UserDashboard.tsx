@@ -173,7 +173,7 @@ const UserDashboard = () => {
   
     if (!locationId) {
       console.warn("Location ID not found in localStorage");
-      setStatus(prev => ({ ...prev, currentTokenNo: "N/A (No Location)" }));
+      setStatus(prev => ({ ...prev, currentTokenNo: "Login Again" }));
       return;
     }
   
