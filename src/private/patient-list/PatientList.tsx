@@ -87,6 +87,7 @@ const PatientList = () => {
             name: p.name,
             reason: p.reason,
             aptId: p.aptId,
+            tokenNum: p.tokenNum || "-",
             status: "Pending" as const,
             doctorName: "",
             preferredDoctor,
