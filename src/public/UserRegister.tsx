@@ -288,7 +288,7 @@ const UserRegister = () => {
                 UHS Portal
               </h2>
               <p className="text-gray-600 mt-2 text-sm font-medium">
-                University Health Services
+                UPES Health Services
               </p>
             </motion.div>
 

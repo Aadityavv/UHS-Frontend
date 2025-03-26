@@ -185,7 +185,7 @@ const CommonPrescription = () => {
                   <h1 className="text-2xl font-bold text-indigo-800">
                     Medical Report
                   </h1>
-                  <p className="text-slate-500">University Health Services</p>
+                  <p className="text-slate-500">UPES Health Services</p>
                 </div>
               </div>
               <div className="text-center md:text-right hidden sm:block">

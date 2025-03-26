@@ -282,11 +282,16 @@ const UserAppointment = () => {
                 <>
                   <div className="flex flex-col items-center">
                     <div className="relative">
-                      <img
-                        src={userDetails.imageUrl || "/default-user.jpg"}
-                        alt="Profile"
-                        className="w-24 h-24 rounded-2xl object-cover border-4 border-white shadow-lg"
-                      />
+                    <img
+  src={
+    userDetails.imageUrl
+      ? `https://uhs-backend.onrender.com/Profile/${userDetails.imageUrl}`
+      : "/default-user.jpg"
+  }
+  alt="Profile"
+  className="w-24 h-24 rounded-2xl object-cover border-4 border-white shadow-lg"
+/>
+
                       <div className="absolute -bottom-2 -right-2 bg-indigo-600 p-1.5 rounded-full">
                         <User className="h-5 w-5 text-white" />
                       </div>

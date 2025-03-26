@@ -97,44 +97,39 @@ const PatientList = () => {
         })
       );
 
-      const assignedPatients = await Promise.all(
-        assignedRes.data.map(async (p: any) => {
-          const { preferredDoctor, reasonForPref } = await fetchAppointmentDetails(p.sapEmail);
-          return {
-            id: p.PatientToken,
-            name: p.PatientName,
-            email: p.sapEmail,
-            reason: p.reason,
-            aptId: p.aptId,
-            tokenNum: p.PatientToken,
-            doctorName: p.doctorName,
-            preferredDoctor,
-            reasonForPref,
-            status: "Assigned" as const,
-            rawData: p,
-          };
-        })
-      );      
+      const assignedPatients = assignedRes.data.map((p: any) => ({
+        id: p.PatientToken,
+        name: p.PatientName,
+        email: p.sapEmail,
+        reason: p.reason,
+        aptId: p.aptId,
+        tokenNum: p.PatientToken,
+        doctorName: p.doctorName,
+        preferredDoctor: "-",
+        reasonForPref: "-",
+        status: "Assigned" as const,
+        rawData: p,
+      }));
 
-      const appointedPatients = await Promise.all(
-        appointedRes.data.map(async (p: any) => {
-          const { preferredDoctor, reasonForPref } = await fetchAppointmentDetails(p.sapEmail);
-          return {
-            id: p.Id,
-            email: p.sapEmail,
-            name: p.name,
-            reason: p.reason,
-            aptId: p.aptId,
-            doctorName: p.doctorName,
-            tokenNum: p.tokenNum || "-",
-            preferredDoctor,
-            reasonForPref,
-            status: "Appointed" as const,
-            rawData: p,
-          };
-        })
-      );
-      
+const appointedPatients = await Promise.all(
+  appointedRes.data.map(async (p: any) => {
+    const { preferredDoctor, reasonForPref } = await fetchAppointmentDetails(p.sapEmail);
+    return {
+      id: p.Id,
+      email: p.sapEmail,
+      name: p.name,
+      reason: p.reason,
+      aptId: p.aptId,
+      doctorName: p.doctorName,
+      tokenNum: p.tokenNum || "-",
+      preferredDoctor,
+      reasonForPref,
+      status: "Appointed" as const,
+      rawData: p,
+    };
+  })
+);
+
 
       const combinePatients = [...pendingPatients, ...assignedPatients, ...appointedPatients];
 
@@ -198,7 +193,7 @@ setFilteredPatients(uniquePatients);
   useEffect(() => {
     const filtered = patients.filter((p) =>
       (p.name || "").toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    );
     setFilteredPatients(filtered);
   }, [searchQuery, patients]);
 
