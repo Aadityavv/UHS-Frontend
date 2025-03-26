@@ -18,8 +18,7 @@ import {
   ChevronRight,
   Users,
 } from "lucide-react";
-import { BottomNavigation, BottomNavigationAction, Fab } from "@mui/material";
-import { Add } from "@mui/icons-material";
+import { BottomNavigation, BottomNavigationAction } from "@mui/material";
 
 const AssistantDoctorDashboard = () => {
   const navigate = useNavigate();
