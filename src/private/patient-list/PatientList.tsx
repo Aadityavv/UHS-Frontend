@@ -197,8 +197,8 @@ setFilteredPatients(uniquePatients);
 
   useEffect(() => {
     const filtered = patients.filter((p) =>
-      p.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+      (p.name || "").toLowerCase().includes(searchQuery.toLowerCase())
+  );
     setFilteredPatients(filtered);
   }, [searchQuery, patients]);
 
