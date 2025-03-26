@@ -285,7 +285,7 @@ const UserAppointment = () => {
                     <img
   src={
     userDetails.imageUrl
-      ? `https://uhs-backend.onrender.com/Profile/${userDetails.imageUrl}`
+      ? `https://uhs-backend.onrender.com/${userDetails.imageUrl}`
       : "/default-user.jpg"
   }
   alt="Profile"
