@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { ToastAction } from "@/components/ui/toast";
@@ -31,11 +31,18 @@ import {
   Search,
   Sliders,
   PackageOpen,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 interface Stock {
   id: string;
-  location: any;
+  location: {
+    locId: string;
+    locationName: string;
+    latitude: string;
+    longitude: string;
+  };
   batchNumber: number | string;
   medicineName: string;
   composition: string;
@@ -45,12 +52,17 @@ interface Stock {
   company: string;
 }
 
+interface Location {
+  locId: string;
+  locationName: string;
+  latitude: string;
+  longitude: string;
+}
+
 const capitalize = (text: string): string => {
   if (!text) return "";
   return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
 };
-
-
 
 const useMobile = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -78,28 +90,23 @@ const MedicineStock = () => {
     new Set()
   );
   const [location, setLocation] = useState("");
-  const [locations, setLocations] = useState<
-    Array<{
-      locId: string;
-      locationName: string;
-      latitude: string;
-      longitude: string;
-    }>
-  >([]);
+  const [locations, setLocations] = useState<Location[]>([]);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [sortColumn, setSortColumn] = useState<string>("quantity");
   const [selectedLocationFilter, setSelectedLocationFilter] =
     useState<string>("all");
+  const [expandedStockId, setExpandedStockId] = useState<string | null>(null);
 
   const isMobile = useMobile();
 
   const handleEdit = (stock: Stock) => {
     setEditStock(stock);
+    setExpandedStockId(stock.id);
   };
 
   const handleLocationChange = (value: string, isEditMode = false) => {
     const selectedLocation = locations.find(
-      (loc) => loc.locationName === value
+      (loc: Location) => loc.locationName === value
     );
   
     if (selectedLocation) {
@@ -142,6 +149,7 @@ const MedicineStock = () => {
           description: "Stock updated successfully!",
         });
         setEditStock(null);
+        setExpandedStockId(null);
       } catch (error: any) {
         console.error("Error updating stock:", error);
         toast({
@@ -168,13 +176,13 @@ const MedicineStock = () => {
     const isExpiringSoon = !isNaN(expirationDate.getTime()) && expirationDate <= thirtyDaysFromNow;
   
     if (isLowQuantity && isExpiringSoon) {
-      return 'bg-blue-100 hover:bg-blue-200'; // Blue for both conditions
+      return 'bg-blue-100 hover:bg-blue-200';
     } else if (isLowQuantity) {
-      return 'bg-red-100 hover:bg-red-200'; // Red for low quantity only
+      return 'bg-red-100 hover:bg-red-200';
     } else if (isExpiringSoon) {
-      return 'bg-yellow-100 hover:bg-yellow-200'; // Yellow for expiring soon only
+      return 'bg-yellow-100 hover:bg-yellow-200';
     }
-    return 'hover:bg-gray-50'; // Default hover color
+    return 'hover:bg-gray-50';
   };
 
   const fetchStocks = async () => {
@@ -292,7 +300,12 @@ const MedicineStock = () => {
       medicineType: "",
       expirationDate: "",
       company: "",
-      location: "",
+      location: {
+        locId: "",
+        locationName: "",
+        latitude: "",
+        longitude: ""
+      }
     });
   };
 
@@ -315,26 +328,26 @@ const MedicineStock = () => {
       });
     }
   };
-const handleEditInputChange = (
-  e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  field: keyof Stock
-) => {
-  if (editStock) {
-    const value =
-      field === "medicineName" ||
-      field === "medicineType" ||
-      field === "composition" ||
-      field === "company"
-        ? capitalize(e.target.value)
-        : e.target.value;
 
-    setEditStock({
-      ...editStock,
-      [field]: value,
-    });
-  }
-};
-  
+  const handleEditInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    field: keyof Stock
+  ) => {
+    if (editStock) {
+      const value =
+        field === "medicineName" ||
+        field === "medicineType" ||
+        field === "composition" ||
+        field === "company"
+          ? capitalize(e.target.value)
+          : e.target.value;
+
+      setEditStock({
+        ...editStock,
+        [field]: value,
+      });
+    }
+  };
 
   const formatExpirationDateForDisplay = (dateString: string): string => {
     const date = new Date(dateString);
@@ -357,7 +370,6 @@ const handleEditInputChange = (
   
         if (role === "ad") role = role.toUpperCase();
   
-        // Convert quantity and batch number to numbers
         const numericStock = {
           ...newStock,
           quantity: Number(newStock.quantity),
@@ -437,10 +449,10 @@ const handleEditInputChange = (
   const handleCancel = () => {
     setNewStock(null);
     setEditStock(null);
+    setExpandedStockId(null);
   };
 
   const getSortedAndFilteredStocks = (stocks: Stock[]) => {
-    // First filter by location if a specific location is selected
     let filteredByLocation = stocks;
     if (selectedLocationFilter !== "all") {
       filteredByLocation = stocks.filter(
@@ -448,12 +460,10 @@ const handleEditInputChange = (
       );
     }
 
-    // Then filter by search term
     const filteredBySearch = filteredByLocation.filter((stock) =>
       stock.medicineName.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Finally sort
     return [...filteredBySearch].sort((a, b) => {
       if (sortColumn === "quantity") {
         const qtyA = Number(a.quantity) || 0;
@@ -488,6 +498,15 @@ const handleEditInputChange = (
       updatedSelection.add(batchNumber);
     }
     setSelectedStocks(updatedSelection);
+  };
+
+  const toggleExpandStock = (stockId: string) => {
+    if (expandedStockId === stockId) {
+      setExpandedStockId(null);
+      setEditStock(null);
+    } else {
+      setExpandedStockId(stockId);
+    }
   };
 
   if (loading) {
@@ -752,139 +771,308 @@ const handleEditInputChange = (
   );
 
   const renderMobileView = () => (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {filteredStocks.map((stock) => (
         <div
           key={stock.id}
-          className={`${getRowHighlightColor(stock).replace('hover:', '')} p-4 rounded-lg shadow-sm border border-gray-100`}
+          className={`${getRowHighlightColor(stock).replace('hover:', '')} p-3 rounded-lg shadow-sm border border-gray-100`}
         >
-          <div className="space-y-2">
-            {/* Select Checkbox */}
-            <div className="flex justify-between items-center">
-              <span className="font-semibold">Select</span>
+          {/* Compact View */}
+          <div 
+            className="flex items-center justify-between cursor-pointer"
+            onClick={() => toggleExpandStock(stock.id)}
+          >
+            <div className="flex items-center space-x-3">
               <input
                 type="checkbox"
                 className="h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
                 checked={selectedStocks.has(stock.id)}
-                onChange={() => handleSelectStock(stock.id)}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  handleSelectStock(stock.id);
+                }}
               />
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {stock.medicineName}
+                </p>
+                <p className="text-xs text-gray-500">
+                  Batch: {stock.batchNumber}
+                </p>
+              </div>
             </div>
-  
-            {/* Batch Number */}
-            <div className="flex justify-between">
-              <span className="font-semibold">Batch No.</span>
-              {editStock?.id === stock.id ? (
-                <Input
-                  className="w-1/2"
-                  value={editStock.batchNumber.toString()}
-                  onChange={(e) => handleEditInputChange(e, "batchNumber")}
-                />
+            <div className="flex items-center space-x-2">
+              <span className="text-xs text-gray-500">
+                {stock.location?.locationName || "N/A"}
+              </span>
+              {expandedStockId === stock.id ? (
+                <ChevronUp className="h-4 w-4 text-gray-500" />
               ) : (
-                <span>{stock.batchNumber}</span>
+                <ChevronDown className="h-4 w-4 text-gray-500" />
               )}
             </div>
+          </div>
   
-            {/* Medicine Name */}
-            <div className="flex justify-between">
-              <span className="font-semibold">Medicine</span>
+          {/* Expanded View */}
+          {expandedStockId === stock.id && (
+            <div className="mt-3 pt-3 border-t border-gray-200 space-y-3">
               {editStock?.id === stock.id ? (
-                <Input
-                  className="w-1/2"
-                  value={editStock.medicineName}
-                  onChange={(e) => handleEditInputChange(e, "medicineName")}
-                />
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Added Batch Number field */}
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Batch No.
+                      </label>
+                      <Input
+                        className="w-full"
+                        value={editStock.batchNumber.toString()}
+                        onChange={(e) => handleEditInputChange(e, "batchNumber")}
+                      />
+                    </div>
+                    
+                    {/* Added Medicine Name field */}
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Medicine Name
+                      </label>
+                      <Input
+                        className="w-full"
+                        value={editStock.medicineName}
+                        onChange={(e) => handleEditInputChange(e, "medicineName")}
+                      />
+                    </div>
+  
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Composition
+                      </label>
+                      <Input
+                        className="w-full"
+                        value={editStock.composition}
+                        onChange={(e) => handleEditInputChange(e, "composition")}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Quantity
+                      </label>
+                      <Input
+                        className="w-full"
+                        value={editStock.quantity.toString()}
+                        onChange={(e) => handleEditInputChange(e, "quantity")}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Type
+                      </label>
+                      <Input
+                        className="w-full"
+                        value={editStock.medicineType}
+                        onChange={(e) => handleEditInputChange(e, "medicineType")}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Expiry
+                      </label>
+                      <Input
+                        type="date"
+                        className="w-full"
+                        value={editStock.expirationDate}
+                        onChange={(e) =>
+                          setEditStock({
+                            ...editStock,
+                            expirationDate: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Company
+                      </label>
+                      <Input
+                        className="w-full"
+                        value={editStock.company}
+                        onChange={(e) => handleEditInputChange(e, "company")}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Location
+                      </label>
+                      <Select
+                        onValueChange={(value) => handleLocationChange(value, true)}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue
+                            placeholder={editStock.location?.locationName || "Select location"}
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {locations.map((loc) => (
+                            <SelectItem key={loc.locId} value={loc.locationName}>
+                              {loc.locationName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="flex justify-end space-x-2 pt-2">
+                    <button
+                      onClick={handleSaveEdit}
+                      className="px-3 py-1 bg-green-600 text-white text-sm rounded flex items-center"
+                    >
+                      <Save className="h-4 w-4 mr-1" />
+                      Save
+                    </button>
+                    <button
+                      onClick={handleCancel}
+                      className="px-3 py-1 bg-red-600 text-white text-sm rounded flex items-center"
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Cancel
+                    </button>
+                  </div>
+                </>
               ) : (
-                <span>{stock.medicineName}</span>
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs font-medium text-gray-700">Batch No.</p>
+                      <p className="text-sm">{stock.batchNumber}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-gray-700">Medicine Name</p>
+                      <p className="text-sm">{stock.medicineName}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-gray-700">Composition</p>
+                      <p className="text-sm">{stock.composition}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-gray-700">Quantity</p>
+                      <p className="text-sm">{stock.quantity}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-gray-700">Type</p>
+                      <p className="text-sm">{stock.medicineType}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-gray-700">Expiry</p>
+                      <p className="text-sm">{formatExpirationDateForDisplay(stock.expirationDate)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-gray-700">Company</p>
+                      <p className="text-sm">{stock.company}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-gray-700">Location</p>
+                      <p className="text-sm">{stock.location?.locationName || "N/A"}</p>
+                    </div>
+                  </div>
+                  <div className="flex justify-end pt-2">
+                    <button
+                      onClick={() => handleEdit(stock)}
+                      className="px-3 py-1 bg-blue-600 text-white text-sm rounded flex items-center"
+                    >
+                      <Pencil className="h-4 w-4 mr-1" />
+                      Edit
+                    </button>
+                  </div>
+                </>
               )}
             </div>
-  
-            {/* Composition */}
-            <div className="flex justify-between">
-              <span className="font-semibold">Composition</span>
-              {editStock?.id === stock.id ? (
+          )}
+        </div>
+      ))}
+    
+      {/* New Stock Row for Mobile - remains unchanged */}
+      {newStock && (
+        <div className="bg-blue-50 p-4 rounded-lg shadow-sm border border-gray-100">
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Batch No.
+                </label>
                 <Input
-                  className="w-1/2"
-                  value={editStock.composition}
-                  onChange={(e) => handleEditInputChange(e, "composition")}
+                  className="w-full"
+                  value={newStock.batchNumber.toString()}
+                  onChange={(e) => handleInputChange(e, "batchNumber")}
                 />
-              ) : (
-                <span>{stock.composition}</span>
-              )}
-            </div>
-  
-            {/* Quantity */}
-            <div className="flex justify-between">
-              <span className="font-semibold">Quantity</span>
-              {editStock?.id === stock.id ? (
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Medicine
+                </label>
                 <Input
-                  className="w-1/2"
-                  value={editStock.quantity.toString()}
-                  onChange={(e) => handleEditInputChange(e, "quantity")}
+                  className="w-full"
+                  value={newStock.medicineName}
+                  onChange={(e) => handleInputChange(e, "medicineName")}
                 />
-              ) : (
-                <span>{stock.quantity}</span>
-              )}
-            </div>
-  
-            {/* Medicine Type */}
-            <div className="flex justify-between">
-              <span className="font-semibold">Type</span>
-              {editStock?.id === stock.id ? (
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Composition
+                </label>
                 <Input
-                  className="w-1/2"
-                  value={editStock.medicineType}
-                  onChange={(e) => handleEditInputChange(e, "medicineType")}
+                  className="w-full"
+                  value={newStock.composition}
+                  onChange={(e) => handleInputChange(e, "composition")}
                 />
-              ) : (
-                <span>{stock.medicineType}</span>
-              )}
-            </div>
-  
-            {/* Expiry Date */}
-            <div className="flex justify-between">
-              <span className="font-semibold">Expiry</span>
-              {editStock?.id === stock.id ? (
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Quantity
+                </label>
                 <Input
-                  className="w-1/2"
+                  className="w-full"
+                  value={newStock.quantity.toString()}
+                  onChange={(e) => handleInputChange(e, "quantity")}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Type
+                </label>
+                <Input
+                  className="w-full"
+                  value={newStock.medicineType}
+                  onChange={(e) => handleInputChange(e, "medicineType")}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Expiry
+                </label>
+                <Input
                   type="date"
-                  value={editStock.expirationDate}
-                  onChange={(e) =>
-                    setEditStock({
-                      ...editStock,
-                      expirationDate: e.target.value,
-                    })
-                  }
+                  className="w-full"
+                  value={newStock.expirationDate}
+                  onChange={(e) => handleInputChange(e, "expirationDate")}
                 />
-              ) : (
-                <span>{formatExpirationDateForDisplay(stock.expirationDate)}</span>
-              )}
-            </div>
-  
-            {/* Company */}
-            <div className="flex justify-between">
-              <span className="font-semibold">Company</span>
-              {editStock?.id === stock.id ? (
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Company
+                </label>
                 <Input
-                  className="w-1/2"
-                  value={editStock.company}
-                  onChange={(e) => handleEditInputChange(e, "company")}
+                  className="w-full"
+                  value={newStock.company}
+                  onChange={(e) => handleInputChange(e, "company")}
                 />
-              ) : (
-                <span>{stock.company}</span>
-              )}
-            </div>
-  
-            {/* Location */}
-            <div className="flex justify-between">
-              <span className="font-semibold">Location</span>
-              {editStock?.id === stock.id ? (
-                <Select
-                  onValueChange={(value) => handleLocationChange(value, true)}
-                >
-                  <SelectTrigger className="w-1/2">
-                    <SelectValue
-                      placeholder={editStock.location?.locationName || "Select location"}
-                    />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Location
+                </label>
+                <Select onValueChange={handleLocationChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select location" />
                   </SelectTrigger>
                   <SelectContent>
                     {locations.map((loc) => (
@@ -894,63 +1082,23 @@ const handleEditInputChange = (
                     ))}
                   </SelectContent>
                 </Select>
-              ) : (
-                <span>{stock.location?.locationName || "N/A"}</span>
-              )}
-            </div>
-  
-            {/* Actions */}
-            <div className="flex justify-between">
-              <span className="font-semibold">Actions</span>
-              <div className="flex gap-2">
-                {editStock?.id === stock.id ? (
-                  <>
-                    <Save
-                      className="h-5 w-5 text-green-600 cursor-pointer"
-                      onClick={handleSaveEdit}
-                    />
-                    <X
-                      className="h-5 w-5 text-red-600 cursor-pointer"
-                      onClick={handleCancel}
-                    />
-                  </>
-                ) : (
-                  <Pencil
-                    className="h-5 w-5 text-blue-600 cursor-pointer"
-                    onClick={() => handleEdit(stock)}
-                  />
-                )}
               </div>
             </div>
-          </div>
-        </div>
-      ))}
-  
-      {/* New Stock Row for Mobile */}
-      {newStock && (
-        <div className="bg-blue-50 p-4 rounded-lg shadow-sm border border-gray-100">
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="font-semibold">Batch No.</span>
-              <Input
-                className="w-1/2"
-                value={newStock.batchNumber.toString()}
-                onChange={(e) => handleInputChange(e, "batchNumber")}
-              />
-            </div>
-            {/* Add other fields similarly */}
-            <div className="flex justify-between">
-              <span className="font-semibold">Actions</span>
-              <div className="flex gap-2">
-                <Save
-                  className="h-5 w-5 text-green-600 cursor-pointer"
-                  onClick={handleSave}
-                />
-                <X
-                  className="h-5 w-5 text-red-600 cursor-pointer"
-                  onClick={handleCancel}
-                />
-              </div>
+            <div className="flex justify-end space-x-2 pt-2">
+              <button
+                onClick={handleSave}
+                className="px-3 py-1 bg-green-600 text-white text-sm rounded flex items-center"
+              >
+                <Save className="h-4 w-4 mr-1" />
+                Save
+              </button>
+              <button
+                onClick={handleCancel}
+                className="px-3 py-1 bg-red-600 text-white text-sm rounded flex items-center"
+              >
+                <X className="h-4 w-4 mr-1" />
+                Cancel
+              </button>
             </div>
           </div>
         </div>
@@ -982,62 +1130,62 @@ const handleEditInputChange = (
               </button>
             </div>
 
-           {/* Filters Section */}
-<div className="grid md:grid-cols-3 gap-4">
-  <div className="bg-white p-2 rounded-lg shadow-sm border border-gray-100 flex items-center">
-    <Search className="h-5 w-5 text-gray-400 ml-2" />
-    <Input
-      className="border-0 focus-visible:ring-0"
-      placeholder="Search medicine..."
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-    />
-  </div>
+            {/* Filters Section */}
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="bg-white p-2 rounded-lg shadow-sm border border-gray-100 flex items-center">
+                <Search className="h-5 w-5 text-gray-400 ml-2" />
+                <Input
+                  className="border-0 focus-visible:ring-0"
+                  placeholder="Search medicine..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
 
-  <Select
-    value={selectedLocationFilter}
-    onValueChange={setSelectedLocationFilter}
-  >
-    <SelectTrigger className="bg-white text-black h-full">
-      <div className="flex items-center gap-2">
-        <Sliders className="h-5 w-5 text-gray-400" />
-        <SelectValue placeholder="Filter by Location" />
-      </div>
-    </SelectTrigger>
-    <SelectContent className="bg-white text-black">
-      <SelectGroup>
-        <SelectItem value="all">All Locations</SelectItem>
-        {locations.map((loc) => (
-          <SelectItem key={loc.locId} value={loc.locationName}>
-            {loc.locationName}
-          </SelectItem>
-        ))}
-      </SelectGroup>
-    </SelectContent>
-  </Select>
+              <Select
+                value={selectedLocationFilter}
+                onValueChange={setSelectedLocationFilter}
+              >
+                <SelectTrigger className="bg-white text-black h-full">
+                  <div className="flex items-center gap-2">
+                    <Sliders className="h-5 w-5 text-gray-400" />
+                    <SelectValue placeholder="Filter by Location" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="bg-white text-black">
+                  <SelectGroup>
+                    <SelectItem value="all">All Locations</SelectItem>
+                    {locations.map((loc) => (
+                      <SelectItem key={loc.locId} value={loc.locationName}>
+                        {loc.locationName}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
 
-  <div className="flex items-center gap-2">
-    {selectedStocks.size > 0 ? (
-      <button
-        onClick={handleDelete}
-        className="bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-red-700 transition-colors flex-1"
-      >
-        <Trash2 className="h-5 w-5" />
-        Delete Selected ({selectedStocks.size})
-      </button>
-    ) : (
-      !editStock && !newStock && (
-        <button
-          onClick={handleAddNewRow}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors flex-1"
-        >
-          <Plus className="h-5 w-5" />
-          Add New
-        </button>
-      )
-    )}
-  </div>
-</div>
+              <div className="flex items-center gap-2">
+                {selectedStocks.size > 0 ? (
+                  <button
+                    onClick={handleDelete}
+                    className="bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-red-700 transition-colors flex-1"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                    Delete Selected ({selectedStocks.size})
+                  </button>
+                ) : (
+                  !editStock && !newStock && (
+                    <button
+                      onClick={handleAddNewRow}
+                      className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors flex-1"
+                    >
+                      <Plus className="h-5 w-5" />
+                      Add New
+                    </button>
+                  )
+                )}
+              </div>
+            </div>
 
             {/* Table Section */}
             <motion.div

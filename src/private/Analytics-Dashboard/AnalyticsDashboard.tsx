@@ -213,7 +213,7 @@ const AnalyticsDashboard = () => {
       
       try {
         // Get Total Patient
-        const responseAllPatient = await axios.get("https://uhs-backend.onrender.com/api/analytics/geTotalPatient", {
+        const responseAllPatient = await axios.get("https://uhs-backend.onrender.com/api/analytics/getTotalPatient", {
           headers: { Authorization: `Bearer ${token}` }
         });
         
