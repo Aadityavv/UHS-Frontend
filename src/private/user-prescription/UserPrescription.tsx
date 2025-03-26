@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 const UserPrescription = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [date, setDate] = useState<Date>(new Date());
+  const [date, setDate] = useState<Date | undefined>(undefined);
   const [reports, setReports] = useState<any[]>([]);
   const [filteredReports, setFilteredReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
