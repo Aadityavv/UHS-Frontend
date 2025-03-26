@@ -97,36 +97,70 @@ const PatientList = () => {
         })
       );
 
-      const assignedPatients = assignedRes.data.map((p: any) => ({
-        id: p.PatientToken,
-        name: p.PatientName,
-        email: p.sapEmail,
-        reason: p.reason,
-        aptId: p.aptId,
-        tokenNum: p.PatientToken,
-        doctorName: p.doctorName,
-        preferredDoctor: "-",
-        reasonForPref: "-",
-        status: "Assigned" as const,
-        rawData: p,
-      }));
+      const assignedPatients = await Promise.all(
+        assignedRes.data.map(async (p: any) => {
+          const { preferredDoctor, reasonForPref } = await fetchAppointmentDetails(p.sapEmail);
+          return {
+            id: p.PatientToken,
+            name: p.PatientName,
+            email: p.sapEmail,
+            reason: p.reason,
+            aptId: p.aptId,
+            tokenNum: p.PatientToken,
+            doctorName: p.doctorName,
+            preferredDoctor,
+            reasonForPref,
+            status: "Assigned" as const,
+            rawData: p,
+          };
+        })
+      );      
 
-      const appointedPatients = appointedRes.data.map((p: any) => ({
-        id: p.Id,
-        email: p.sapEmail,
-        name: p.name,
-        reason: p.reason,
-        aptId: p.aptId,
-        doctorName: p.doctorName,
-        preferredDoctor: "-",
-        reasonForPref: "-",
-        status: "Appointed" as const,
-        rawData: p,
-      }));
+      const appointedPatients = await Promise.all(
+        appointedRes.data.map(async (p: any) => {
+          const { preferredDoctor, reasonForPref } = await fetchAppointmentDetails(p.sapEmail);
+          return {
+            id: p.Id,
+            email: p.sapEmail,
+            name: p.name,
+            reason: p.reason,
+            aptId: p.aptId,
+            doctorName: p.doctorName,
+            tokenNum: p.tokenNum || "-",
+            preferredDoctor,
+            reasonForPref,
+            status: "Appointed" as const,
+            rawData: p,
+          };
+        })
+      );
+      
 
       const combinePatients = [...pendingPatients, ...assignedPatients, ...appointedPatients];
-      setPatients(combinePatients);
-      setFilteredPatients(combinePatients);
+
+// Priority: Appointed > Assigned > Pending
+const statusPriority = { Pending: 0, Assigned: 1, Appointed: 2 };
+
+const patientMap = new Map<string, Patient>();
+
+for (const patient of combinePatients) {
+  const key = patient.email || patient.id;
+  const existing = patientMap.get(key);
+
+  if (
+    !existing ||
+    statusPriority[patient.status as keyof typeof statusPriority] >
+      statusPriority[existing.status as keyof typeof statusPriority]
+  ) {
+    patientMap.set(key, patient);
+  }
+  
+}
+
+const uniquePatients = Array.from(patientMap.values());
+setPatients(uniquePatients);
+setFilteredPatients(uniquePatients);
+
     } catch (error) {
       handleError(error, "Failed to fetch patients");
     } finally {
