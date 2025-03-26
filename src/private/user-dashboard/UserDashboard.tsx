@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import dayjs from 'dayjs';
 import {
   Activity,
@@ -54,6 +56,9 @@ const UserDashboard = () => {
   const [lastAppointmentDate, setLastAppointmentDate] = useState<string | null>(null);
   const [loadingMedications, setLoadingMedications] = useState(true);
   const [locationName, setLocationName] = useState("");
+  const [medDialogOpen, setMedDialogOpen] = useState(false);
+  const [selectedMed, setSelectedMed] = useState<Medication | null>(null);
+
 
   // ✅ New state for allergies and BMI
   const [allergies, setAllergies] = useState<string>("N/A");
@@ -491,22 +496,72 @@ const UserDashboard = () => {
                   </p>
                 </div>
                 <div className="text-center p-4 bg-emerald-50 rounded-xl">
-                  <p className="text-sm text-gray-600 mb-1">Active medications</p>
+  <p className="text-sm text-gray-600 mb-1">Active medications</p>
+  {loadingMedications ? (
+    <p className="font-medium">Loading...</p>
+  ) : activeMedications.length > 0 ? (
+    <Dialog open={medDialogOpen} onOpenChange={setMedDialogOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="ghost"
+          className="text-emerald-700 font-medium hover:underline p-0 h-auto"
+        >
+          View All ({activeMedications.length})
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md w-full">
+        <h2 className="text-lg font-semibold text-center mb-4">
+          Active Medications
+        </h2>
+        <ul className="space-y-2">
+          {activeMedications.map((med) => (
+            <li
+              key={med.pres_medicine_id}
+              className="cursor-pointer px-4 py-2 rounded-lg hover:bg-emerald-100 text-left border border-emerald-200"
+              onClick={() => setSelectedMed(med)}
+            >
+              <span className="capitalize font-medium">{med.medicineName}</span>
+            </li>
+          ))}
+        </ul>
+      </DialogContent>
+    </Dialog>
+  ) : (
+    <p className="font-medium">No Active Medications</p>
+  )}
+</div>
 
-                  {loadingMedications ? (
-                    <p className="font-medium">Loading...</p>
-                  ) : activeMedications.length > 0 ? (
-                    <ul className="font-medium space-y-1 text-sm text-gray-700">
-                      {activeMedications.map((med) => (
-                        <li key={med.pres_medicine_id} className="capitalize">
-                          {med.medicineName}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="font-medium">No Active Medications</p>
-                  )}
-                </div>
+{/* Medication Details Dialog */}
+<Dialog open={!!selectedMed} onOpenChange={() => setSelectedMed(null)}>
+  <DialogContent className="max-w-sm w-full">
+    {selectedMed && (
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold text-center capitalize">
+          {selectedMed.medicineName}
+        </h2>
+        <div className="text-sm text-gray-600">
+          <p>
+            <span className="font-medium">Start Date:</span>{" "}
+            {selectedMed.appointmentDate ? dayjs(selectedMed.appointmentDate).format("DD/MM/YYYY") : "N/A"}
+          </p>
+          <p>
+            <span className="font-medium">End Date:</span>{" "}
+            {selectedMed.endDate ? dayjs(selectedMed.endDate).format("DD/MM/YYYY") : "N/A"}
+
+          </p>
+          <p>
+            <span className="font-medium">Dosage:</span>{" "}
+            {selectedMed.dosage || "N/A"}
+          </p>
+          <p>
+            <span className="font-medium">Frequency:</span>{" "}
+            {selectedMed.duration ? `${selectedMed.duration} times/day` : "N/A"}
+          </p>
+        </div>
+      </div>
+    )}
+  </DialogContent>
+</Dialog>
 
                 <div className="text-center p-4 bg-amber-50 rounded-xl">
                   <p className="text-sm text-gray-600 mb-1">Allergies</p>
