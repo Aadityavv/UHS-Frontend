@@ -18,7 +18,8 @@ import {
   ChevronRight,
   Users,
 } from "lucide-react";
-import { BottomNavigation, BottomNavigationAction } from "@mui/material";
+import { BottomNavigation, BottomNavigationAction, Fab } from "@mui/material";
+import { Add } from "@mui/icons-material";
 
 const AssistantDoctorDashboard = () => {
   const navigate = useNavigate();
@@ -214,7 +215,31 @@ const AssistantDoctorDashboard = () => {
                   ))}
                 </div>
                 <div className="fixed bottom-24 right-4 z-50 flex flex-col gap-1">
-             
+              {/* Patient List FAB */}
+              <Fab
+                color="primary"
+                aria-label="patients"
+                onClick={() => navigate("/patient-list")}
+                sx={{
+                  backgroundColor: "#3B82F6",
+                  "&:hover": { backgroundColor: "#2563EB" },
+                }}
+              >
+                <Users className="text-white" />
+              </Fab>
+
+              {/* Ad-Hoc FAB */}
+              <Fab
+                color="primary"
+                aria-label="add"
+                onClick={() => navigate("/adhoc")}
+                sx={{
+                  backgroundColor: "#3B82F6",
+                  "&:hover": { backgroundColor: "#2563EB" },
+                }}
+              >
+                <Add className="text-white" />
+              </Fab>
             </div>
 
                 {/* Diagnosis Word Cloud */}
