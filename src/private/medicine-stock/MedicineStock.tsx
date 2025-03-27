@@ -33,6 +33,7 @@ import {
   PackageOpen,
   ChevronDown,
   ChevronUp,
+  Truck,
 } from "lucide-react";
 
 interface Stock {
@@ -57,6 +58,12 @@ interface Location {
   locationName: string;
   latitude: string;
   longitude: string;
+}
+
+interface TransferData {
+  fromStock: Stock | null;
+  toLocation: string;
+  quantity: number | string;
 }
 
 const capitalize = (text: string): string => {
@@ -96,6 +103,12 @@ const MedicineStock = () => {
   const [selectedLocationFilter, setSelectedLocationFilter] =
     useState<string>("all");
   const [expandedStockId, setExpandedStockId] = useState<string | null>(null);
+  const [transferData, setTransferData] = useState<TransferData>({
+    fromStock: null,
+    toLocation: "",
+    quantity: "",
+  });
+  const [showTransferModal, setShowTransferModal] = useState(false);
 
   const isMobile = useMobile();
 
@@ -128,8 +141,6 @@ const MedicineStock = () => {
         let role = localStorage.getItem("roles");
 
         if (role === "ad") role = role.toUpperCase();
-
-        console.log(editStock);
 
         await axios.post(
           `https://uhs-backend.onrender.com/api/${role}/stock/editStock`,
@@ -509,6 +520,152 @@ const MedicineStock = () => {
     }
   };
 
+  // Transfer Medicine Functions
+  const handleInitiateTransfer = (stock: Stock) => {
+    setTransferData({
+      fromStock: stock,
+      toLocation: "",
+      quantity: "",
+    });
+    setShowTransferModal(true);
+  };
+
+  const handleTransferInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTransferData({
+      ...transferData,
+      quantity: e.target.value,
+    });
+  };
+
+  const handleTransferLocationChange = (value: string) => {
+    setTransferData({
+      ...transferData,
+      toLocation: value,
+    });
+  };
+
+  const handleTransferSubmit = async () => {
+    if (!transferData.fromStock || !transferData.toLocation || !transferData.quantity) {
+      toast({
+        title: "Error",
+        description: "Please fill all transfer details",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const quantity = Number(transferData.quantity);
+    const currentQuantity = Number(transferData.fromStock.quantity);
+
+    if (isNaN(quantity) || quantity <= 0) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid quantity",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (quantity > currentQuantity) {
+      toast({
+        title: "Error",
+        description: "Transfer quantity cannot exceed available stock",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      let role = localStorage.getItem("roles");
+
+      if (role === "ad") role = role.toUpperCase();
+
+      const toLocation = locations.find(loc => loc.locationName === transferData.toLocation);
+      if (!toLocation) {
+        throw new Error("Invalid destination location");
+      }
+
+      const updatedSourceStock = {
+        ...transferData.fromStock,
+        quantity: currentQuantity - quantity
+      };
+  
+      await axios.post(
+        `https://uhs-backend.onrender.com/api/${role}/stock/editStock`,
+        updatedSourceStock,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "X-Location": transferData.fromStock.location.locId,
+          },
+        }
+      );
+  
+      // Step 2: Find or create stock at destination location
+      const existingDestinationStock = stocks.find(
+        stock => 
+          stock.medicineName === transferData.fromStock?.medicineName &&
+          stock.batchNumber === transferData.fromStock?.batchNumber &&
+          stock.location.locId === toLocation.locId
+      );
+  
+      if (existingDestinationStock) {
+        // Update existing stock at destination
+        const updatedDestinationStock = {
+          ...existingDestinationStock,
+          quantity: Number(existingDestinationStock.quantity) + quantity
+        };
+  
+        await axios.post(
+          `https://uhs-backend.onrender.com/api/${role}/stock/editStock`,
+          updatedDestinationStock,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "X-Location": toLocation.locId,
+            },
+          }
+        );
+      } else {
+        // Create new stock at destination
+        const newDestinationStock = {
+          ...transferData.fromStock,
+          id: "", // Let backend generate new ID
+          quantity: quantity,
+          location: toLocation
+        };
+  
+        await axios.post(
+          `https://uhs-backend.onrender.com/api/${role}/stock/addStock`,
+          newDestinationStock,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "X-Location": toLocation.locId,
+            },
+          }
+        );
+      }
+  
+
+      toast({
+        title: "Success",
+        description: `Transferred ${quantity} units of ${transferData.fromStock.medicineName} to ${transferData.toLocation}`,
+      });
+
+      setShowTransferModal(false);
+      fetchStocks();
+    } catch (error: any) {
+      console.error("Error transferring stock:", error);
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to transfer stock",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -683,6 +840,10 @@ const MedicineStock = () => {
                   <Pencil
                     className="h-5 w-5 text-blue-600 cursor-pointer"
                     onClick={() => handleEdit(stock)}
+                  />
+                  <Truck
+                    className="h-5 w-5 text-purple-600 cursor-pointer"
+                    onClick={() => handleInitiateTransfer(stock)}
                   />
                 </div>
               )}
@@ -974,13 +1135,20 @@ const MedicineStock = () => {
                       <p className="text-sm">{stock.location?.locationName || "N/A"}</p>
                     </div>
                   </div>
-                  <div className="flex justify-end pt-2">
+                  <div className="flex justify-end space-x-2 pt-2">
                     <button
                       onClick={() => handleEdit(stock)}
                       className="px-3 py-1 bg-blue-600 text-white text-sm rounded flex items-center"
                     >
                       <Pencil className="h-4 w-4 mr-1" />
                       Edit
+                    </button>
+                    <button
+                      onClick={() => handleInitiateTransfer(stock)}
+                      className="px-3 py-1 bg-purple-600 text-white text-sm rounded flex items-center"
+                    >
+                      <Truck className="h-4 w-4 mr-1" />
+                      Transfer
                     </button>
                   </div>
                 </>
@@ -1205,6 +1373,79 @@ const MedicineStock = () => {
           </motion.div>
         </div>
       </div>
+
+      {/* Transfer Modal */}
+      {showTransferModal && transferData.fromStock && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">
+              Transfer {transferData.fromStock.medicineName}
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  From Location
+                </label>
+                <Input
+                  value={transferData.fromStock.location?.locationName || "N/A"}
+                  disabled
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  To Location
+                </label>
+                <Select
+                  onValueChange={handleTransferLocationChange}
+                  value={transferData.toLocation}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select destination location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {locations
+                      .filter(
+                        (loc) =>
+                          loc.locId !== transferData.fromStock?.location.locId
+                      )
+                      .map((loc) => (
+                        <SelectItem key={loc.locId} value={loc.locationName}>
+                          {loc.locationName}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Quantity (Available: {transferData.fromStock.quantity})
+                </label>
+                <Input
+                  type="number"
+                  value={transferData.quantity.toString()}
+                  onChange={handleTransferInputChange}
+                  min="1"
+                  max={transferData.fromStock.quantity}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setShowTransferModal(false)}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleTransferSubmit}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+              >
+                Transfer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
