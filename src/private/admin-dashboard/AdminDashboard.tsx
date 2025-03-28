@@ -36,22 +36,22 @@ const AdminDashboard = () => {
         }
 
         const [patientsRes, sessionsRes, healthRes, activitiesRes] = await Promise.all([
-          fetch("https://uhs-backend.onrender.com/api/patient/count", {
+          fetch("https://uhs-backend.onrender.com/api/analytics/getTotalPatient", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }),
-          fetch("https://uhs-backend.onrender.com/api/sessions/active", {
+          fetch("https://uhs-backend.onrender.com/api/analytics/getActiveSessions", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }),
-          fetch("https://uhs-backend.onrender.com/api/system/health", {
+          fetch("https://uhs-backend.onrender.com/api/analytics/getSystemHealth", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }),
-          fetch("https://uhs-backend.onrender.com/api/activities/recent", {
+          fetch("https://uhs-backend.onrender.com/api/analytics/getRecentActivities", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -79,15 +79,17 @@ const AdminDashboard = () => {
         if (typeof healthData.status !== "number") {
           throw new Error("Invalid system health response");
         }
-        if (!Array.isArray(activitiesData)) {
+        if (!Array.isArray(activitiesData.data)) {
           throw new Error("Invalid recent activities response");
         }
+        
+        console.log("Recent activities fetched:", activitiesData.data);
 
         // Update state
         setTotalPatients(patientsData.count || 0);
         setActiveSessions(sessionsData.count || 0);
         setSystemHealth(healthData.status || 0);
-        setRecentActivities(activitiesData || []);
+        setRecentActivities(activitiesData.data || []);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {

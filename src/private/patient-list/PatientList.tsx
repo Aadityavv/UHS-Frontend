@@ -368,7 +368,12 @@ setFilteredPatients(uniquePatients);
 </Button>
 
 {/* Add this dialog component */}
-<Dialog open={manualOpen} onOpenChange={setManualOpen}>
+<Dialog open={manualOpen} onOpenChange={(open) => {
+  if (open) {
+    fetchAvailableDoctors(); // Fetch doctors when dialog opens
+  }
+  setManualOpen(open);
+}}>
   <DialogContent>
     <DialogHeader>
       <DialogTitle>Create Manual Appointment</DialogTitle>
@@ -380,7 +385,7 @@ setFilteredPatients(uniquePatients);
       <Input
         placeholder="Patient Email"
         value={manualData.email}
-        onChange={(e) => setManualData({ ...manualData, email: e.target.value })}
+        onChange={(e) => setManualData({ ...manualData, email: e.target.value.toLowerCase() })}
         type="email"
         required
       />
@@ -390,16 +395,34 @@ setFilteredPatients(uniquePatients);
         onChange={(e) => setManualData({ ...manualData, reason: e.target.value })}
         required
       />
-      <Input
-        placeholder="Preferred Doctor (optional)"
-        value={manualData.preferredDoctor}
-        onChange={(e) => setManualData({ ...manualData, preferredDoctor: e.target.value })}
-      />
-      <Textarea
-        placeholder="Reason for Preference (optional)"
-        value={manualData.reasonForPref}
-        onChange={(e) => setManualData({ ...manualData, reasonForPref: e.target.value })}
-      />
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">
+          Preferred Doctor (optional)
+        </label>
+        <select
+          className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-600"
+          value={manualData.preferredDoctor}
+          onChange={(e) => setManualData({ ...manualData, preferredDoctor: e.target.value })}
+        >
+          <option value="">Select a doctor</option>
+          {doctors.map((doctor) => (
+            <option key={doctor.id} value={doctor.id}>
+              {doctor.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">
+          Reason for Preference (optional)
+        </label>
+        <Textarea
+          value={manualData.reasonForPref}
+          onChange={(e) => setManualData({ ...manualData, reasonForPref: e.target.value })}
+          placeholder="Explain your preference"
+          rows={3}
+        />
+      </div>
       <div className="flex justify-end gap-2">
         <Button variant="outline" onClick={() => setManualOpen(false)}>
           Cancel
