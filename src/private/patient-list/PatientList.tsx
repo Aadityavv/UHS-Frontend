@@ -2,6 +2,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { ToastAction } from "@/components/ui/toast";
+import { PlusCircle } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -23,6 +24,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Search, FileText, Stethoscope, RefreshCcw } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Patient {
   id: string;
@@ -54,6 +56,43 @@ const PatientList = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const [manualOpen, setManualOpen] = useState(false);
+const [manualData, setManualData] = useState({
+  email: "",
+  reason: "",
+  preferredDoctor: "",
+  reasonForPref: ""
+});
+
+const handleManualAppointment = async () => {
+  try {
+    setSubmitting(true);
+    const token = localStorage.getItem("token");
+    const headers = {
+      Authorization: `Bearer ${token}`,
+    };
+
+    await axios.post(
+      "https://uhs-backend.onrender.com/api/AD/manual/submitAppointment",
+      {
+        email: manualData.email,
+        reason: manualData.reason,
+        preferredDoctor: manualData.preferredDoctor || null,
+        reasonPrefDoctor: manualData.reasonForPref || null
+      },
+      { headers }
+    );
+
+    toast({ title: "Manual appointment created successfully!" });
+    setManualOpen(false);
+    fetchAllPatients();
+  } catch (error) {
+    handleError(error, "Failed to create manual appointment");
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   const encodeEmail = (email: string) => {
     const [localPart, domain] = email.split("@");
@@ -322,6 +361,59 @@ setFilteredPatients(uniquePatients);
         <Button variant="outline" onClick={fetchAllPatients}>
           <RefreshCcw className="h-4 w-4 mr-2" /> Refresh
         </Button>
+
+        {/* Add this button next to the Refresh button */}
+<Button variant="outline" onClick={() => setManualOpen(true)}>
+  <PlusCircle className="h-4 w-4 mr-2" /> New Appointment
+</Button>
+
+{/* Add this dialog component */}
+<Dialog open={manualOpen} onOpenChange={setManualOpen}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Create Manual Appointment</DialogTitle>
+      <DialogDescription>
+        Add a new patient to the queue manually
+      </DialogDescription>
+    </DialogHeader>
+    <div className="space-y-4">
+      <Input
+        placeholder="Patient Email"
+        value={manualData.email}
+        onChange={(e) => setManualData({ ...manualData, email: e.target.value })}
+        type="email"
+        required
+      />
+      <Input
+        placeholder="Reason for Appointment"
+        value={manualData.reason}
+        onChange={(e) => setManualData({ ...manualData, reason: e.target.value })}
+        required
+      />
+      <Input
+        placeholder="Preferred Doctor (optional)"
+        value={manualData.preferredDoctor}
+        onChange={(e) => setManualData({ ...manualData, preferredDoctor: e.target.value })}
+      />
+      <Textarea
+        placeholder="Reason for Preference (optional)"
+        value={manualData.reasonForPref}
+        onChange={(e) => setManualData({ ...manualData, reasonForPref: e.target.value })}
+      />
+      <div className="flex justify-end gap-2">
+        <Button variant="outline" onClick={() => setManualOpen(false)}>
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleManualAppointment}
+          disabled={submitting || !manualData.email || !manualData.reason}
+        >
+          {submitting ? "Creating..." : "Create Appointment"}
+        </Button>
+      </div>
+    </div>
+  </DialogContent>
+</Dialog>
       </div>
 
       {loading ? (

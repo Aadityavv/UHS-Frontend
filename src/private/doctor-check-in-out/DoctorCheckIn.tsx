@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { Calendar } from "@/components/ui/calendar";
+// import { Calendar } from "@/components/ui/calendar";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { ToastAction } from "@/components/ui/toast";
 import { motion } from "framer-motion";
-import { CalendarIcon, User, Stethoscope, Filter } from "lucide-react";
+import { User, Stethoscope, Filter } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -14,7 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 
 function useMediaQuery(query: string) {
   const [matches, setMatches] = useState(false);
@@ -34,7 +33,7 @@ const DoctorCheckIn = () => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  // const [date, setDate] = useState<Date | undefined>(new Date());
   const [doctors, setDoctors] = useState<
     Array<{
       id: number;
@@ -51,16 +50,16 @@ const DoctorCheckIn = () => {
     specialization: "all",
     location: "all",
   });
-  const [showLeaveModal, setShowLeaveModal] = useState(false);
-  const [selectedDoctor, setSelectedDoctor] = useState<number | null>(null);
+  // const [showLeaveModal, setShowLeaveModal] = useState(false);
+  // const [selectedDoctor, setSelectedDoctor] = useState<number | null>(null);
 
-  const specializations = [
-    "Cardiology",
-    "Neurology",
-    "Pediatrics",
-    "Orthopedics",
-    "General"
-  ];
+  // const specializations = [
+  //   "Cardiology",
+  //   "Neurology",
+  //   "Pediatrics",
+  //   "Orthopedics",
+  //   "General"
+  // ];
 
   const fetchDoctors = async () => {
     try {
@@ -177,10 +176,10 @@ const DoctorCheckIn = () => {
     }
   };
 
-  const handleLeaveRequest = (doctorId: number) => {
-    setSelectedDoctor(doctorId);
-    setShowLeaveModal(true);
-  };
+  // const handleLeaveRequest = (doctorId: number) => {
+  //   setSelectedDoctor(doctorId);
+  //   setShowLeaveModal(true);
+  // };
 
   const filteredDoctors = doctors.filter((doctor) => {
     return (
@@ -197,7 +196,7 @@ const DoctorCheckIn = () => {
   return (
     <>
       <Toaster />
-      {showLeaveModal && (
+      {/* {showLeaveModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-md w-full">
             <h3 className="font-bold text-lg mb-4">Request Leave for Dr. {doctors.find(d => d.id === selectedDoctor)?.name}</h3>
@@ -234,17 +233,17 @@ const DoctorCheckIn = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="grid lg:grid-cols-4 gap-8"
+            className="grid lg:grid-cols-1 gap-8"
           >
             {/* Left Sidebar */}
-            <div className="lg:col-span-1 space-y-6">
+            {/* <div className="lg:col-span-1 space-y-6">
               {!isMobile && (
                 <motion.div
                   whileHover={{ scale: 1.02 }}
@@ -262,7 +261,7 @@ const DoctorCheckIn = () => {
                   />
                 </motion.div>
               )}
-            </div>
+            </div> */}
 
             {/* Main Content */}
             <div className="lg:col-span-3">
@@ -272,7 +271,7 @@ const DoctorCheckIn = () => {
                 className="grid gap-4"
               >
                 <motion.div
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: 1 }}
                   className="bg-white rounded-2xl p-6 border border-gray-200"
                 >
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -299,7 +298,7 @@ const DoctorCheckIn = () => {
                         </SelectContent>
                       </Select>
 
-                      <Select
+                      {/* <Select
                         value={filters.specialization}
                         onValueChange={(v) => setFilters({...filters, specialization: v})}
                       >
@@ -314,7 +313,7 @@ const DoctorCheckIn = () => {
                             </SelectItem>
                           ))}
                         </SelectContent>
-                      </Select>
+                      </Select> */}
                     </div>
                   </div>
 
@@ -418,12 +417,12 @@ const DoctorCheckIn = () => {
                                     : "Not available"}
                                 </span>
                               </div>
-                              <button
+                              {/* <button
                                 onClick={() => handleLeaveRequest(doctor.id)}
                                 className="text-xs text-blue-600 hover:underline"
                               >
                                 Request Leave
-                              </button>
+                              </button> */}
                             </div>
                           </div>
                         </motion.div>
@@ -436,7 +435,7 @@ const DoctorCheckIn = () => {
                   </div>
                 </motion.div>
 
-                {isMobile && (
+                {/* {isMobile && (
                   <motion.div
                     whileHover={{ scale: 1.02 }}
                     className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
@@ -452,7 +451,7 @@ const DoctorCheckIn = () => {
                       className="rounded-md border-none"
                     />
                   </motion.div>
-                )}
+                )} */}
               </motion.div>
             </div>
           </motion.div>
