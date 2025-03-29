@@ -24,7 +24,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Search, FileText, Stethoscope, RefreshCcw } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
 
 interface Patient {
   id: string;
@@ -395,7 +394,7 @@ setFilteredPatients(uniquePatients);
         onChange={(e) => setManualData({ ...manualData, reason: e.target.value })}
         required
       />
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700">
           Preferred Doctor (optional)
         </label>
@@ -422,7 +421,7 @@ setFilteredPatients(uniquePatients);
           placeholder="Explain your preference"
           rows={3}
         />
-      </div>
+      </div> */}
       <div className="flex justify-end gap-2">
         <Button variant="outline" onClick={() => setManualOpen(false)}>
           Cancel

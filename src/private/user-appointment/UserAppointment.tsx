@@ -24,6 +24,7 @@ const UserAppointment = () => {
   const [lastAppointmentDate, setLastAppointmentDate] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedDoctor, setSelectedDoctor] = useState('');
 
   const [userDetails, setUserDetails] = useState({
     name: "",
@@ -389,34 +390,38 @@ const UserAppointment = () => {
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Preferred Doctor
-                  </label>
-                  <select
-                    name="preferredDoctor"
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-600"
-                  >
-                    <option value="">Select a doctor</option>
-                    {doctors.map((doctor) => (
-                      <option key={doctor.id} value={doctor.id}>
-                        {doctor.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+<div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">
+          Preferred Doctor
+        </label>
+        <select
+          name="preferredDoctor"
+          className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-600"
+          value={selectedDoctor}
+          onChange={(e) => setSelectedDoctor(e.target.value)}
+        >
+          <option value="">Select a doctor</option>
+          {doctors.map((doctor) => (
+            <option key={doctor.id} value={doctor.id}>
+              {doctor.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Reason for Preference
-                  </label>
-                  <textarea
-                    name="reasonForPreference"
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-600"
-                    placeholder="Explain your preference (optional)"
-                    rows={3}
-                  />
-                </div>
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">
+          Reason for Preference
+        </label>
+        <textarea
+          name="reasonForPreference"
+          className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          placeholder={selectedDoctor ? "Explain your preference (optional)" : "Please select a doctor first"}
+          rows={3}
+          disabled={!selectedDoctor}
+        />
+      </div>
+
 
                 <div className="flex justify-end gap-4 mt-8">
                   <button

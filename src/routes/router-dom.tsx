@@ -197,14 +197,6 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/doctor-check-in-out",
-        element: (
-          <DoctorCheckInLayout>
-            <DoctorCheckIn />
-          </DoctorCheckInLayout>
-        ),
-      },
-      {
         path: "/token-page",
         element: (
           <TokenPageLayout>

@@ -4,8 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import dayjs from 'dayjs';
 import {
   Activity,
@@ -15,12 +14,16 @@ import {
   Pill,
   User,
   MapPin,
+  ChevronRight,
+  HeartPulse,
+  Thermometer,
+  Weight,
+  Shield
 } from "lucide-react";
 import Skeleton from '@mui/material/Skeleton';
 import { ToastAction } from "@radix-ui/react-toast";
 import BreathingExercise from '@/components/BreathingExercise';
 
-// ✅ Define Medication type here (outside the component)
 type Medication = {
   pres_medicine_id: string;
   medicineName?: string;
@@ -28,7 +31,6 @@ type Medication = {
   duration?: number;
   appointmentDate?: string;
   endDate?: string;
-  // Add any other fields if they exist in your backend response
 };
 
 const UserDashboard = () => {
@@ -39,7 +41,7 @@ const UserDashboard = () => {
     appointmentStatus: "",
     doctorName: "",
     tokenNo: "",
-    currentTokenNo: "", // New state for current token number
+    currentTokenNo: "",
   });
 
   const [userDetails, setUserDetails] = useState({
@@ -57,59 +59,42 @@ const UserDashboard = () => {
   const [lastAppointmentDate, setLastAppointmentDate] = useState<string | null>(null);
   const [loadingMedications, setLoadingMedications] = useState(true);
   const [locationName, setLocationName] = useState("");
-  const [medDialogOpen, setMedDialogOpen] = useState(false);
   const [selectedMed, setSelectedMed] = useState<Medication | null>(null);
-
-
-  // ✅ New state for allergies and BMI
   const [allergies, setAllergies] = useState<string>("N/A");
   const [bmi, setBmi] = useState<string>("N/A");
+  const [currentTime, setCurrentTime] = useState<string>(dayjs().format('h:mm A'));
 
-  // ✅ Function to calculate BMI
+  // Update time every minute
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(dayjs().format('h:mm A'));
+    }, 60000);
+    return () => clearInterval(timer);
+  }, []);
+
   const calculateBMI = (heightCm: number, weightKg: number): string => {
     if (!heightCm || !weightKg) return "N/A";
     const heightM = heightCm / 100;
     const bmiValue = weightKg / (heightM * heightM);
-    return bmiValue.toFixed(1); // One decimal place
+    return bmiValue.toFixed(1);
   };
 
-  // ✅ Fetch medical details including allergies and bmi
   const fetchMedicalDetails = useCallback(async () => {
     const token = localStorage.getItem("token");
-
-    if (!token || !userDetails.email) {
-      console.warn("Missing token or user email for fetching medical details.");
-      return;
-    }
-    console.log("Fetching medical details for:", userDetails.email);
+    if (!token || !userDetails.email) return;
 
     try {
       const response = await axios.get(
         `https://uhs-backend.onrender.com/api/medical-details/email/${userDetails.email}`,
-        // {
-        //   headers: {
-        //     Authorization: `Bearer ${token}`
-        //   }
-        // }
       );
 
       if (response?.data) {
         const medicalData = response.data;
-
-        console.log("Medical details fetched:", medicalData);
-
-        // Set allergies
         setAllergies(medicalData.allergies || "N/A");
-
-        // Calculate and set BMI
         if (medicalData.height && medicalData.weight) {
-          const calculatedBMI = calculateBMI(medicalData.height, medicalData.weight);
-          setBmi(calculatedBMI);
-        } else {
-          setBmi("N/A");
+          setBmi(calculateBMI(medicalData.height, medicalData.weight));
         }
       }
-
     } catch (error: unknown) {
       console.error("Error fetching medical details:", error);
       toast({
@@ -123,37 +108,23 @@ const UserDashboard = () => {
 
   const fetchActiveMedications = useCallback(async () => {
     const token = localStorage.getItem("token");
-
-    if (!token || !userDetails.email) {
-      console.warn("Missing token or user email for fetching active medications.");
-      return;
-    }
+    if (!token || !userDetails.email) return;
 
     const encodedEmail = encodeURIComponent(userDetails.email);
-    console.log("Fetching active medications for:", encodedEmail);
-
     setLoadingMedications(true);
 
     try {
       const response = await axios.get<Medication[]>(
         `https://uhs-backend.onrender.com/api/patient/medications/active/${encodedEmail}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (response?.data) {
         const uniqueMedications = Array.from(
           new Map(response.data.map((med: Medication) => [med.pres_medicine_id, med])).values()
         );
-
         setActiveMedications(uniqueMedications);
-      } else {
-        setActiveMedications([]);
       }
-
     } catch (error: unknown) {
       console.error("Active medications fetch error:", error);
       toast({
@@ -170,15 +141,8 @@ const UserDashboard = () => {
   const fetchCurrentTokenNumber = useCallback(async () => {
     const token = localStorage.getItem("token");
     const locationId = localStorage.getItem("locationId");
-    console.log("LOCATION IS "+locationId)
     
-    if (!token) {
-      console.warn("Missing token for fetching current token number.");
-      return;
-    }
-  
-    if (!locationId) {
-      console.warn("Location ID not found in localStorage");
+    if (!token || !locationId) {
       setStatus(prev => ({ ...prev, currentTokenNo: "Login Again" }));
       return;
     }
@@ -186,17 +150,11 @@ const UserDashboard = () => {
     try {
       const response = await axios.get(
         `https://uhs-backend.onrender.com/api/current-appointment/current-token?locationId=${locationId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          },
-          timeout: 5000 // Add timeout to prevent hanging
-        }
+        { headers: { Authorization: `Bearer ${token}` }, timeout: 5000 }
       );
-  
       setStatus(prevStatus => ({
         ...prevStatus,
-        currentTokenNo: response.data || "N/A", // Handle empty response
+        currentTokenNo: response.data || "N/A",
       }));
     } catch (error) {
       console.error("Error fetching current token number:", error);
@@ -207,23 +165,9 @@ const UserDashboard = () => {
     }
   }, []);
   
-  // Initialize and refresh current token periodically
   useEffect(() => {
-    // Fetch immediately on mount
     fetchCurrentTokenNumber();
-    
-    // Then set up periodic refresh
     const interval = setInterval(fetchCurrentTokenNumber, 30000);
-    
-    // Cleanup interval on unmount
-    return () => clearInterval(interval);
-  }, [fetchCurrentTokenNumber]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchCurrentTokenNumber();
-    }, 30000); // Refresh every 30 seconds
-  
     return () => clearInterval(interval);
   }, [fetchCurrentTokenNumber]);
 
@@ -256,53 +200,24 @@ const UserDashboard = () => {
           axios.get("https://uhs-backend.onrender.com/api/patient/lastPrescriptionDate", { headers }),
         ]);
 
-        // Handle User Details ✅
         if (userRes.status === "fulfilled" && userRes.value?.data) {
-          const userData = userRes.value.data;
-          setUserDetails(userData);
-        } else if (userRes.status === "rejected") {
-          const errorReason = (userRes as PromiseRejectedResult).reason;
-          console.error("Failed to fetch user details:", errorReason);
-
-          toast({
-            title: "Error",
-            description: "Failed to fetch user details.",
-            variant: "destructive",
-            action: <ToastAction altText="Try again">Try again</ToastAction>,
-          });
-
-          return; // if no user data, we can't continue
+          setUserDetails(userRes.value.data);
         }
 
-        // Handle Status ✅
         if (statusRes.status === "fulfilled" && statusRes.value?.data) {
           const data = statusRes.value.data;
           setStatus({
             appointmentStatus: data.Appointment ? "Queued" : "NA",
             doctorName: data.Doctor ? data.DoctorName : "Not Appointed",
             tokenNo: data.TokenNo || "N/A",
-            currentTokenNo: data.currentTokenNo || "...", // Set current token number
-          });
-        } else {
-          console.warn("No appointment status available (might be no active appointment).");
-          setStatus({
-            appointmentStatus: "NA",
-            doctorName: "Not Appointed",
-            tokenNo: "N/A",
-            currentTokenNo: "...", // Set current token number
+            currentTokenNo: data.currentTokenNo || "...",
           });
         }
 
-        // Handle Last Appointment ✅
         if (lastAppointmentRes.status === "fulfilled" && lastAppointmentRes.value?.data) {
-          const formattedDate = dayjs(lastAppointmentRes.value.data).format("DD/MM/YYYY");
-          setLastAppointmentDate(formattedDate);
-        } else {
-          console.warn("No last appointment date found.");
-          setLastAppointmentDate(null);
+          setLastAppointmentDate(dayjs(lastAppointmentRes.value.data).format("DD/MM/YYYY"));
         }
 
-        // Additional data fetching
         await Promise.all([fetchActiveMedications(), fetchMedicalDetails(), fetchCurrentTokenNumber()]);
 
       } catch (error) {
@@ -322,12 +237,6 @@ const UserDashboard = () => {
     fetchData();
   }, [navigate, toast, fetchActiveMedications, fetchMedicalDetails, fetchCurrentTokenNumber]);
 
-  console.log(userDetails);
-
-
-
-
-
   return (
     <div className="min-h-[79vh] overflow-x-hidden bg-gray-50">
       <Toaster />
@@ -340,6 +249,7 @@ const UserDashboard = () => {
         >
           {/* LEFT SIDEBAR */}
           <div className="hidden lg:block w-full lg:w-1/4 space-y-6">
+            {/* PROFILE CARD */}
             <motion.div
               whileHover={{ scale: 1.02 }}
               className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
@@ -359,15 +269,14 @@ const UserDashboard = () => {
                 <>
                   <div className="flex flex-col items-center">
                     <div className="relative">
-                    <img src={
-                          userDetails.imageUrl
-                            ? `https://uhs-backend.onrender.com/${userDetails.imageUrl}`
-                            : "/default-user.jpg"
+                      <img 
+                        src={userDetails.imageUrl 
+                          ? `https://uhs-backend.onrender.com/${userDetails.imageUrl}`
+                          : "/default-user.jpg"
                         }
                         alt="Profile"
                         className="w-24 h-24 rounded-2xl object-cover border-4 border-white shadow-lg"
                       />
-
                       <div className="absolute -bottom-2 -right-2 bg-indigo-600 p-1.5 rounded-full">
                         <User className="h-5 w-5 text-white" />
                       </div>
@@ -399,18 +308,21 @@ const UserDashboard = () => {
                 </>
               )}
             </motion.div>
+
+            {/* BREATHING EXERCISE */}
             <motion.div
               whileHover={{ scale: 1.02 }}
               className="bg-white rounded-2xl shadow-sm border border-gray-100"
             >
               <BreathingExercise/>
-              </motion.div>
+            </motion.div>
           </div>
 
           {/* MAIN CONTENT */}
           <div className="flex-1">
             {/* STATUS CARDS */}
-            <div className="grid md:grid-cols-3 gap-3 mb-8">
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              {/* APPOINTMENT STATUS */}
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 className="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-2xl p-6 text-white"
@@ -428,69 +340,119 @@ const UserDashboard = () => {
                   </>
                 ) : (
                   <>
-                    <h3 className="text-sm font-medium opacity-90 mb-4">Current Status</h3>
-                    <div className="flex items-center justify-between">
+                    <div className="flex justify-between items-start">
                       <div>
+                        <h3 className="text-sm font-medium opacity-90 mb-1">Current Status</h3>
                         <p className="text-2xl font-bold mb-2">
                           {status.appointmentStatus === "Queued" ? "In Queue" : "No Appointment"}
                         </p>
                         <div className="text-sm opacity-90">{status.doctorName}</div>
                       </div>
-                      <div className="bg-white/10 p-4 rounded-xl">
-                        <Stethoscope className="h-8 w-8" />
+                      <div className="text-xs bg-white/20 px-2 py-1 rounded-full">
+                        {currentTime}
+                      </div>
+                    </div>
+                    <div className="mt-6 flex justify-between items-center">
+                      <div>
+                        <p className="text-xs opacity-80 mb-1">Your Token</p>
+                        <p className="text-xl font-bold">{status.tokenNo}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs opacity-80 mb-1">Current Token</p>
+                        <p className="text-xl font-bold">{status.currentTokenNo}</p>
                       </div>
                     </div>
                   </>
                 )}
               </motion.div>
 
-              {/* Quick Actions */}
+              {/* QUICK ACTIONS */}
               <motion.div
                 className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
+                <h3 className="text-md font-medium text-gray-700 mb-2">Quick Actions</h3>
                 <button
                   onClick={() => navigate("/patient-appointment")}
-                  className="w-full flex items-center justify-between p-4 rounded-xl bg-indigo-50 hover:bg-indigo-100 transition-colors"
+                  className="w-full flex items-center justify-between p-3 rounded-xl bg-indigo-50 hover:bg-indigo-100 transition-colors group"
                 >
-                  <span className="text-indigo-700 font-medium">New Appointment</span>
-                  <Stethoscope className="h-5 w-5 text-indigo-700" />
+                  <div className="flex items-center">
+                    <div className="bg-indigo-100 p-2 rounded-lg mr-3 group-hover:bg-indigo-200 transition-colors">
+                      <Stethoscope className="h-5 w-5 text-indigo-700" />
+                    </div>
+                    <span className="text-indigo-700 font-medium">New Appointment</span>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-indigo-700 opacity-70" />
                 </button>
                 <button
                   onClick={() => navigate("/patient-prescription")}
-                  className="w-full flex items-center justify-between p-4 rounded-xl bg-emerald-50 hover:bg-emerald-100 transition-colors"
+                  className="w-full flex items-center justify-between p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 transition-colors group"
                 >
-                  <span className="text-emerald-700 font-medium">Prescriptions</span>
-                  <Pill className="h-5 w-5 text-emerald-700" />
+                  <div className="flex items-center">
+                    <div className="bg-emerald-100 p-2 rounded-lg mr-3 group-hover:bg-emerald-200 transition-colors">
+                      <Pill className="h-5 w-5 text-emerald-700" />
+                    </div>
+                    <span className="text-emerald-700 font-medium">Prescriptions</span>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-emerald-700 opacity-70" />
                 </button>
                 <button
                   onClick={() => navigate("/emergency")}
-                  className="w-full flex items-center justify-between p-4 rounded-xl bg-rose-50 hover:bg-rose-100 transition-colors"
+                  className="w-full flex items-center justify-between p-3 rounded-xl bg-rose-50 hover:bg-rose-100 transition-colors group"
                 >
-                  <span className="text-rose-700 font-medium">Emergency</span>
-                  <AlertCircle className="h-5 w-5 text-rose-700" />
+                  <div className="flex items-center">
+                    <div className="bg-rose-100 p-2 rounded-lg mr-3 group-hover:bg-rose-200 transition-colors">
+                      <AlertCircle className="h-5 w-5 text-rose-700" />
+                    </div>
+                    <span className="text-rose-700 font-medium">Emergency</span>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-rose-700 opacity-70" />
                 </button>
               </motion.div>
 
-              {/* NEXT STEPS */}
+              {/* HEALTH STATS */}
               <motion.div
                 whileHover={{ scale: 1.02 }}
-                className="bg-white rounded-2xl px-4 py-6 shadow-sm border border-gray-100"
+                className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
               >
-                <h3 className="text-md font-medium text-gray-500 mb-4">Next Steps</h3>
-                <div className="flex flex-col gap-4 text-sm">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold text-gray-700">Your Token Number:</span>
-                    <span className="font-semibold text-indigo-600">{status.tokenNo}</span>
+                <h3 className="text-md font-medium text-gray-700 mb-4">Health Stats</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-blue-50 p-3 rounded-xl">
+                    <div className="flex items-center mb-1">
+                      <HeartPulse className="h-4 w-4 text-blue-600 mr-2" />
+                      <span className="text-xs text-blue-600">Blood Group</span>
+                    </div>
+                    <p className="font-semibold text-blue-800">
+                      {userDetails.bloodGroup || "N/A"}
+                    </p>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold text-gray-700">Current Token Number:</span>
-                    <span className="font-semibold text-indigo-600">{status.currentTokenNo}</span>
+                  <div className="bg-amber-50 p-3 rounded-xl">
+                    <div className="flex items-center mb-1">
+                      <Thermometer className="h-4 w-4 text-amber-600 mr-2" />
+                      <span className="text-xs text-amber-600">Allergies</span>
+                    </div>
+                    <p className="font-semibold text-amber-800">
+                      {allergies}
+                    </p>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold text-gray-700">Doctor Assigned:</span>
-                    <span className="font-semibold text-indigo-600">{status.doctorName}</span>
+                  <div className="bg-green-50 p-3 rounded-xl">
+                    <div className="flex items-center mb-1">
+                      <Weight className="h-4 w-4 text-green-600 mr-2" />
+                      <span className="text-xs text-green-600">BMI</span>
+                    </div>
+                    <p className="font-semibold text-green-800">
+                      {bmi}
+                    </p>
+                  </div>
+                  <div className="bg-purple-50 p-3 rounded-xl">
+                    <div className="flex items-center mb-1">
+                      <Shield className="h-4 w-4 text-purple-600 mr-2" />
+                      <span className="text-xs text-purple-600">Last Visit</span>
+                    </div>
+                    <p className="font-semibold text-purple-800">
+                      {lastAppointmentDate || "N/A"}
+                    </p>
                   </div>
                 </div>
               </motion.div>
@@ -500,105 +462,130 @@ const UserDashboard = () => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="bg-white rounded-2xl p-2 shadow-sm border border-gray-100"
+              className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8"
             >
-              <h3 className="text-lg font-semibold text-gray-900 m-2">Health Overview</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-indigo-50 rounded-xl">
-                  <p className="text-sm text-gray-600 mb-1">Last Checkup</p>
-                  <p className="font-medium">
-                    {lastAppointmentDate ? lastAppointmentDate : "No records"}
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-semibold text-gray-900">Health Overview</h3>
+                <button 
+                  onClick={() => navigate("/patient-prescription")}
+                  className="text-sm text-indigo-600 hover:underline"
+                >
+                  View All
+                </button>
+              </div>
+              
+              {/* MEDICATIONS */}
+              <div className="mb-6">
+                <h4 className="text-sm font-medium text-gray-500 mb-3 flex items-center">
+                  <Pill className="h-4 w-4 mr-2 text-indigo-500" />
+                  Active Medications
+                </h4>
+                {loadingMedications ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {[...Array(3)].map((_, i) => (
+                      <Skeleton key={i} variant="rectangular" height={80} className="rounded-xl" />
+                    ))}
+                  </div>
+                ) : activeMedications.length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {activeMedications.slice(0, 3).map((med) => (
+                      <motion.div 
+                        key={med.pres_medicine_id}
+                        whileHover={{ y: -2 }}
+                        className="bg-indigo-50 p-4 rounded-xl cursor-pointer"
+                        onClick={() => setSelectedMed(med)}
+                      >
+                        <div className="flex items-center mb-2">
+                          <div className="bg-indigo-100 p-2 rounded-lg mr-3">
+                            <Pill className="h-5 w-5 text-indigo-700" />
+                          </div>
+                          <h5 className="font-medium text-indigo-900 capitalize">
+                            {med.medicineName}
+                          </h5>
+                        </div>
+                        <p className="text-xs text-indigo-700">
+                          {med.dosage || "Dosage not specified"}
+                        </p>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 p-6 rounded-xl text-center">
+                    <p className="text-gray-500">No active medications</p>
+                  </div>
+                )}
+              </div>
+
+              {/* UPCOMING APPOINTMENTS */}
+              <div>
+                <h4 className="text-sm font-medium text-gray-500 mb-3 flex items-center">
+                  <Calendar className="h-4 w-4 mr-2 text-indigo-500" />
+                  Recent Appointments
+                </h4>
+                <div className="bg-gray-50 p-6 rounded-xl text-center">
+                  <p className="text-gray-500">
+                    {lastAppointmentDate 
+                      ? `Last appointment on ${lastAppointmentDate}`
+                      : "No recent appointments"}
                   </p>
-                </div>
-                <div className="text-center p-4 bg-emerald-50 rounded-xl">
-           <p className="text-sm text-gray-600 mb-1">Active medications</p>
-  {loadingMedications ? (
-    <p className="font-medium">Loading...</p>
-  ) : activeMedications.length > 0 ? (
-    <Dialog open={medDialogOpen} onOpenChange={setMedDialogOpen}>
-      <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          className="text-emerald-700 font-medium hover:underline p-0 h-auto"
-        >
-          View All ({activeMedications.length})
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-md w-full">
-        <h2 className="text-lg font-semibold text-center mb-4">
-          Active Medications
-        </h2>
-        <ul className="space-y-2">
-          {activeMedications.map((med) => (
-            <li
-              key={med.pres_medicine_id}
-              className="cursor-pointer px-4 py-2 rounded-lg hover:bg-emerald-100 text-left border border-emerald-200"
-              onClick={() => setSelectedMed(med)}
-            >
-              <span className="capitalize font-medium">{med.medicineName}</span>
-            </li>
-          ))}
-        </ul>
-      </DialogContent>
-    </Dialog>
-  ) : (
-    <p className="font-medium">No Active Medications</p>
-  )}
-</div>
-
-{/* Medication Details Dialog */}
-<Dialog open={!!selectedMed} onOpenChange={() => setSelectedMed(null)}>
-  <DialogContent className="max-w-sm w-full">
-    {selectedMed && (
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold text-center capitalize">
-          {selectedMed.medicineName}
-        </h2>
-        <div className="text-sm text-gray-600">
-          <p>
-            <span className="font-medium">Start Date:</span>{" "}
-            {selectedMed.appointmentDate ? dayjs(selectedMed.appointmentDate).format("DD/MM/YYYY") : "N/A"}
-          </p>
-          <p>
-            <span className="font-medium">End Date:</span>{" "}
-            {selectedMed.endDate ? dayjs(selectedMed.endDate).format("DD/MM/YYYY") : "N/A"}
-
-          </p>
-          <p>
-            <span className="font-medium">Dosage:</span>{" "}
-            {selectedMed.dosage || "N/A"}
-          </p>
-          <p>
-            <span className="font-medium">Frequency:</span>{" "}
-            {selectedMed.duration ? `${selectedMed.duration} times/day` : "N/A"}
-          </p>
-        </div>
-      </div>
-    )}
-  </DialogContent>
-</Dialog>
-
-                <div className="text-center p-4 bg-amber-50 rounded-xl">
-                  <p className="text-sm text-gray-600 mb-1">Allergies</p>
-                  <p className="font-medium">{allergies}</p>
-                </div>
-                <div className="text-center p-4 bg-rose-50 rounded-xl">
-                  <p className="text-sm text-gray-600 mb-1">BMI</p>
-                  <p className="font-medium">{bmi}</p>
                 </div>
               </div>
             </motion.div>
+
+            {/* MOBILE BREATHING EXERCISE */}
             <div className="lg:hidden mb-8">
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="bg-white rounded-2xl  mt-3 shadow-sm border border-gray-100"
-            >
-              <BreathingExercise/>
-            </motion.div>
-          </div>
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                className="bg-white rounded-2xl shadow-sm border border-gray-100"
+              >
+                <BreathingExercise/>
+              </motion.div>
+            </div>
           </div>
         </motion.div>
       </div>
+
+      {/* MEDICATION DETAILS DIALOG */}
+      <Dialog open={!!selectedMed} onOpenChange={() => setSelectedMed(null)}>
+        <DialogContent className="max-w-sm w-full">
+          {selectedMed && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-center mb-4">
+                <div className="bg-indigo-100 p-3 rounded-full">
+                  <Pill className="h-6 w-6 text-indigo-700" />
+                </div>
+              </div>
+              <h2 className="text-xl font-bold text-center capitalize">
+                {selectedMed.medicineName}
+              </h2>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between border-b pb-2">
+                  <span className="text-gray-500">Dosage:</span>
+                  <span className="font-medium">{selectedMed.dosage || "N/A"}</span>
+                </div>
+                <div className="flex justify-between border-b pb-2">
+                  <span className="text-gray-500">Frequency:</span>
+                  <span className="font-medium">
+                    {selectedMed.duration ? `${selectedMed.duration} times/day` : "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between border-b pb-2">
+                  <span className="text-gray-500">Start Date:</span>
+                  <span className="font-medium">
+                    {selectedMed.appointmentDate ? dayjs(selectedMed.appointmentDate).format("DD/MM/YYYY") : "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">End Date:</span>
+                  <span className="font-medium">
+                    {selectedMed.endDate ? dayjs(selectedMed.endDate).format("DD/MM/YYYY") : "N/A"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
