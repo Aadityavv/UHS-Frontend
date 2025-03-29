@@ -4,9 +4,7 @@ import { motion } from "framer-motion";
 import {
   UserPlus,
   Stethoscope,
-  UserCog,
   Activity,
-  Calendar as CalendarIcon,
   Clock,
   ClipboardList,
   HeartPulse,
