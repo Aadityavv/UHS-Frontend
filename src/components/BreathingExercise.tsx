@@ -15,8 +15,8 @@ const ambientSounds = [
   },
   {
     id: 3,
-    name: "White Noise",
-    file: "/sounds/white-noise.mp3",
+    name: "Birds Chirping",
+    file: "/sounds/birds.mp3",
   },
 ];
 
