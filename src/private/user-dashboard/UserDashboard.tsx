@@ -401,7 +401,7 @@ const UserDashboard = () => {
             </motion.div>
             <motion.div
               whileHover={{ scale: 1.02 }}
-              className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
+              className="bg-white rounded-2xl shadow-sm border border-gray-100"
             >
               <BreathingExercise/>
               </motion.div>
@@ -500,9 +500,9 @@ const UserDashboard = () => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
+              className="bg-white rounded-2xl p-2 shadow-sm border border-gray-100"
             >
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">Health Overview</h3>
+              <h3 className="text-lg font-semibold text-gray-900 m-2">Health Overview</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-4 bg-indigo-50 rounded-xl">
                   <p className="text-sm text-gray-600 mb-1">Last Checkup</p>
@@ -591,7 +591,7 @@ const UserDashboard = () => {
             <div className="lg:hidden mb-8">
             <motion.div
               whileHover={{ scale: 1.02 }}
-              className="bg-white rounded-2xl p-3 mt-3 shadow-sm border border-gray-100"
+              className="bg-white rounded-2xl  mt-3 shadow-sm border border-gray-100"
             >
               <BreathingExercise/>
             </motion.div>
