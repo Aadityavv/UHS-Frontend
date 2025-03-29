@@ -104,6 +104,8 @@ const SignIn = () => {
   
       const response = await axios.post(apiUrl, input, { headers });
       const { token, email, roles } = response.data;
+
+      console.log("Login response:", token);
   
       // Save tokens and info
       localStorage.setItem("token", token);

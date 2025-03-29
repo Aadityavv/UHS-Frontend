@@ -19,86 +19,8 @@ const AdminDashboard = () => {
   const [time, setTime] = useState<Date>(new Date());
   const [date] = useState<Date | undefined>(new Date());
   const [loading, setLoading] = useState(true);
-  const [totalPatients, setTotalPatients] = useState<number>(0);
-  const [activeSessions, setActiveSessions] = useState<number>(0);
-  const [systemHealth, setSystemHealth] = useState<number>(0);
-  const [recentActivities, setRecentActivities] = useState<any[]>([]);
 
-  // Fetch data from backend
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          console.error("No token found in localStorage");
-          navigate("/login");
-          return;
-        }
-
-        const [patientsRes, sessionsRes, healthRes, activitiesRes] = await Promise.all([
-          fetch("https://uhs-backend.onrender.com/api/analytics/getTotalPatient", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-          fetch("https://uhs-backend.onrender.com/api/analytics/getActiveSessions", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-          fetch("https://uhs-backend.onrender.com/api/analytics/getSystemHealth", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-          fetch("https://uhs-backend.onrender.com/api/analytics/getRecentActivities", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-        ]);
-
-        if (!patientsRes.ok || !sessionsRes.ok || !healthRes.ok || !activitiesRes.ok) {
-          throw new Error("Failed to fetch data");
-        }
-
-        const [patientsData, sessionsData, healthData, activitiesData] = await Promise.all([
-          patientsRes.json(),
-          sessionsRes.json(),
-          healthRes.json(),
-          activitiesRes.json(),
-        ]);
-
-        // Validate responses
-        if (typeof patientsData.count !== "number") {
-          throw new Error("Invalid patient count response");
-        }
-        if (typeof sessionsData.count !== "number") {
-          throw new Error("Invalid active sessions response");
-        }
-        if (typeof healthData.status !== "number") {
-          throw new Error("Invalid system health response");
-        }
-        if (!Array.isArray(activitiesData.data)) {
-          throw new Error("Invalid recent activities response");
-        }
-        
-        console.log("Recent activities fetched:", activitiesData.data);
-
-        // Update state
-        setTotalPatients(patientsData.count || 0);
-        setActiveSessions(sessionsData.count || 0);
-        setSystemHealth(healthData.status || 0);
-        setRecentActivities(activitiesData.data || []);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [navigate]);
+  
 
   // Simulated loading state
   useEffect(() => {
@@ -132,12 +54,6 @@ const AdminDashboard = () => {
     });
   };
 
-  // Updated stats with real data
-  const stats = [
-    { title: "Total Users", value: totalPatients?.toLocaleString() || "0", icon: <UserCog className="h-6 w-6" /> },
-    { title: "Active Sessions", value: activeSessions?.toString() || "0", icon: <Activity className="h-6 w-6" /> },
-    { title: "System Health", value: `${systemHealth || 0}%`, icon: <Server className="h-6 w-6" /> },
-  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -197,27 +113,14 @@ const AdminDashboard = () => {
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            {/* Stats Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-              {stats.map((stat, index) => (
-                <motion.div
-                  key={stat.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-500">{stat.title}</p>
-                      <p className="text-2xl font-bold mt-1">{stat.value}</p>
-                    </div>
-                    <div className="bg-indigo-100 p-2 rounded-lg">{stat.icon}</div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
+          <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 cursor-pointer"
+                      onClick={() => navigate("/analytics-dashboard")}
+                    >
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">UHS Analysis</h3>
+                      <p className="text-sm text-gray-600">View analytics and reports.</p>
+                    </motion.div>
             {/* Quick Actions */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -256,33 +159,6 @@ const AdminDashboard = () => {
             </motion.div>
 
             {/* Recent Activities */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
-            >
-              <div className="flex items-center mb-4">
-                <ClipboardList className="h-5 w-5 mr-2 text-indigo-600" />
-                <h3 className="text-lg font-semibold">Recent Activities</h3>
-              </div>
-              <div className="space-y-4">
-                {recentActivities.length > 0 ? (
-                  recentActivities.map((activity, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
-                      <div>
-                        <p className="font-medium">{activity.action}</p>
-                        <p className="text-sm text-gray-500">{activity.userName}</p>
-                      </div>
-                      <span className="text-sm text-gray-500">
-                        {formatActivityTime(activity.timestamp)}
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-500">No recent activities found.</p>
-                )}
-              </div>
-            </motion.div>
           </div>
         </motion.div>
       </div>

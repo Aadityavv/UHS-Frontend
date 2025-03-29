@@ -27,6 +27,7 @@ const AdminSignIn = () => {
 
     try {
       const response = await axios.post(apiUrl, input);
+      console.log("Login response:", response.data);
       const { token, email, roles } = response.data;
 
       localStorage.setItem("token", token);

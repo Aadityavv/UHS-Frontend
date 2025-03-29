@@ -14,10 +14,11 @@ import {
   Stethoscope,
   Pill,
   User,
-  MapPin
+  MapPin,
 } from "lucide-react";
 import Skeleton from '@mui/material/Skeleton';
 import { ToastAction } from "@radix-ui/react-toast";
+import BreathingExercise from '@/components/BreathingExercise';
 
 // ✅ Define Medication type here (outside the component)
 type Medication = {
@@ -323,6 +324,10 @@ const UserDashboard = () => {
 
   console.log(userDetails);
 
+
+
+
+
   return (
     <div className="min-h-[79vh] overflow-x-hidden bg-gray-50">
       <Toaster />
@@ -394,6 +399,12 @@ const UserDashboard = () => {
                 </>
               )}
             </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
+            >
+              <BreathingExercise/>
+              </motion.div>
           </div>
 
           {/* MAIN CONTENT */}
@@ -577,6 +588,14 @@ const UserDashboard = () => {
                 </div>
               </div>
             </motion.div>
+            <div className="lg:hidden mb-8">
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              className="bg-white rounded-2xl p-3 mt-3 shadow-sm border border-gray-100"
+            >
+              <BreathingExercise/>
+            </motion.div>
+          </div>
           </div>
         </motion.div>
       </div>
