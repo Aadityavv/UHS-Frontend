@@ -4,13 +4,9 @@ import { motion } from "framer-motion";
 import {
   UserPlus,
   Stethoscope,
-  UserCog,
-  Activity,
   Calendar as CalendarIcon,
   Clock,
-  ClipboardList,
   HeartPulse,
-  Server,
 } from "lucide-react";
 import Skeleton from "@mui/material/Skeleton";
 
@@ -45,14 +41,14 @@ const AdminDashboard = () => {
   };
 
   // Format activity time
-  const formatActivityTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
+  // const formatActivityTime = (timestamp: string) => {
+  //   const date = new Date(timestamp);
+  //   return date.toLocaleTimeString("en-US", {
+  //     hour: "2-digit",
+  //     minute: "2-digit",
+  //     hour12: true,
+  //   });
+  // };
 
 
   return (
