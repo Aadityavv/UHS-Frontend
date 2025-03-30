@@ -431,51 +431,54 @@ const AdminDashboard = () => {
                   </div>
                 ) : (
                   <div className="grid md:grid-cols-3 gap-4">
-                    <motion.div 
-                      whileHover={{ scale: 1.02 }}
-                      className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 cursor-pointer"
-                      onClick={() => navigate("/backup-restore")}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="p-2 rounded-lg bg-amber-100 text-amber-600">
-                          <Database className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <h3 className="font-medium">Backup & Restore</h3>
-                          <p className="text-sm text-gray-500">Manage system data</p>
-                        </div>
-                      </div>
-                    </motion.div>
-                    <motion.div 
-                      whileHover={{ scale: 1.02 }}
-                      className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 cursor-pointer"
-                      onClick={() => navigate("/user-management")}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
-                          <Users className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <h3 className="font-medium">User Management</h3>
-                          <p className="text-sm text-gray-500">Manage all users</p>
-                        </div>
-                      </div>
-                    </motion.div>
-                    <motion.div 
-                      whileHover={{ scale: 1.02 }}
-                      className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 cursor-pointer"
-                      onClick={() => navigate("/system-logs")}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="p-2 rounded-lg bg-green-100 text-green-600">
-                          <FileText className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <h3 className="font-medium">System Logs</h3>
-                          <p className="text-sm text-gray-500">View system activity</p>
-                        </div>
-                      </div>
-                    </motion.div>
+
+<motion.div 
+  whileHover={{ scale: 1.02 }}
+  className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 cursor-pointer"
+  onClick={() => navigate("/admin/backup")}
+>
+  <div className="flex items-center space-x-3">
+    <div className="p-2 rounded-lg bg-amber-100 text-amber-600">
+      <Database className="h-5 w-5" />
+    </div>
+    <div>
+      <h3 className="font-medium">Backup & Restore</h3>
+      <p className="text-sm text-gray-500">Manage system data</p>
+    </div>
+  </div>
+</motion.div>
+
+<motion.div 
+  whileHover={{ scale: 1.02 }}
+  className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 cursor-pointer"
+  onClick={() => navigate("/admin/users")}
+>
+  <div className="flex items-center space-x-3">
+    <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
+      <Users className="h-5 w-5" />
+    </div>
+    <div>
+      <h3 className="font-medium">User Management</h3>
+      <p className="text-sm text-gray-500">Manage all users</p>
+    </div>
+  </div>
+</motion.div>
+
+<motion.div 
+  whileHover={{ scale: 1.02 }}
+  className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 cursor-pointer"
+  onClick={() => navigate("/admin/logs")}
+>
+  <div className="flex items-center space-x-3">
+    <div className="p-2 rounded-lg bg-green-100 text-green-600">
+      <FileText className="h-5 w-5" />
+    </div>
+    <div>
+      <h3 className="font-medium">System Logs</h3>
+      <p className="text-sm text-gray-500">View system activity</p>
+    </div>
+  </div>
+</motion.div>
                   </div>
                 )}
               </CardContent>

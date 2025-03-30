@@ -1,0 +1,1 @@
+export type AmbientMode = 'none' | 'rain' | 'ocean' | 'mountain';

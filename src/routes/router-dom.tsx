@@ -16,6 +16,10 @@ import NewAssistantDoctorLayout from "@/private/new-assistant-doctor/NewAssistan
 import NewAssistantDoctor from "@/private/new-assistant-doctor/NewAssistantDoctor";
 import AnalyticsDashboardLayout from "@/private/Analytics-Dashboard/AnalyticsDashboardLayout";
 import AnalyticsDashboard from "@/private/Analytics-Dashboard/AnalyticsDashboard";
+import BackupRestore from "@/components/BackupRestore";
+import UserManagement from "@/components/UserManagement";
+import SystemLogs from "@/components/SystemLogs";
+
 
 // Patient routes
 import UserDashboard from "@/private/user-dashboard/UserDashboard";
@@ -94,6 +98,17 @@ const router = createBrowserRouter([
             <NewAssistantDoctor />
           </NewAssistantDoctorLayout>
         ),
+      },{
+        path: "/admin/backup",
+        element: <BackupRestore />,
+      },
+      {
+        path: "/admin/users",
+        element: <UserManagement />,
+      },
+      {
+        path: "/admin/logs",
+        element: <SystemLogs />,
       },
     ],
   },

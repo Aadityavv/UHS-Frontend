@@ -1,28 +1,33 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { HeartPulse, Volume2, VolumeX, Wind, Settings } from 'lucide-react';
+import AmbientAnimation from './AmbientAnimation';
+import { AmbientMode } from './types';
 
 const ambientSounds = [
   {
     id: 1,
     name: "Ocean Waves",
     file: "/sounds/ocean-waves.mp3",
-    colorFrom: "#06b6d4", // cyan-500
-    colorTo: "#3b82f6",   // blue-500
+    colorFrom: "#06b6d4",
+    colorTo: "#3b82f6",
+    ambientMode: 'ocean' as AmbientMode
   },
   {
     id: 2,
     name: "Forest Rain",
     file: "/sounds/forest-rain.mp3",
-    colorFrom: "#10b981", // emerald-500
-    colorTo: "#14b8a6",   // teal-500
+    colorFrom: "#10b981",
+    colorTo: "#14b8a6",
+    ambientMode: 'rain' as AmbientMode
   },
   {
     id: 3,
     name: "Birds Chirping",
     file: "/sounds/birds.mp3",
-    colorFrom: "#84cc16", // lime-500
-    colorTo: "#22c55e",   // green-500
+    colorFrom: "#84cc16",
+    colorTo: "#22c55e",
+    ambientMode: 'mountain' as AmbientMode
   },
 ];
 
@@ -35,9 +40,15 @@ const BreathingExercise = () => {
   const [currentTrack, setCurrentTrack] = useState(ambientSounds[0]);
   const [volume, setVolume] = useState(0.7);
   const [showSettings, setShowSettings] = useState(false);
+  const [ambientMode, setAmbientMode] = useState<AmbientMode>('none');
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const animationRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setAmbientMode(isActive ? currentTrack.ambientMode : 'none');
+  }, [isActive, currentTrack]);
+
 
   // Preload audio files
   useEffect(() => {
@@ -180,6 +191,9 @@ const BreathingExercise = () => {
 
   return (
     <div className="relative bg-white rounded-2xl p-6 shadow-lg border border-gray-100 overflow-hidden max-w-md mx-auto">
+
+<AmbientAnimation mode={ambientMode} intensity={volume} />
+
       {/* Header with controls */}
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
