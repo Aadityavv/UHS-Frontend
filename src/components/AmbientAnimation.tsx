@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Droplets, Waves, BirdIcon } from 'lucide-react';
+import { CloudRain, Waves, BirdIcon } from 'lucide-react';
 import { AmbientMode } from '@/components/types';
 
 type AmbientAnimationProps = {
@@ -37,7 +37,7 @@ const AmbientAnimation = ({ mode, intensity = 1 }: AmbientAnimationProps) => {
                 }}
                 className="absolute text-blue-300/50"
               >
-                <Droplets className="h-4 w-4" />
+                <CloudRain className="h-4 w-4" />
               </motion.div>
             ))}
           </>
