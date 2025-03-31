@@ -16,13 +16,13 @@ import NewAssistantDoctorLayout from "@/private/new-assistant-doctor/NewAssistan
 import NewAssistantDoctor from "@/private/new-assistant-doctor/NewAssistantDoctor";
 import AnalyticsDashboardLayout from "@/private/Analytics-Dashboard/AnalyticsDashboardLayout";
 import AnalyticsDashboard from "@/private/Analytics-Dashboard/AnalyticsDashboard";
-import BackupRestore from "@/components/BackupRestore";
-import UserManagement from "@/components/UserManagement";
-import SystemLogs from "@/components/SystemLogs";
+import BackupRestore from "@/private/Backup-Restore/BackupRestore";
+import UserManagement from "@/private/User-Management/UserManagement";
+import SystemLogs from "@/private/System-Logs/SystemLogs";
 
 
 // Patient routes
-import UserDashboard from "@/private/user-dashboard/UserDashboard";
+import UserDashboard from "@/components/UserDashboard";
 import UserDasboardLayout from "@/private/user-dashboard/UserDasboardLayout";
 import UserProfile from "@/private/user-profile/UserProfile";
 import UserProfileLayout from "@/private/user-profile/UserProfileLayout";
@@ -61,6 +61,8 @@ import AmbulanceLayout from "@/private/ambulance/AmbulanceLayout";
 import CommonPrescription from "@/private/common-prescription/CommonPrescription";
 import CommonPrescriptionLayout from "@/private/common-prescription/CommonPrescriptionLayout";
 import VerifyPage from "@/public/VerifyPage";
+import { UserForm } from "@/private/User-Management/UserForm";
+import { EditUser } from "@/private/User-Management/EditUser";
 
 const router = createBrowserRouter([
   // PUBLIC ROUTES
@@ -110,6 +112,14 @@ const router = createBrowserRouter([
         path: "/admin/logs",
         element: <SystemLogs />,
       },
+      {
+        path: "/admin/users/new",
+        element: <UserForm />,
+      },
+      {
+        path: "/admin/users/edit/:id",
+        element: <EditUser />,
+      }
     ],
   },
 

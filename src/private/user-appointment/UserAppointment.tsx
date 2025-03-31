@@ -383,7 +383,7 @@ const UserAppointment = () => {
                       Last Appointment Date
                     </label>
                     <input
-                      value={lastAppointmentDate}
+                      value={dayjs(lastAppointmentDate).format('DD/MM/YYYY')}
                       disabled
                       className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200"
                     />

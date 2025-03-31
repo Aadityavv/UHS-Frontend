@@ -24,10 +24,12 @@ import {
   Droplet,
   Moon,
   Armchair,
-  RotateCw} from "lucide-react";
+  RotateCw,
+} from "lucide-react";
 import Skeleton from '@mui/material/Skeleton';
 import { ToastAction } from "@radix-ui/react-toast";
 import BreathingExercise from '@/components/BreathingExercise';
+import SymptomAnalysis from '@/components/SymptomAnalysis';
 
 type Medication = {
   pres_medicine_id: string;
@@ -55,7 +57,6 @@ type Exercise = {
 };
 
 const UserDashboard = () => {
-
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -551,6 +552,13 @@ const UserDashboard = () => {
               )}
             </motion.div>
 
+            {/* SYMPTOM ANALYSIS */}
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              className="bg-white rounded-2xl shadow-sm border border-gray-100"
+            >
+              <SymptomAnalysis />
+            </motion.div>
 
             {/* BREATHING EXERCISE */}
             <motion.div
@@ -826,7 +834,7 @@ const UserDashboard = () => {
               </div>
             </motion.div>
 
-                        {/* EXERCISES SECTION */}
+            {/* EXERCISES SECTION */}
             <motion.div 
               whileHover={{ scale: 1.0 }}
               className="bg-white rounded-2xl p-4 mb-6 shadow-sm border border-gray-100"
@@ -932,7 +940,15 @@ const UserDashboard = () => {
               </div>
             </motion.div>
 
-            
+            {/* MOBILE SYMPTOM ANALYSIS */}
+            <div className="lg:hidden mb-8">
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                className="bg-white rounded-2xl shadow-sm border border-gray-100"
+              >
+                <SymptomAnalysis />
+              </motion.div>
+            </div>
 
             {/* MOBILE BREATHING EXERCISE */}
             <div className="lg:hidden mb-8">
