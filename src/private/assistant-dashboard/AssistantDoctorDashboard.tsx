@@ -19,6 +19,7 @@ import {
   Users,
 } from "lucide-react";
 import { BottomNavigation, BottomNavigationAction } from "@mui/material";
+import BreathingExercise from "@/components/BreathingExercise";
 
 const AssistantDoctorDashboard = () => {
   const navigate = useNavigate();
@@ -320,6 +321,7 @@ const AssistantDoctorDashboard = () => {
                     </div>
                   </div>
                 </motion.div>
+                <BreathingExercise/>
               </div>
 
               {/* Main Content */}

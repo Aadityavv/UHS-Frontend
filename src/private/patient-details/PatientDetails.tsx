@@ -290,6 +290,53 @@ const PatientDetails = () => {
     }
   };
 
+  const handleViewPreviousPrescription = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const rawEmail = ndata?.email;
+  
+      if (!rawEmail) {
+        toast({
+          variant: "destructive",
+          title: "Missing Email",
+          description: "No patient email found for fetching prescription history.",
+        });
+        return;
+      }
+
+  
+      const { data } = await axios.get(
+        `https://uhs-backend.onrender.com/api/doctor/prescription/${rawEmail}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+  
+      const history = data?.response;
+  
+      if (!history || Object.keys(history).length === 0) {
+        toast({
+          variant: "destructive",
+          title: "No Prescription History",
+          description: "This patient has no past prescriptions.",
+        });
+        return;
+      }
+  
+      navigate(`/prescription-history?email=${rawEmail}`);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error Fetching Prescription History",
+        description:
+          error.response?.data?.message || "Failed to fetch previous prescription.",
+      });
+    }
+  };
+  
+  
+  
+
   const addRow = () => setRows([...rows, { id: Date.now() }]);
   const removeRow = (id: number) => setRows(rows.filter((row) => row.id !== id));
 
@@ -627,19 +674,26 @@ const PatientDetails = () => {
                 <div className="text-slate-600">{ndata.designation}</div>
               </div>
               <div className="flex gap-4 w-full md:w-auto">
-                <Button
-                  onClick={handleSubmit}
-                  className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700"
-                >
-                  Submit Prescription
-                </Button>
-                <Button
-                  onClick={handleRelease}
-                  className="w-full md:w-auto bg-rose-600 hover:bg-rose-700"
-                >
-                  Release Patient
-                </Button>
-              </div>
+  <Button
+    onClick={handleSubmit}
+    className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700"
+  >
+    Submit Prescription
+  </Button>
+  <Button
+    onClick={handleViewPreviousPrescription}
+    className="w-full md:w-auto bg-blue-600 hover:bg-blue-700"
+  >
+    View Previous Prescription
+  </Button>
+  <Button
+    onClick={handleRelease}
+    className="w-full md:w-auto bg-rose-600 hover:bg-rose-700"
+  >
+    Release Patient
+  </Button>
+</div>
+
             </div>
           </motion.div>
         </motion.div>

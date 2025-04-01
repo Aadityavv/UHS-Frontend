@@ -8,6 +8,7 @@ import { ToastAction } from "@/components/ui/toast";
 import { motion } from "framer-motion";
 import Skeleton from '@mui/material/Skeleton';
 import { AlertCircle, Stethoscope, ChevronRight, LogOut } from "lucide-react";
+import BreathingExercise from "@/components/BreathingExercise";
 
 const DoctorDashboard = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
@@ -492,6 +493,8 @@ const DoctorDashboard = () => {
                       <AlertCircle className="h-5 w-5" />
                     </button>
                   </motion.div>
+
+                  <BreathingExercise/>
                 </div>
 
                 {/* Main Content */}
