@@ -48,8 +48,8 @@ const PatientLogs = () => {
       setLoading(true);
       
       let apiUrl = selectedButton === "Consultation"
-        ? `https://uhs-backend.onrender.com/api/AD/getAppointmentByDate?date=${date}`
-        : `https://uhs-backend.onrender.com/api/AD/getAdHocByDate?date=${date}`;
+        ? `http://localhost:8081/api/AD/getAppointmentByDate?date=${date}`
+        : `http://localhost:8081/api/AD/getAdHocByDate?date=${date}`;
 
       const resp = await axios.get(apiUrl, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },

@@ -53,7 +53,7 @@ export const EditUser = () => {
     const fetchUser = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(`https://uhs-backend.onrender.com/api/admin/${id}`, {
+        const response = await axios.get(`http://localhost:8081/api/admin/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -98,7 +98,7 @@ export const EditUser = () => {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.put(`https://uhs-backend.onrender.com/api/admin/${id}`, formData, {
+      await axios.put(`http://localhost:8081/api/admin/${id}`, formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

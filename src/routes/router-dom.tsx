@@ -22,7 +22,7 @@ import SystemLogs from "@/private/System-Logs/SystemLogs";
 
 
 // Patient routes
-import UserDashboard from "@/components/UserDashboard";
+import UserDashboard from "@/private/user-dashboard/UserDashboard";
 import UserDasboardLayout from "@/private/user-dashboard/UserDasboardLayout";
 import UserProfile from "@/private/user-profile/UserProfile";
 import UserProfileLayout from "@/private/user-profile/UserProfileLayout";
