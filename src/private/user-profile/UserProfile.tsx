@@ -365,43 +365,52 @@ const UserProfile = () => {
                   Medical Details
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {formFields.slice(6, 12).map((field) => (
-                    <div key={field.name} className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                        <field.icon className="h-4 w-4 text-gray-500" />
-                        {field.label}
-                        {field.required && <span className="text-red-500">*</span>}
-                      </label>
-                      {field.type === 'select' ? (
-                        <>
-                          <select
-                            {...register(field.name)}
-                            className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 ${
-                              errors[field.name] ? "border-red-500" : "border-gray-300"
-                            }`}
-                          >
-                            <option value="">Select {field.label.toLowerCase()}</option>
-                            {field.options?.map(option => (
-                              <option key={option} value={option}>{option}</option>
-                            ))}
-                          </select>
-                          {errors[field.name] && (
-                            <p className="text-sm text-red-600 mt-1 flex items-start gap-1">
-                              <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                              <span>{errors[field.name]?.message as string}</span>
-                            </p>
-                          )}
-                        </>
-                      ) : (
-                        <input
-                          {...register(field.name)}
-                          className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 ${
-                            errors[field.name] ? "border-red-500" : "border-gray-300"
-                          }`}
-                        />
-                      )}
-                    </div>
-                  ))}
+                {formFields.slice(6, 12).map((field) => (
+  <div key={field.name} className="space-y-2">
+    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+      <field.icon className="h-4 w-4 text-gray-500" />
+      {field.label}
+      {field.required && <span className="text-red-500">*</span>}
+    </label>
+
+    {/* If field is disabled, show read-only input */}
+    {field.disabled ? (
+      <input
+        {...register(field.name)}
+        className="w-full px-4 py-3 border rounded-xl bg-gray-100 text-gray-700 border-gray-300 cursor-not-allowed"
+        disabled
+      />
+    ) : field.type === 'select' ? (
+      <>
+        <select
+          {...register(field.name)}
+          className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 ${
+            errors[field.name] ? "border-red-500" : "border-gray-300"
+          }`}
+        >
+          <option value="">Select {field.label.toLowerCase()}</option>
+          {field.options?.map(option => (
+            <option key={option} value={option}>{option}</option>
+          ))}
+        </select>
+        {errors[field.name] && (
+          <p className="text-sm text-red-600 mt-1 flex items-start gap-1">
+            <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <span>{errors[field.name]?.message as string}</span>
+          </p>
+        )}
+      </>
+    ) : (
+      <input
+        {...register(field.name)}
+        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 ${
+          errors[field.name] ? "border-red-500" : "border-gray-300"
+        }`}
+      />
+    )}
+  </div>
+))}
+
                 </div>
               </div>
             </div>
