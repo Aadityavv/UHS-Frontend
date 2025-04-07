@@ -89,7 +89,7 @@ const DoctorCheckIn = () => {
         variant: "destructive",
         title: "Error fetching doctors",
         description: error.response?.data?.message || "Failed to load doctors.",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };
@@ -110,7 +110,7 @@ const DoctorCheckIn = () => {
           variant: "destructive",
           title: "Location Required",
           description: "Allow Location Services to proceed.",
-          //action: <ToastAction altText="Try again">Try again</ToastAction>,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
         return;
       }
@@ -138,7 +138,7 @@ const DoctorCheckIn = () => {
         variant: "destructive",
         title: "Error during check-in",
         description: error.response?.data?.message || "Please try again later.",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };
@@ -171,7 +171,7 @@ const DoctorCheckIn = () => {
         variant: "destructive",
         title: "Error during check-out",
         description: error.response?.data?.message || "Please try again later.",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };

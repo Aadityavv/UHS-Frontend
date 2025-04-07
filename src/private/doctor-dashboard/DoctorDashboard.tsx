@@ -47,7 +47,7 @@ const DoctorDashboard = () => {
           title: "Error",
           description: errorData.message || "Failed to fetch patient data.",
           variant: "destructive",
-          //action: <ToastAction altText="Try again">Try again</ToastAction>,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
         console.error("Failed to fetch patient data:", errorData);
       }
@@ -58,7 +58,7 @@ const DoctorDashboard = () => {
           error.response?.data?.message ||
           "Failed to fetch patient data due to a network error.",
         variant: "destructive",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
       console.error("Error fetching patient data:", error);
     } finally {
@@ -80,7 +80,7 @@ const DoctorDashboard = () => {
           title: "Location Error",
           description: "Allow Location Services.",
           variant: "destructive",
-          //action: <ToastAction altText="Try again">Try again</ToastAction>,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
         return;
       }
@@ -107,7 +107,7 @@ const DoctorDashboard = () => {
           title: "Error",
           description: errorData.message || "Failed to check in.",
           variant: "destructive",
-          //action: <ToastAction altText="Try again">Try again</ToastAction>,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     } catch (error: any) {
@@ -117,7 +117,7 @@ const DoctorDashboard = () => {
           error.response?.data?.message ||
           "Error during check-in. Please try again.",
         variant: "destructive",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
       console.error("Error during check-in:", error);
     }
@@ -150,7 +150,7 @@ const DoctorDashboard = () => {
           title: "Error",
           description: errorData.message || "Failed to check out.",
           variant: "destructive",
-          //action: <ToastAction altText="Try again">Try again</ToastAction>,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     } catch (error: any) {
@@ -160,7 +160,7 @@ const DoctorDashboard = () => {
           error.response?.data?.message ||
           "Error during check-out. Please try again.",
         variant: "destructive",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
       console.error("Error during check-out:", error);
     }
@@ -190,7 +190,7 @@ const DoctorDashboard = () => {
         title: "Error",
         description: response.data.message,
         variant: "destructive",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };
@@ -223,7 +223,7 @@ const DoctorDashboard = () => {
         title: "Error",
         description: response.data.message,
         variant: "destructive",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };

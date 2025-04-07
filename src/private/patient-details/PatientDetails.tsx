@@ -136,7 +136,7 @@ const PatientDetails = () => {
           variant: "destructive",
           title: "Error",
           description: err.response?.data?.message || "Failed to fetch data.",
-          //action: <ToastAction altText="Try again">Try again</ToastAction>,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     };
@@ -258,7 +258,7 @@ const PatientDetails = () => {
           variant: "destructive",
           title: "Error",
           description: err.response?.data?.message || "Failed to submit prescription.",
-          //action: <ToastAction altText="Try again">Try again</ToastAction>,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     }
@@ -285,7 +285,7 @@ const PatientDetails = () => {
         variant: "destructive",
         title: "Error",
         description: err.response?.data?.message || "An error occurred while releasing the patient.",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };

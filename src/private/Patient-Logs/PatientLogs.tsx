@@ -84,7 +84,7 @@ const PatientLogs = () => {
         title: "Error",
         description: error?.response?.data?.message || "An unexpected error occurred.",
         variant: "destructive",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     } finally {
       setLoading(false);

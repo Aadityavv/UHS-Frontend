@@ -189,7 +189,7 @@ const UserRegister = () => {
           description:
             error?.response?.data?.message || "Something went wrong.",
           variant: "destructive",
-          //action: <ToastAction altText="Try again">Try again</ToastAction>,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     } else {
@@ -198,7 +198,7 @@ const UserRegister = () => {
         title: "Validation Error",
         description: "Please fill in required details before submitting.",
         variant: "destructive",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };
@@ -225,7 +225,7 @@ const UserRegister = () => {
         title: "Invalid File Type",
         description: "Only JPG or PNG images are allowed.",
         variant: "destructive",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
       event.target.value = "";
       return;
@@ -236,7 +236,7 @@ const UserRegister = () => {
         title: "File Too Large",
         description: "Profile photo must be less than 25KB.",
         variant: "destructive",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
       event.target.value = "";
       return;

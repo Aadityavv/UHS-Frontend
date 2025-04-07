@@ -341,7 +341,7 @@ setFilteredPatients(uniquePatients);
       title: "Error",
       description: `${message}: ${error.message}`,
       variant: "destructive",
-      //action: <ToastAction altText="Try again">Try again</ToastAction>,
+      action: <ToastAction altText="Try again">Try again</ToastAction>,
     });
   };
 

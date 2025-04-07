@@ -111,7 +111,7 @@ const NewDoctor = () => {
           title: "Registration Failed",
           description: error?.response?.data?.message || "Registration failed",
           variant: "destructive",
-          //action: <ToastAction altText="Try again">Try again</ToastAction>,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     }

@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { Calendar, ClipboardList, Activity, User, AlertCircle, Home, MapPin, Ruler, Weight, Droplet, Heart } from "lucide-react";
 import Skeleton from "@mui/material/Skeleton";
+import { ToastAction } from "@radix-ui/react-toast";
 
 // Define enum types for better type safety
 const AllergiesEnum = z.enum(["Yes", "No"], {
@@ -152,7 +153,7 @@ const UserProfile = () => {
               title: "Error",
               description: "Failed to fetch user details",
               variant: "destructive",
-              //action: <ToastAction altText="Try again">Try again</ToastAction>,
+              action: <ToastAction altText="Try again">Try again</ToastAction>,
             });
           }
         } else {
@@ -160,7 +161,7 @@ const UserProfile = () => {
             title: "Error",
             description: error.response?.data?.message || "Failed to fetch user details",
             variant: "destructive",
-            //action: <ToastAction altText="Try again">Try again</ToastAction>,
+            action: <ToastAction altText="Try again">Try again</ToastAction>,
           });
         }
       } finally {
@@ -229,7 +230,7 @@ const UserProfile = () => {
         title: "Error",
         description: error.response?.data?.message || "Failed to update profile. Please try again.",
         variant: "destructive",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };

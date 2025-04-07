@@ -18,7 +18,7 @@ const TokenPage = () => {
         title: "Unauthorized",
         description: "Session expired. Please log in again.",
         variant: "destructive",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
       setTimeout(() => {
         navigate("/");
@@ -44,7 +44,7 @@ const TokenPage = () => {
             title: "Unauthorized",
             description: "You are not authorized. Redirecting to login...",
             variant: "destructive",
-            //action: <ToastAction altText="Try again">Try again</ToastAction>,
+            action: <ToastAction altText="Try again">Try again</ToastAction>,
           });
           setTimeout(() => {
             navigate("/");
@@ -54,7 +54,7 @@ const TokenPage = () => {
             title: "Error",
             description: response.data.message || "Something went wrong.",
             variant: "destructive",
-            //action: <ToastAction altText="Try again">Try again</ToastAction>,
+            action: <ToastAction altText="Try again">Try again</ToastAction>,
           });
         }
       } catch (err) {
@@ -62,7 +62,7 @@ const TokenPage = () => {
           title: "Error",
           description: "Something Went Wrong. Please try again later.",
           variant: "destructive",
-          //action: <ToastAction altText="Try again">Try again</ToastAction>,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     };

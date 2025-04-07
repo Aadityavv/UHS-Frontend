@@ -87,7 +87,7 @@ const SignIn = () => {
         variant: "destructive",
         title: "Location Missing",
         description: "Please select a location.",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   
@@ -147,7 +147,7 @@ const SignIn = () => {
               variant: "destructive",
               title: "Error fetching profile",
               description: error.response?.data?.message || "An error occurred while fetching profile",
-              //action: <ToastAction altText="Try again">Try again</ToastAction>,
+              action: <ToastAction altText="Try again">Try again</ToastAction>,
             });
           }
         }
@@ -182,7 +182,7 @@ const SignIn = () => {
         variant: "destructive",
         title: "Sign In Failed",
         description: message,
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };
@@ -195,7 +195,7 @@ const SignIn = () => {
         variant: "destructive",
         title: "Missing Email",
         description: "Please enter your registered email.",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   
@@ -222,7 +222,7 @@ const SignIn = () => {
           variant: "destructive",
           title: "Request Unsuccessful",
           description: response.data.message,
-          //action: <ToastAction altText="Try again">Try again</ToastAction>,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     } catch (error: any) {
@@ -230,7 +230,7 @@ const SignIn = () => {
         variant: "destructive",
         title: "Request Failed",
         description: error.response?.data?.message || "Something went wrong",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     } finally {
       setResetProcess("Submit");
@@ -275,7 +275,7 @@ const SignIn = () => {
           variant: "destructive",
           title: "Network Error",
           description: "Using default locations due to error fetching data.",
-          //action: <ToastAction altText="Try again">Try again</ToastAction>,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     };

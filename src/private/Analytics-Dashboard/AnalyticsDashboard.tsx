@@ -225,7 +225,7 @@ const AnalyticsDashboard = () => {
             title: "Error Fetching Data",
             description: responseAllPatient?.data?.message ||
               "Error occurred while fetching prescription data.",
-            //action: <ToastAction altText="Try again">Try again</ToastAction>,
+            action: <ToastAction altText="Try again">Try again</ToastAction>,
           });
         }
 
@@ -297,7 +297,7 @@ const AnalyticsDashboard = () => {
           title: "Error Fetching Data",
           description: err.response?.data?.message ||
             "Error occurred while fetching data.",
-          //action: <ToastAction altText="Try again">Try again</ToastAction>,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       } finally {
         setLoading(false);

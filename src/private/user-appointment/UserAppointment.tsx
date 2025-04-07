@@ -13,6 +13,7 @@ import {
   MapPin
 } from "lucide-react";
 import Skeleton from "@mui/material/Skeleton";
+import { ToastAction } from "@radix-ui/react-toast";
 
 const UserAppointment = () => {
   const { toast } = useToast();
@@ -72,7 +73,7 @@ const UserAppointment = () => {
           title: "Error",
           description: "Failed to load user profile.",
           variant: "destructive",
-          //action: <ToastAction altText="Try again">Try again</ToastAction>,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     
@@ -121,7 +122,7 @@ const UserAppointment = () => {
           title: "Error",
           description: "Failed to load appointment status.",
           variant: "destructive",
-          //action: <ToastAction altText="Try again">Try again</ToastAction>,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     

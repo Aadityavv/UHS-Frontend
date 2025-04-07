@@ -218,7 +218,7 @@ const MedicineStock = () => {
         title: "Error",
         description: "Failed to fetch stock data. Please try again.",
         variant: "destructive",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     } finally {
       setLoading(false);
@@ -236,7 +236,7 @@ const MedicineStock = () => {
           title: "Error",
           description: resp.data.message,
           variant: "destructive",
-          //action: <ToastAction altText="Try again">Try again</ToastAction>,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     } catch (err) {
@@ -244,7 +244,7 @@ const MedicineStock = () => {
         title: "Error",
         description: "Error in fetching locations. Please try again.",
         variant: "destructive",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };
@@ -296,7 +296,7 @@ const MedicineStock = () => {
         title: "Error",
         description: err.response?.data?.message,
         variant: "destructive",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };
@@ -414,7 +414,7 @@ const MedicineStock = () => {
           title: "Error",
           description: error.response?.data?.message,
           variant: "destructive",
-          //action: <ToastAction altText="Try again">Try again</ToastAction>,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     }
@@ -449,7 +449,7 @@ const MedicineStock = () => {
           title: "Error",
           description: `Failed to delete stock.`,
           variant: "destructive",
-          //action: <ToastAction altText="Try again">Try again</ToastAction>,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     }

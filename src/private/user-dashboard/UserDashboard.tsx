@@ -177,7 +177,7 @@ const UserDashboard = () => {
         title: "Error",
         description: "Couldn't fetch medical details",
         variant: "destructive",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   }, [toast, userDetails.email]);
@@ -207,7 +207,7 @@ const UserDashboard = () => {
         title: "Error",
         description: "Couldn't fetch active medications",
         variant: "destructive",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     } finally {
       setLoadingMedications(false);
@@ -375,7 +375,7 @@ const UserDashboard = () => {
           title: "Error",
           description: "Something went wrong!",
           variant: "destructive",
-          //action: <ToastAction altText="Try again">Try again</ToastAction>,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       } finally {
         setLoading(false);

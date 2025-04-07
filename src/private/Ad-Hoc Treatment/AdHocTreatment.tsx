@@ -108,7 +108,7 @@ const AdHocTreatment = () => {
             error.response?.data?.details ||
             "Failed to fetch medicine stock.",
           variant: "destructive",
-          //action: <ToastAction altText="Try again">Try again</ToastAction>,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     };
@@ -135,7 +135,7 @@ const AdHocTreatment = () => {
           title: "Location Required",
           description: "Select a location to proceed.",
           variant: "destructive",
-          //action: <ToastAction altText="Try again">Try again</ToastAction>,
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
         return;
       }
@@ -165,7 +165,7 @@ const AdHocTreatment = () => {
         title: "Error",
         description: error.response?.data?.message || "Failed to submit treatment",
         variant: "destructive",
-        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     } finally {
       setIsSubmitting(false);
