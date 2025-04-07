@@ -40,7 +40,7 @@ export const UserForm = () => {
     
     try {
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:8081/api/admin", formData, {
+      await axios.post("https://uhs-backend.onrender.com/api/admin", formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       

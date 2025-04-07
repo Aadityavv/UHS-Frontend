@@ -63,7 +63,7 @@ const UserAppointment = () => {
     
       try {
         // Fetch User Profile
-        const userRes = await axios.get("http://localhost:8081/api/patient/", {
+        const userRes = await axios.get("https://uhs-backend.onrender.com/api/patient/", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUserDetails(userRes.data);
@@ -80,7 +80,7 @@ const UserAppointment = () => {
       try {
         // Fetch Doctors List (non-critical)
         const doctorsRes = await axios.get(
-          "http://localhost:8081/api/patient/getAvailableDoctors",
+          "https://uhs-backend.onrender.com/api/patient/getAvailableDoctors",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -107,7 +107,7 @@ const UserAppointment = () => {
     
       try {
         // Fetch Status (non-critical)
-        const statusRes = await axios.get("http://localhost:8081/api/patient/getStatus", {
+        const statusRes = await axios.get("https://uhs-backend.onrender.com/api/patient/getStatus", {
           headers: { Authorization: `Bearer ${token}` },
         });
     
@@ -140,7 +140,7 @@ const UserAppointment = () => {
   
     try {
       const response = await axios.get(
-        "http://localhost:8081/api/patient/lastAppointmentDate",
+        "https://uhs-backend.onrender.com/api/patient/lastAppointmentDate",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -197,7 +197,7 @@ const UserAppointment = () => {
   
     try {
       await axios.post(
-        "http://localhost:8081/api/patient/submitAppointment",
+        "https://uhs-backend.onrender.com/api/patient/submitAppointment",
         appointmentData,
         {
           headers: {
@@ -261,7 +261,7 @@ const UserAppointment = () => {
                     <img
   src={
     userDetails.imageUrl
-      ? `http://localhost:8081/${userDetails.imageUrl}`
+      ? `https://uhs-backend.onrender.com/${userDetails.imageUrl}`
       : "/default-user.jpg"
   }
   alt="Profile"
