@@ -65,7 +65,7 @@ const DoctorCheckIn = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "https://uhs-backend.onrender.com/api/AD/getAllDoctors",
+        "http://localhost:8081/api/AD/getAllDoctors",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -89,7 +89,7 @@ const DoctorCheckIn = () => {
         variant: "destructive",
         title: "Error fetching doctors",
         description: error.response?.data?.message || "Failed to load doctors.",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
+        //action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };
@@ -110,13 +110,13 @@ const DoctorCheckIn = () => {
           variant: "destructive",
           title: "Location Required",
           description: "Allow Location Services to proceed.",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
+          //action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
         return;
       }
 
       const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/AD/setStatus/${doctorId}?isDoctorCheckIn=true`,
+        `http://localhost:8081/api/AD/setStatus/${doctorId}?isDoctorCheckIn=true`,
         {
           headers: {
             Authorization: "Bearer " + token,
@@ -138,7 +138,7 @@ const DoctorCheckIn = () => {
         variant: "destructive",
         title: "Error during check-in",
         description: error.response?.data?.message || "Please try again later.",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
+        //action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };
@@ -151,7 +151,7 @@ const DoctorCheckIn = () => {
         return;
       }
       const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/AD/setStatus/${doctorId}?isDoctorCheckIn=false`,
+        `http://localhost:8081/api/AD/setStatus/${doctorId}?isDoctorCheckIn=false`,
         {
           headers: {
             Authorization: "Bearer " + token,
@@ -171,7 +171,7 @@ const DoctorCheckIn = () => {
         variant: "destructive",
         title: "Error during check-out",
         description: error.response?.data?.message || "Please try again later.",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
+        //action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };

@@ -26,9 +26,9 @@ import { Eye, EyeOff, MapPin, Stethoscope, User, HeartPulse } from "lucide-react
 import { motion } from "framer-motion";
 
 const API_URLS = {
-  patient: "https://uhs-backend.onrender.com/api/auth/patient/signin",
-  doctor: "https://uhs-backend.onrender.com/api/auth/doctor/signin",
-  nursing_assistant: "https://uhs-backend.onrender.com/api/auth/ad/signin",
+  patient: "http://localhost:8081/api/auth/patient/signin",
+  doctor: "http://localhost:8081/api/auth/doctor/signin",
+  nursing_assistant: "http://localhost:8081/api/auth/ad/signin",
 };
 
 const DASHBOARD_ROUTES = {
@@ -87,7 +87,7 @@ const SignIn = () => {
         variant: "destructive",
         title: "Location Missing",
         description: "Please select a location.",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
+        //action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   
@@ -131,7 +131,7 @@ const SignIn = () => {
   
         try {
           const profileRes = await axios.get(
-            "https://uhs-backend.onrender.com/api/patient/getAllDetails",
+            "http://localhost:8081/api/patient/getAllDetails",
             {
               headers: { Authorization: `Bearer ${token}` },
             }
@@ -147,7 +147,7 @@ const SignIn = () => {
               variant: "destructive",
               title: "Error fetching profile",
               description: error.response?.data?.message || "An error occurred while fetching profile",
-              action: <ToastAction altText="Try again">Try again</ToastAction>,
+              //action: <ToastAction altText="Try again">Try again</ToastAction>,
             });
           }
         }
@@ -182,7 +182,7 @@ const SignIn = () => {
         variant: "destructive",
         title: "Sign In Failed",
         description: message,
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
+        //action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };
@@ -195,7 +195,7 @@ const SignIn = () => {
         variant: "destructive",
         title: "Missing Email",
         description: "Please enter your registered email.",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
+        //action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   
@@ -208,7 +208,7 @@ const SignIn = () => {
   
     try {
       const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/auth/passwordChangeRequest?email=${formattedEmail}&role=${passRole}`
+        `http://localhost:8081/api/auth/passwordChangeRequest?email=${formattedEmail}&role=${passRole}`
       );
   
       if (response.status === 200) {
@@ -222,7 +222,7 @@ const SignIn = () => {
           variant: "destructive",
           title: "Request Unsuccessful",
           description: response.data.message,
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
+          //action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     } catch (error: any) {
@@ -230,7 +230,7 @@ const SignIn = () => {
         variant: "destructive",
         title: "Request Failed",
         description: error.response?.data?.message || "Something went wrong",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
+        //action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     } finally {
       setResetProcess("Submit");
@@ -242,7 +242,7 @@ const SignIn = () => {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const resp = await axios.get("https://uhs-backend.onrender.com/locations");
+        const resp = await axios.get("http://localhost:8081/locations");
   
         // Access the array correctly
         const locations = resp.data._embedded?.locations;
@@ -275,7 +275,7 @@ const SignIn = () => {
           variant: "destructive",
           title: "Network Error",
           description: "Using default locations due to error fetching data.",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
+          //action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     };

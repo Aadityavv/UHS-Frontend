@@ -68,9 +68,9 @@ const AdminDashboard = () => {
 
       // Using Promise.all to fetch multiple endpoints in parallel
       const [statsRes, activityRes, alertsRes] = await Promise.all([
-        axios.get("https://uhs-backend.onrender.com/api/admin/stats", { headers }),
-        axios.get("https://uhs-backend.onrender.com/api/admin/recentActivities", { headers }),
-        axios.get("https://uhs-backend.onrender.com/api/admin/alerts", { headers })
+        axios.get("http://localhost:8081/api/admin/stats", { headers }),
+        axios.get("http://localhost:8081/api/admin/recentActivities", { headers }),
+        axios.get("http://localhost:8081/api/admin/alerts", { headers })
       ]);
       
       setStats(statsRes.data);

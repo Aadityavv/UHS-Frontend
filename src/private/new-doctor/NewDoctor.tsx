@@ -90,7 +90,7 @@ const NewDoctor = () => {
         }
         const payload = { ...data, status: false };
         await axios.post(
-          "https://uhs-backend.onrender.com/api/admin/doctor/signup",
+          "http://localhost:8081/api/admin/doctor/signup",
           payload,
           {
             headers: {
@@ -111,7 +111,7 @@ const NewDoctor = () => {
           title: "Registration Failed",
           description: error?.response?.data?.message || "Registration failed",
           variant: "destructive",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
+          //action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     }

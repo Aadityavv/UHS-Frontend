@@ -60,7 +60,7 @@ const AssistantDoctorDashboard = () => {
       }
 
       const response = await fetch(
-        "https://uhs-backend.onrender.com/api/AD/total-patient-count",
+        "http://localhost:8081/api/AD/total-patient-count",
         {
           headers: {
             Authorization: "Bearer " + token,
@@ -79,7 +79,7 @@ const AssistantDoctorDashboard = () => {
           title: "Fetch Error",
           description: "Failed to fetch patient data. Please try again later.",
           variant: "destructive",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
+          //action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     } catch (error: any) {
@@ -88,7 +88,7 @@ const AssistantDoctorDashboard = () => {
         title: "Error",
         description: error.message || "Network Error",
         variant: "destructive",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
+        //action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     } finally {
       setIsLoading(false);

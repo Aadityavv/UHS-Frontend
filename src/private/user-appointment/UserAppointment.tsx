@@ -13,7 +13,6 @@ import {
   MapPin
 } from "lucide-react";
 import Skeleton from "@mui/material/Skeleton";
-import { ToastAction } from "@radix-ui/react-toast";
 
 const UserAppointment = () => {
   const { toast } = useToast();
@@ -25,6 +24,8 @@ const UserAppointment = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState('');
+  const [followUpError, setFollowUpError] = useState(false);
+
 
   const [userDetails, setUserDetails] = useState({
     name: "",
@@ -54,51 +55,6 @@ const UserAppointment = () => {
     const savedLocation = localStorage.getItem("locationName");
     setLocationName(savedLocation || "Location not available");
 
-    // const fetchData = async () => {
-    //   try {
-    //     const [userRes, doctorsRes, statusRes] = await Promise.all([
-    //       axios.get("https://uhs-backend.onrender.com/api/patient/", {
-    //         headers: { Authorization: `Bearer ${token}` },
-    //       }),
-    //       axios.get("https://uhs-backend.onrender.com/api/patient/getAvailableDoctors", {
-    //         headers: {
-    //           Authorization: `Bearer ${token}`,
-    //           "X-Latitude": localStorage.getItem("latitude") || "0",
-    //           "X-Longitude": localStorage.getItem("longitude") || "0",
-    //         },
-    //       }),
-    //       axios.get("https://uhs-backend.onrender.com/api/patient/getStatus", {
-    //         headers: { Authorization: `Bearer ${token}` },
-    //       }),
-    //     ]);
-
-    //     setUserDetails(userRes.data);
-
-    //     setDoctors(
-    //       doctorsRes.data.map((doctor: any) => ({
-    //         id: doctor.doctorId.toString(),
-    //         name: doctor.name,
-    //       }))
-    //     );
-
-    //     setStatus({
-    //       appointmentStatus: statusRes.data.Appointment ? "Queued" : "NA",
-    //       doctorName: statusRes.data.Doctor ? statusRes.data.DoctorName : "Not Appointed",
-    //       tokenNo: statusRes.data.TokenNo || "N/A",
-    //     });
-
-    //   } catch (error: any) {
-    //     console.error("Fetch error:", error);
-    //     toast({
-    //       title: "Error",
-    //       description: error?.response?.data?.message || error.message || "Something went wrong!",
-    //       variant: "destructive",
-    //       action: <ToastAction altText="Try again">Try again</ToastAction>,
-    //     });
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
 
     const fetchData = async () => {
       const token = localStorage.getItem("token");
@@ -106,7 +62,7 @@ const UserAppointment = () => {
     
       try {
         // Fetch User Profile
-        const userRes = await axios.get("https://uhs-backend.onrender.com/api/patient/", {
+        const userRes = await axios.get("http://localhost:8081/api/patient/", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUserDetails(userRes.data);
@@ -116,14 +72,14 @@ const UserAppointment = () => {
           title: "Error",
           description: "Failed to load user profile.",
           variant: "destructive",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
+          //action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     
       try {
         // Fetch Doctors List (non-critical)
         const doctorsRes = await axios.get(
-          "https://uhs-backend.onrender.com/api/patient/getAvailableDoctors",
+          "http://localhost:8081/api/patient/getAvailableDoctors",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -150,7 +106,7 @@ const UserAppointment = () => {
     
       try {
         // Fetch Status (non-critical)
-        const statusRes = await axios.get("https://uhs-backend.onrender.com/api/patient/getStatus", {
+        const statusRes = await axios.get("http://localhost:8081/api/patient/getStatus", {
           headers: { Authorization: `Bearer ${token}` },
         });
     
@@ -165,7 +121,7 @@ const UserAppointment = () => {
           title: "Error",
           description: "Failed to load appointment status.",
           variant: "destructive",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
+          //action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     
@@ -180,49 +136,67 @@ const UserAppointment = () => {
   const fetchLastAppointmentDate = useCallback(async () => {
     const token = localStorage.getItem("token");
     if (!token) return;
-
+  
     try {
       const response = await axios.get(
-        "https://uhs-backend.onrender.com/api/patient/lastAppointmentDate",
+        "http://localhost:8081/api/patient/lastAppointmentDate",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setLastAppointmentDate(response.data || null);
+  
+      if (response.data) {
+        setLastAppointmentDate(response.data);
+        setFollowUpError(false); // ✅ reset error
+      } else {
+        setLastAppointmentDate(null);
+        setFollowUpError(true); // ❌ no previous appointment
+      }
     } catch (error: any) {
-      console.error("Last appointment fetch error:", error);
+      setLastAppointmentDate(null);
+      setFollowUpError(true); // ❌ no previous appointment
       toast({
         title: "Error",
-        description: "Couldn't get last appointment date",
+        description: "No previous appointment found.",
         variant: "destructive",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   }, []);
-
+  
   // Form submit handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-
+  
     const formData = new FormData(e.currentTarget as HTMLFormElement);
-
+  
+    const followUpSelected = formData.get("followUp") === "Yes";
+    if (followUpSelected && (!lastAppointmentDate || followUpError)) {
+      toast({
+        title: "Error",
+        description: "No previous appointment found for follow-up.",
+        variant: "destructive",
+      });
+      setSubmitting(false);
+      return;
+    }
+  
     const token = localStorage.getItem("token");
     if (!token) {
       setSubmitting(false);
       return;
     }
-
+  
     const appointmentData = {
       reason: formData.get("reason"),
-      isFollowUp: formData.get("followUp") === "Yes",
+      isFollowUp: followUpSelected,
       preferredDoctor: formData.get("preferredDoctor") || null,
       reasonPrefDoctor: formData.get("reasonForPreference") || null,
     };
-
+  
     try {
       await axios.post(
-        "https://uhs-backend.onrender.com/api/patient/submitAppointment",
+        "http://localhost:8081/api/patient/submitAppointment",
         appointmentData,
         {
           headers: {
@@ -232,12 +206,12 @@ const UserAppointment = () => {
           },
         }
       );
-
+  
       toast({
         title: "Success",
         description: "Appointment submitted successfully.",
       });
-
+  
       setTimeout(() => navigate("/patient-dashboard"), 1000);
     } catch (error: any) {
       console.error("Appointment submission error:", error);
@@ -245,12 +219,12 @@ const UserAppointment = () => {
         title: "Error",
         description: error?.response?.data?.message || error.message || "An error occurred.",
         variant: "destructive",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     } finally {
       setSubmitting(false);
     }
   };
+  
 
   return (
     <div className="min-h-[79vh] overflow-x-hidden bg-gray-50">
@@ -286,7 +260,7 @@ const UserAppointment = () => {
                     <img
   src={
     userDetails.imageUrl
-      ? `https://uhs-backend.onrender.com/${userDetails.imageUrl}`
+      ? `http://localhost:8081/${userDetails.imageUrl}`
       : "/default-user.jpg"
   }
   alt="Profile"

@@ -213,7 +213,7 @@ const AnalyticsDashboard = () => {
       
       try {
         // Get Total Patient
-        const responseAllPatient = await axios.get("https://uhs-backend.onrender.com/api/analytics/getTotalPatient", {
+        const responseAllPatient = await axios.get("http://localhost:8081/api/analytics/getTotalPatient", {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -225,12 +225,12 @@ const AnalyticsDashboard = () => {
             title: "Error Fetching Data",
             description: responseAllPatient?.data?.message ||
               "Error occurred while fetching prescription data.",
-            action: <ToastAction altText="Try again">Try again</ToastAction>,
+            //action: <ToastAction altText="Try again">Try again</ToastAction>,
           });
         }
 
         // Get School wise data
-        const responseSchoolWise = await axios.get("https://uhs-backend.onrender.com/api/analytics/getSchoolWise", {
+        const responseSchoolWise = await axios.get("http://localhost:8081/api/analytics/getSchoolWise", {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (responseSchoolWise.status === 200) {
@@ -241,7 +241,7 @@ const AnalyticsDashboard = () => {
         }
 
         // Get Top 10 medicine
-        const responseTopMedsPres = await axios.get("https://uhs-backend.onrender.com/api/analytics/getTopMeds", {
+        const responseTopMedsPres = await axios.get("http://localhost:8081/api/analytics/getTopMeds", {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (responseTopMedsPres.status === 200) {
@@ -249,7 +249,7 @@ const AnalyticsDashboard = () => {
         }
 
         // Get Data By Residence Type
-        const responseByResType = await axios.get("https://uhs-backend.onrender.com/api/analytics/getByResidenceType", {
+        const responseByResType = await axios.get("http://localhost:8081/api/analytics/getByResidenceType", {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (responseByResType.status === 200) {
@@ -260,7 +260,7 @@ const AnalyticsDashboard = () => {
         }
 
         // Get Doctor-Wise Distribution
-        const responseDoctorWise = await axios.get("https://uhs-backend.onrender.com/api/analytics/getByDoctorName", {
+        const responseDoctorWise = await axios.get("http://localhost:8081/api/analytics/getByDoctorName", {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (responseDoctorWise.status === 200) {
@@ -268,7 +268,7 @@ const AnalyticsDashboard = () => {
         }
 
         // Get Patient Visits Monthly
-        const responseMonthlyData = await axios.get("https://uhs-backend.onrender.com/api/analytics/getMonthlyData", {
+        const responseMonthlyData = await axios.get("http://localhost:8081/api/analytics/getMonthlyData", {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (responseMonthlyData.status === 200) {
@@ -276,7 +276,7 @@ const AnalyticsDashboard = () => {
         }
 
         // Get Patient Visits Yearly
-        const responseYearlyData = await axios.get("https://uhs-backend.onrender.com/api/analytics/getYearlyData", {
+        const responseYearlyData = await axios.get("http://localhost:8081/api/analytics/getYearlyData", {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (responseYearlyData.status === 200) {
@@ -284,7 +284,7 @@ const AnalyticsDashboard = () => {
         }
 
         // Get Daily Data
-        const responseDailyData = await axios.get("https://uhs-backend.onrender.com/api/analytics/getDailyData", {
+        const responseDailyData = await axios.get("http://localhost:8081/api/analytics/getDailyData", {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (responseDailyData.status === 200) {
@@ -297,7 +297,7 @@ const AnalyticsDashboard = () => {
           title: "Error Fetching Data",
           description: err.response?.data?.message ||
             "Error occurred while fetching data.",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
+          //action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       } finally {
         setLoading(false);

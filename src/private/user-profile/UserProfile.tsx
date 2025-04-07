@@ -9,7 +9,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { Calendar, ClipboardList, Activity, User, AlertCircle, Home, MapPin, Ruler, Weight, Droplet, Heart } from "lucide-react";
 import Skeleton from "@mui/material/Skeleton";
-import { ToastAction } from "@radix-ui/react-toast";
 
 // Define enum types for better type safety
 const AllergiesEnum = z.enum(["Yes", "No"], {
@@ -61,7 +60,9 @@ const formSchema = z.object({
   program: z.string().min(1, "Program is required"),
   dateOfBirth: z.string().min(1, "Date of Birth is required"),
   phoneNumber: z.string().min(1, "Contact Number is required"),
-  emergencyContact: z.string().min(1, "Emergency Contact is required"),
+  emergencyContact: z
+  .string()
+  .regex(/^\d{10}$/, "Emergency contact must be a 10-digit number"),
   height: z
     .string()
     .regex(/^\d*(\.\d+)?$/, "Height must be a numeric value")
@@ -124,23 +125,23 @@ const UserProfile = () => {
     const fetchUserDetails = async () => {
       try {
         const res = await axios.get(
-          "https://uhs-backend.onrender.com/api/patient/getAllDetails",
+          "http://localhost:8081/api/patient/getAllDetails",
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
         const data = res.data;
         updateFormValues(data);
-        setImg(`https://uhs-backend.onrender.com/api//${data.imageUrl}`);
+        setImg(`http://localhost:8081/api//${data.imageUrl}`);
       } catch (error: any) {
         if (error.response?.status === 404) {
           try {
             const resBackup = await axios.get(
-              "https://uhs-backend.onrender.com/api/patient/",
+              "http://localhost:8081/api/patient/",
               { headers: { Authorization: `Bearer ${token}` } }
             );
             const dataBackup = resBackup.data;
             updateFormValues(dataBackup);
-            setImg(`https://uhs-backend.onrender.com/api//${dataBackup.imageUrl}`);
+            setImg(`http://localhost:8081/api//${dataBackup.imageUrl}`);
             toast({
               title: "Required Information",
               description: "Please complete your profile by filling all required fields",
@@ -151,7 +152,7 @@ const UserProfile = () => {
               title: "Error",
               description: "Failed to fetch user details",
               variant: "destructive",
-              action: <ToastAction altText="Try again">Try again</ToastAction>,
+              //action: <ToastAction altText="Try again">Try again</ToastAction>,
             });
           }
         } else {
@@ -159,7 +160,7 @@ const UserProfile = () => {
             title: "Error",
             description: error.response?.data?.message || "Failed to fetch user details",
             variant: "destructive",
-            action: <ToastAction altText="Try again">Try again</ToastAction>,
+            //action: <ToastAction altText="Try again">Try again</ToastAction>,
           });
         }
       } finally {
@@ -191,10 +192,12 @@ const UserProfile = () => {
   }, [navigate, setValue, toast]);
 
   const onSubmit = async (data: FormValues) => {
+    const token = localStorage.getItem("token");
+  
     try {
-      const token = localStorage.getItem("token");
+      // First update the medical & address info
       await axios.put(
-        "https://uhs-backend.onrender.com/api/patient/update",
+        "http://localhost:8081/api/patient/update",
         {
           currentAddress: data.currentAddress,
           medicalHistory: data.medicalHistory,
@@ -206,7 +209,16 @@ const UserProfile = () => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
+  
+      // Then update emergency contact separately
+      await axios.put(
+        "http://localhost:8081/api/patient/updateEmergencyContact",
+        {
+          emergencyContact: data.emergencyContact,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+  
       toast({
         title: "Success",
         description: "Profile updated successfully",
@@ -217,10 +229,11 @@ const UserProfile = () => {
         title: "Error",
         description: error.response?.data?.message || "Failed to update profile. Please try again.",
         variant: "destructive",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
+        //action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };
+  
 
   const handleCancel = () => navigate("/patient-dashboard");
 
@@ -251,7 +264,7 @@ const UserProfile = () => {
       options: AllergiesEnum.options,
       required: true
     },
-    { label: "Emergency Contact", name: "emergencyContact", icon: AlertCircle, disabled: true },
+    { label: "Emergency Contact", name: "emergencyContact", icon: AlertCircle },
     { label: "Current Address", name: "currentAddress", icon: MapPin, type: "textarea", required: true },
     { label: "Medical History", name: "medicalHistory", icon: Heart, type: "textarea", required: true },
     { label: "Family Medical History", name: "familyMedicalHistory", icon: Heart, type: "textarea", required: true },

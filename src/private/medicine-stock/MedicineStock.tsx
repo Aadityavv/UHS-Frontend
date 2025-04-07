@@ -143,7 +143,7 @@ const MedicineStock = () => {
         if (role === "ad") role = role.toUpperCase();
 
         await axios.post(
-          `https://uhs-backend.onrender.com/api/${role}/stock/editStock`,
+          `http://localhost:8081/api/${role}/stock/editStock`,
           editStock,
           {
             headers: {
@@ -204,7 +204,7 @@ const MedicineStock = () => {
       if (role === "ad") role = role.toUpperCase();
 
       const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/${role}/stock/`,
+        `http://localhost:8081/api/${role}/stock/`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -218,7 +218,7 @@ const MedicineStock = () => {
         title: "Error",
         description: "Failed to fetch stock data. Please try again.",
         variant: "destructive",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
+        //action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     } finally {
       setLoading(false);
@@ -227,7 +227,7 @@ const MedicineStock = () => {
 
   const fetchLocations = async () => {
     try {
-      const resp = await axios.get("https://uhs-backend.onrender.com/api/location/");
+      const resp = await axios.get("http://localhost:8081/api/location/");
       if (resp.status === 200) {
         const data = resp.data;
         setLocations(data);
@@ -236,7 +236,7 @@ const MedicineStock = () => {
           title: "Error",
           description: resp.data.message,
           variant: "destructive",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
+          //action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     } catch (err) {
@@ -244,7 +244,7 @@ const MedicineStock = () => {
         title: "Error",
         description: "Error in fetching locations. Please try again.",
         variant: "destructive",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
+        //action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };
@@ -262,7 +262,7 @@ const MedicineStock = () => {
       if (role === "ad") role = role.toUpperCase();
 
       const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/${role}/export`,
+        `http://localhost:8081/api/${role}/export`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -296,7 +296,7 @@ const MedicineStock = () => {
         title: "Error",
         description: err.response?.data?.message,
         variant: "destructive",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
+        //action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };
@@ -391,7 +391,7 @@ const MedicineStock = () => {
         };
   
         await axios.post(
-          `https://uhs-backend.onrender.com/api/${role}/stock/addStock`,
+          `http://localhost:8081/api/${role}/stock/addStock`,
           numericStock,
           {
             headers: {
@@ -414,7 +414,7 @@ const MedicineStock = () => {
           title: "Error",
           description: error.response?.data?.message,
           variant: "destructive",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
+          //action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     }
@@ -429,7 +429,7 @@ const MedicineStock = () => {
     for (const batchNumber of selectedStocks) {
       try {
         await axios.delete(
-          `https://uhs-backend.onrender.com/api/${role}/stock/${batchNumber}`,
+          `http://localhost:8081/api/${role}/stock/${batchNumber}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -449,7 +449,7 @@ const MedicineStock = () => {
           title: "Error",
           description: `Failed to delete stock.`,
           variant: "destructive",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
+          //action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     }
@@ -592,7 +592,7 @@ const MedicineStock = () => {
       };
   
       await axios.post(
-        `https://uhs-backend.onrender.com/api/${role}/stock/editStock`,
+        `http://localhost:8081/api/${role}/stock/editStock`,
         updatedSourceStock,
         {
           headers: {
@@ -618,7 +618,7 @@ const MedicineStock = () => {
         };
   
         await axios.post(
-          `https://uhs-backend.onrender.com/api/${role}/stock/editStock`,
+          `http://localhost:8081/api/${role}/stock/editStock`,
           updatedDestinationStock,
           {
             headers: {
@@ -637,7 +637,7 @@ const MedicineStock = () => {
         };
   
         await axios.post(
-          `https://uhs-backend.onrender.com/api/${role}/stock/addStock`,
+          `http://localhost:8081/api/${role}/stock/addStock`,
           newDestinationStock,
           {
             headers: {

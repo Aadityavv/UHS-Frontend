@@ -168,7 +168,7 @@ const UserRegister = () => {
         };
         setStatus("Loading...");
         await axios
-          .post("https://uhs-backend.onrender.com/api/auth/patient/signup", payload)
+          .post("http://localhost:8081/api/auth/patient/signup", payload)
           .then((res) => {
             setStatus("Submit");
             return res.data;
@@ -189,7 +189,7 @@ const UserRegister = () => {
           description:
             error?.response?.data?.message || "Something went wrong.",
           variant: "destructive",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
+          //action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     } else {
@@ -198,7 +198,7 @@ const UserRegister = () => {
         title: "Validation Error",
         description: "Please fill in required details before submitting.",
         variant: "destructive",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
+        //action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };
@@ -214,20 +214,34 @@ const UserRegister = () => {
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-
+  
     if (!file) return;
-
-    if (file.size > 1048576) {
+  
+    const allowedTypes = ["image/jpeg", "image/png"];
+    const maxSize = 50 * 1024; // 25KB = 25 * 1024 bytes
+  
+    if (!allowedTypes.includes(file.type)) {
       toast({
-        title: "File Too Large",
-        description: "File size should be less than 1MB.",
+        title: "Invalid File Type",
+        description: "Only JPG or PNG images are allowed.",
         variant: "destructive",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
+        //action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
       event.target.value = "";
       return;
     }
-
+  
+    if (file.size > maxSize) {
+      toast({
+        title: "File Too Large",
+        description: "Profile photo must be less than 25KB.",
+        variant: "destructive",
+        //action: <ToastAction altText="Try again">Try again</ToastAction>,
+      });
+      event.target.value = "";
+      return;
+    }
+  
     const reader = new FileReader();
     reader.onload = () => {
       setBs64Img(reader.result as string);
@@ -235,6 +249,7 @@ const UserRegister = () => {
     };
     reader.readAsDataURL(file);
   };
+  
 
   useEffect(() => {
     if (form.watch("school") === "Guest") {

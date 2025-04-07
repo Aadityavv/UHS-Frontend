@@ -94,10 +94,10 @@ const PatientDetails = () => {
     const fetchData = async () => {
       try {
         const [patientResp, medResp] = await Promise.all([
-          axios.get("https://uhs-backend.onrender.com/api/doctor/getPatient", {
+          axios.get("http://localhost:8081/api/doctor/getPatient", {
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
           }),
-          axios.get("https://uhs-backend.onrender.com/api/doctor/stock/available", {
+          axios.get("http://localhost:8081/api/doctor/stock/available", {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
               "X-Latitude": localStorage.getItem("latitude"),
@@ -118,7 +118,7 @@ const PatientDetails = () => {
           allergies: response.medicalDetails.allergies,
           reason: response.reason,
           email: response.patient.email,
-          imageUrl: `https://uhs-backend.onrender.com/${response.patient.imageUrl}`,
+          imageUrl: `http://localhost:8081/${response.patient.imageUrl}`,
           docName: response.docName,
           height: response.medicalDetails.height,
           weight: response.medicalDetails.weight,
@@ -136,7 +136,7 @@ const PatientDetails = () => {
           variant: "destructive",
           title: "Error",
           description: err.response?.data?.message || "Failed to fetch data.",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
+          //action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     };
@@ -238,7 +238,7 @@ const PatientDetails = () => {
   
       // Submit to backend
       const resp = await axios.post(
-        "https://uhs-backend.onrender.com/api/doctor/prescription/submit",
+        "http://localhost:8081/api/doctor/prescription/submit",
         {
           diagnosis,
           dietaryRemarks: dietary,
@@ -258,7 +258,7 @@ const PatientDetails = () => {
           variant: "destructive",
           title: "Error",
           description: err.response?.data?.message || "Failed to submit prescription.",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
+          //action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     }
@@ -268,7 +268,7 @@ const PatientDetails = () => {
   const handleRelease = async () => {
     try {
       const resp = await axios.get(
-        "https://uhs-backend.onrender.com/api/doctor/releasePatient",
+        "http://localhost:8081/api/doctor/releasePatient",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -285,7 +285,7 @@ const PatientDetails = () => {
         variant: "destructive",
         title: "Error",
         description: err.response?.data?.message || "An error occurred while releasing the patient.",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
+        //action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };
@@ -306,7 +306,7 @@ const PatientDetails = () => {
 
   
       const { data } = await axios.get(
-        `https://uhs-backend.onrender.com/api/doctor/prescription/${rawEmail}`,
+        `http://localhost:8081/api/doctor/prescription/${rawEmail}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

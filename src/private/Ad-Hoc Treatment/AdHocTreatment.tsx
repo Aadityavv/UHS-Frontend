@@ -79,7 +79,7 @@ const AdHocTreatment = () => {
     const fetchMedicineStock = async () => {
       try {
         const response = await axios.get(
-          "https://uhs-backend.onrender.com/api/AD/stock/available",
+          "http://localhost:8081/api/AD/stock/available",
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -108,7 +108,7 @@ const AdHocTreatment = () => {
             error.response?.data?.details ||
             "Failed to fetch medicine stock.",
           variant: "destructive",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
+          //action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     };
@@ -135,13 +135,13 @@ const AdHocTreatment = () => {
           title: "Location Required",
           description: "Select a location to proceed.",
           variant: "destructive",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
+          //action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
         return;
       }
 
       const response = await axios.post(
-        "https://uhs-backend.onrender.com/api/AD/submit/adHoc",
+        "http://localhost:8081/api/AD/submit/adHoc",
         submitData,
         {
           headers: {
@@ -165,7 +165,7 @@ const AdHocTreatment = () => {
         title: "Error",
         description: error.response?.data?.message || "Failed to submit treatment",
         variant: "destructive",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
+        //action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     } finally {
       setIsSubmitting(false);

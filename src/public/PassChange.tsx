@@ -48,7 +48,7 @@ const PassChange = () => {
 
     try {
       const response = await axios.post(
-        `https://uhs-backend.onrender.com/api/auth/passwordChange?code=${code}&role=${role}`,
+        `http://localhost:8081/api/auth/passwordChange?code=${code}&role=${role}`,
         input
       );
 

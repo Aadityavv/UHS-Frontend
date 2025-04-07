@@ -37,8 +37,8 @@ const UserPrescription = () => {
       try {
         const role = localStorage.getItem("roles");
         const apiUrl = role === "patient"
-          ? "https://uhs-backend.onrender.com/api/patient/getAppointment"
-          : `https://uhs-backend.onrender.com/api/doctor/getAppointmentPat/${getPatientEmail()}`;
+          ? "http://localhost:8081/api/patient/getAppointment"
+          : `http://localhost:8081/api/doctor/getAppointmentPat/${getPatientEmail()}`;
 
         const { data } = await axios.get(apiUrl, {
           headers: {
@@ -87,7 +87,7 @@ const UserPrescription = () => {
       title: "Error",
       description: error.response?.data?.message || "Failed to load prescriptions",
       variant: "destructive",
-      action: <ToastAction altText="Try again">Try again</ToastAction>,
+      //action: <ToastAction altText="Try again">Try again</ToastAction>,
     });
   };
 
