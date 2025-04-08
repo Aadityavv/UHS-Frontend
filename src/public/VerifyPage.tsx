@@ -30,7 +30,7 @@ const VerifyPage: React.FC = () => {
     const verifyEmail = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8081/api/auth/user/verify?code=${code}`,
+          `https://uhs-backend.onrender.com/api/auth/user/verify?code=${code}`,
           {
             method: "GET",
             headers: {

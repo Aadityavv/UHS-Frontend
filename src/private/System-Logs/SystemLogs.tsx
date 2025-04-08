@@ -31,7 +31,7 @@ const SystemLogs = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:8081/api/admin/logs", {
+      const response = await axios.get("https://uhs-backend.onrender.com/api/admin/logs", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -161,7 +161,7 @@ const UserDashboard = () => {
 
     try {
       const response = await axios.get(
-        `http://localhost:8081/api/medical-details/email/${userDetails.email}`,
+        `https://uhs-backend.onrender.com/api/medical-details/email/${userDetails.email}`,
       );
 
       if (response?.data) {
@@ -191,7 +191,7 @@ const UserDashboard = () => {
 
     try {
       const response = await axios.get<Medication[]>(
-        `http://localhost:8081/api/patient/medications/active/${encodedEmail}`,
+        `https://uhs-backend.onrender.com/api/patient/medications/active/${encodedEmail}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -225,7 +225,7 @@ const UserDashboard = () => {
   
     try {
       const response = await axios.get(
-        `http://localhost:8081/api/current-appointment/current-token?locationId=${locationId}`,
+        `https://uhs-backend.onrender.com/api/current-appointment/current-token?locationId=${locationId}`,
         { headers: { Authorization: `Bearer ${token}` }, timeout: 5000 }
       );
       setStatus(prevStatus => ({
@@ -248,7 +248,7 @@ const UserDashboard = () => {
     setLoadingPrescription(true);
     try {
       const response = await axios.get<Prescription>(
-        "http://localhost:8081/api/patient/lastPrescription",
+        "https://uhs-backend.onrender.com/api/patient/lastPrescription",
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -339,9 +339,9 @@ const UserDashboard = () => {
 
       try {
         const [userRes, statusRes, lastAppointmentRes] = await Promise.allSettled([
-          axios.get("http://localhost:8081/api/patient/", { headers }),
-          axios.get("http://localhost:8081/api/patient/getStatus", { headers }),
-          axios.get("http://localhost:8081/api/patient/lastPrescriptionDate", { headers }),
+          axios.get("https://uhs-backend.onrender.com/api/patient/", { headers }),
+          axios.get("https://uhs-backend.onrender.com/api/patient/getStatus", { headers }),
+          axios.get("https://uhs-backend.onrender.com/api/patient/lastPrescriptionDate", { headers }),
         ]);
 
         if (userRes.status === "fulfilled" && userRes.value?.data) {
@@ -431,7 +431,7 @@ const UserDashboard = () => {
                     <div className="relative">
                       <img 
                         src={userDetails.imageUrl 
-                          ? `http://localhost:8081/${userDetails.imageUrl}`
+                          ? `https://uhs-backend.onrender.com/${userDetails.imageUrl}`
                           : "/default-user.jpg"
                         }
                         alt="Profile"

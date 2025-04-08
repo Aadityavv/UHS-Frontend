@@ -38,7 +38,7 @@ export default defineConfig({
     host: true,
     proxy: {  // Moved inside the server object
       '/api': {
-        target: 'http://localhost:8081',
+        target: 'https://uhs-backend.onrender.com',
         changeOrigin: true,
         rewrite: (path: string) => path.replace(/^\/api/, ''),
         secure: false // Only for development with self-signed certs

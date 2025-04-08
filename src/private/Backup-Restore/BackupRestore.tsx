@@ -17,7 +17,7 @@ const BackupRestore = () => {
       const token = localStorage.getItem("token");
       
       const response = await axios.post(
-        "http://localhost:8081/api/admin/backup",
+        "https://uhs-backend.onrender.com/api/admin/backup",
         {},
         {
           headers: {
@@ -63,7 +63,7 @@ const BackupRestore = () => {
       formData.append('file', file);
       
       await axios.post(
-        "http://localhost:8081/api/admin/restore",
+        "https://uhs-backend.onrender.com/api/admin/restore",
         formData,
         {
           headers: {
