@@ -29,7 +29,7 @@ const DoctorDashboard = () => {
         return;
       }
       const response = await fetch(
-        "https://uhs-backend.onrender.com/api/doctor/total-patient-count",
+        "http://localhost:8081/api/doctor/total-patient-count",
         {
           headers: {
             Authorization: "Bearer " + token,
@@ -86,7 +86,7 @@ const DoctorDashboard = () => {
       }
 
       const response = await axios.get(
-        "https://uhs-backend.onrender.com/api/doctor/setStatus?isDoctorCheckIn=true",
+        "http://localhost:8081/api/doctor/setStatus?isDoctorCheckIn=true",
         {
           headers: {
             Authorization: "Bearer " + token,
@@ -131,7 +131,7 @@ const DoctorDashboard = () => {
         return;
       }
       const response = await fetch(
-        "https://uhs-backend.onrender.com/api/doctor/setStatus?isDoctorCheckIn=false",
+        "http://localhost:8081/api/doctor/setStatus?isDoctorCheckIn=false",
         {
           headers: {
             Authorization: "Bearer " + token,
@@ -174,7 +174,7 @@ const DoctorDashboard = () => {
     }
 
     const response = await axios.get(
-      "https://uhs-backend.onrender.com/api/doctor/getCurrentToken",
+      "http://localhost:8081/api/doctor/getCurrentToken",
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -203,7 +203,7 @@ const DoctorDashboard = () => {
     }
 
     const response = await axios.get(
-      "https://uhs-backend.onrender.com/api/doctor/getStatus",
+      "http://localhost:8081/api/doctor/getStatus",
       {
         headers: {
           Authorization: `Bearer ${token}`,

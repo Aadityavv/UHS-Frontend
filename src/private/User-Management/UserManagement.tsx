@@ -44,7 +44,7 @@ const filteredUsers = users.filter(user =>
       setLoading(true);
       setError(null);
       const token = localStorage.getItem("token");
-      const response = await axios.get<User[]>("https://uhs-backend.onrender.com/api/admin/users", {
+      const response = await axios.get<User[]>("http://localhost:8081/api/admin/users", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -67,7 +67,7 @@ const filteredUsers = users.filter(user =>
   const deleteUser = async (email: string) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`https://uhs-backend.onrender.com/api/admin/${email}`, {
+      await axios.delete(`http://localhost:8081/api/admin/${email}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast({ title: "Success", description: "User deleted successfully" });

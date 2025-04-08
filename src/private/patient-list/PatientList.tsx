@@ -73,7 +73,7 @@ const handleManualAppointment = async () => {
     };
 
     await axios.post(
-      "https://uhs-backend.onrender.com/api/AD/manual/submitAppointment",
+      "http://localhost:8081/api/AD/manual/submitAppointment",
       {
         email: manualData.email,
         reason: manualData.reason,
@@ -111,9 +111,9 @@ const handleManualAppointment = async () => {
       };
 
       const [pendingRes, assignedRes, appointedRes] = await Promise.all([
-        axios.get("https://uhs-backend.onrender.com/api/AD/getPatientQueue", { headers }),
-        axios.get("https://uhs-backend.onrender.com/api/AD/getAssignedPatient", { headers }),
-        axios.get("https://uhs-backend.onrender.com/api/AD/getCompletedQueue", { headers }),
+        axios.get("http://localhost:8081/api/AD/getPatientQueue", { headers }),
+        axios.get("http://localhost:8081/api/AD/getAssignedPatient", { headers }),
+        axios.get("http://localhost:8081/api/AD/getCompletedQueue", { headers }),
       ]);
 
       const pendingPatients = await Promise.all(
@@ -206,7 +206,7 @@ setFilteredPatients(uniquePatients);
       const token = localStorage.getItem("token");
       const modifiedEmail = encodeEmail(email);
       const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/AD/getAptForm/${modifiedEmail}`,
+        `http://localhost:8081/api/AD/getAptForm/${modifiedEmail}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -245,7 +245,7 @@ setFilteredPatients(uniquePatients);
       };
 
       const response = await axios.get(
-        "https://uhs-backend.onrender.com/api/AD/getAvailableDoctors",
+        "http://localhost:8081/api/AD/getAvailableDoctors",
         { headers }
       );
 
@@ -285,7 +285,7 @@ setFilteredPatients(uniquePatients);
         }
 
         await axios.post(
-          "https://uhs-backend.onrender.com/api/AD/submitAppointment",
+          "http://localhost:8081/api/AD/submitAppointment",
           {
             weight,
             temperature,
@@ -300,21 +300,33 @@ setFilteredPatients(uniquePatients);
         const modifiedEmail = encodeEmail(patient.email);
         try {
           await axios.get(
-            `https://uhs-backend.onrender.com/api/AD/rejectAppointment?email=${modifiedEmail}`,
+            `http://localhost:8081/api/AD/rejectAppointment?email=${modifiedEmail}`,
             { headers }
           );
           toast({ title: "Appointment Rejected" });
         } catch (err: any) {
-          if (err.response?.data?.message?.includes("different campus")) {
+          const errorMessage = err.response?.data?.message;
+        
+          if (errorMessage && errorMessage.includes("different campus")) {
             toast({
               title: "Access Denied",
               description: "This appointment belongs to a different campus. You cannot reject it.",
               variant: "destructive",
             });
+          } else if (errorMessage) {
+            toast({
+              title: "Error",
+              description: errorMessage,
+              variant: "destructive",
+            });
           } else {
-            throw err;
+            toast({
+              title: "Error",
+              description: "Something went wrong during rejection.",
+              variant: "destructive",
+            });
           }
-        }
+        }        
         
       }
 
@@ -337,7 +349,7 @@ setFilteredPatients(uniquePatients);
       };
 
       await axios.get(
-        `https://uhs-backend.onrender.com/api/AD/completeAppointment/${modifiedEmail}`,
+        `http://localhost:8081/api/AD/completeAppointment/${modifiedEmail}`,
         { headers }
       );
 

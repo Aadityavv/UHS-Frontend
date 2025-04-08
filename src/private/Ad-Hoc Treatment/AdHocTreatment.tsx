@@ -79,7 +79,7 @@ const AdHocTreatment = () => {
     const fetchMedicineStock = async () => {
       try {
         const response = await axios.get(
-          "https://uhs-backend.onrender.com/api/AD/stock/available",
+          "http://localhost:8081/api/AD/stock/available",
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -141,7 +141,7 @@ const AdHocTreatment = () => {
       }
 
       const response = await axios.post(
-        "https://uhs-backend.onrender.com/api/AD/submit/adHoc",
+        "http://localhost:8081/api/AD/submit/adHoc",
         submitData,
         {
           headers: {
