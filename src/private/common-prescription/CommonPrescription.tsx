@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
-import MedicalReportPDF from "@/components/MedicalReportPDF";
-import { PDFDownloadLink } from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -30,6 +28,8 @@ interface PrescriptionData {
   meds: Medication[];
 }
 
+
+
 const CommonPrescription = () => {
   const { toast } = useToast();
   const [ndata, setNdata] = useState<PrescriptionData>({
@@ -50,6 +50,53 @@ const CommonPrescription = () => {
   const [testNeeded, setTestNeeded] = useState("");
   const [doctorName, setDoctorName] = useState("");
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
+
+const handleBackendPDFDownload = async () => {
+  setDownloading(true);
+  const token = localStorage.getItem("token");
+  const urlParam = new URLSearchParams(window.location.search).get("id");
+
+  if (!urlParam || !token) {
+    toast({
+      variant: "destructive",
+      title: "Missing Data",
+      description: "Appointment ID or token is missing.",
+    });
+    return;
+  }
+
+  try {
+    const response = await axios.get(
+      `https://uhs-backend.onrender.com/api/prescription/pdf/${urlParam}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        responseType: "blob", // important!
+      }
+    );
+
+    // Trigger download
+    const blob = new Blob([response.data], { type: "application/pdf" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `prescription_${ndata.id}_${ndata.date}.pdf`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  } catch (error: any) {
+    toast({
+      variant: "destructive",
+      title: "Download Failed",
+      description:
+        error?.response?.data?.message || "Could not download prescription.",
+    });
+  
+    console.error("Download error:", error);
+  }
+  setDownloading(false);
+};
 
   useEffect(() => {
     const fetchData = async () => {
@@ -412,25 +459,16 @@ const CommonPrescription = () => {
                   Licensed Medical Practitioner
                 </div>
               </div>
-              <PDFDownloadLink
-                document={
-                  <MedicalReportPDF
-                    ndata={ndata}
-                    diagnosis={diagnosis}
-                    dietaryRemarks={dietaryRemarks}
-                    doctorName={doctorName}
-                    testNeeded={testNeeded}
-                  />
-                }
-                fileName="patient_report.pdf"
-              >
-                <Button
-                  className="w-full md:w-auto bg-gradient-to-r from-indigo-600 to-indigo-600 hover:from-indigo-700 hover:to-indigo-700 text-white shadow-lg"
-                  disabled={loading}
-                >
-                  {loading ? "Generating PDF..." : "Download Full Report"}
-                </Button>
-              </PDFDownloadLink>
+
+              <Button
+  onClick={handleBackendPDFDownload}
+  className="w-full md:w-auto bg-gradient-to-r from-indigo-600 to-indigo-600 hover:from-indigo-700 hover:to-indigo-700 text-white shadow-lg"
+  disabled={loading}
+>
+{downloading ? "Downloading..." : "Download Full Report"}
+</Button>
+
+
             </div>
           </motion.div>
         </motion.div>

@@ -300,6 +300,15 @@ const router = createBrowserRouter([
           </CommonPrescriptionLayout>
         ),
       },
+
+      {
+        path: "/previous-prescription",
+        element: (
+          <CommonPrescriptionLayout prevRef="/patient-logs">
+            <CommonPrescription />
+          </CommonPrescriptionLayout>
+        ),
+      },
       
     ],
   },
