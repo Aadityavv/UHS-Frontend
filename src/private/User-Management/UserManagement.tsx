@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
-import { Edit, Trash2, UserPlus, Users, AlertCircle, Search } from "lucide-react";
+import { Edit, Trash2, Users, AlertCircle, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -100,9 +100,9 @@ const filteredUsers = users.filter(user =>
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button onClick={() => navigate("/admin/users/new")} className="w-full sm:w-auto">
+          {/* <Button onClick={() => navigate("/admin/users/new")} className="w-full sm:w-auto">
             <UserPlus className="h-4 w-4 mr-2" /> Add New User
-          </Button>
+          </Button> */}
         </div>
       </div>
 
