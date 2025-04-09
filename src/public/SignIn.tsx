@@ -242,35 +242,25 @@ const SignIn = () => {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const resp = await axios.get("https://uhs-backend.onrender.com/locations");
-  
-        // Access the array correctly
-        const locations = resp.data._embedded?.locations;
-  
+        const resp = await axios.get("https://uhs-backend.onrender.com/api/location");
+      
+        const locations: Array<any> = resp.data;
+      
         if (resp.status === 200 && locations && locations.length > 0) {
-          console.log("Fetched locations:", locations);
-  
-          // Map the lat/long values to strings if needed
-          const formattedLocations = locations.map((loc: any)=> ({ 
-
-            id: loc._links.self.href.split('/').pop(), 
+          const formattedLocations = locations.map((loc: any) => ({
+            id: loc.locId.toString(),
             locationName: loc.locationName,
             latitude: loc.latitude.toString(),
             longitude: loc.longitude.toString()
           }));
-  console.log("Location is "+formattedLocations.id)
-          setLocations(formattedLocations); // ✅ Fixed
+      
+          setLocations(formattedLocations);
         } else {
           throw new Error("No locations found");
         }
       } catch (err) {
-        console.error("Error fetching locations, using fallback:", err);
-  
-        // setLocations([
-        //   { locationName: "UPES Bidholi Campus", latitude: "12.9716", longitude: "77.5946" },
-        //   { locationName: "UPES Kandoli Campus", latitude: "28.7041", longitude: "77.1025" }
-        // ]);
-  
+        console.error("Full Axios Error:", err);
+      
         toast({
           variant: "destructive",
           title: "Network Error",
@@ -278,9 +268,10 @@ const SignIn = () => {
           action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
-    };
+      
+  };
   
-    fetchLocations();
+  fetchLocations();
   }, []);
   
   
