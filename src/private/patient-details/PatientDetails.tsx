@@ -21,7 +21,7 @@ const PatientDetails = () => {
   const [rows, setRows] = useState([{ id: 1 }]);
   const [ndata, setNdata] = useState<any>({});
   const [stock, setStock] = useState<Array<{ id: string; medicineName: string; quantity: number }>>([]);
-  const [selectedMedicine, setSelectedMedicine] = useState<Record<number, string>>({});
+  const [selectedMedicine, setSelectedMedicine] = useState<Record<number, string>>({}); 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const [, setIsMobile] = useState(window.innerWidth <= 768);
@@ -180,61 +180,70 @@ const PatientDetails = () => {
       }
   
       // Validate Medications
-      const medAry = rows
-        .map((_, index) => {
-          const medicine = medLst?.[index]; // medicineName from selectedMedicine
-          const durationValue = (document.querySelector(`.duration-${index}`) as HTMLInputElement)?.value || "0";
-          const dosageMorning = (document.querySelector(`.dosage-morning-${index}`) as HTMLInputElement)?.value || "0";
-          const dosageAfternoon = (document.querySelector(`.dosage-afternoon-${index}`) as HTMLInputElement)?.value || "0";
-          const dosageEvening = (document.querySelector(`.dosage-evening-${index}`) as HTMLInputElement)?.value || "0";
-          const suggestion = (document.querySelector(`.suggestion-${index}`) as HTMLInputElement)?.value || "";
+      const medAry = rows.map(row => {
+        const medicineId = selectedMedicine[row.id];
+        const medicineName = medLst[row.id];
+        const duration = parseInt(
+          (document.querySelector(`.duration-${row.id}`) as HTMLInputElement)?.value || "0"
+        );
+        const dosageMorning = parseFloat(
+          (document.querySelector(`.dosage-morning-${row.id}`) as HTMLInputElement)?.value || "0"
+        );
+        const dosageAfternoon = parseFloat(
+          (document.querySelector(`.dosage-afternoon-${row.id}`) as HTMLInputElement)?.value || "0"
+        );
+        const dosageEvening = parseFloat(
+          (document.querySelector(`.dosage-evening-${row.id}`) as HTMLInputElement)?.value || "0"
+        );
+        const suggestion = (
+          (document.querySelector(`.suggestion-${row.id}`) as HTMLTextAreaElement)?.value || ""
+        );
   
-          // Check if any field is filled in (duration or dosage)
-          const isAnyFieldFilled =
-            parseFloat(durationValue) > 0 ||
-            parseFloat(dosageMorning) > 0 ||
-            parseFloat(dosageAfternoon) > 0 ||
-            parseFloat(dosageEvening) > 0 ||
-            suggestion.trim() !== "";
+        // Check if any field is filled in (duration or dosage)
+        const isAnyFieldFilled =
+          duration > 0 ||
+          dosageMorning > 0 ||
+          dosageAfternoon > 0 ||
+          dosageEvening > 0 ||
+          suggestion.trim() !== "";
   
-          // If fields are filled but medicine is NOT selected
-          if (isAnyFieldFilled && !medicine) {
-            toast({
-              variant: "destructive",
-              title: "Validation Error",
-              description: `Choose medicine for row ${index + 1}`,
-              action: <ToastAction altText="Understand">OK</ToastAction>,
-            });
-            throw new Error("Validation failed");
-          }
+        // If fields are filled but medicine is NOT selected
+        if (isAnyFieldFilled && !medicineId) {
+          toast({
+            variant: "destructive",
+            title: "Validation Error",
+            description: `Choose medicine for row ${row.id}`,
+            action: <ToastAction altText="Understand">OK</ToastAction>,
+          });
+          throw new Error("Validation failed");
+        }
   
-          // If everything is empty and no medicine, skip adding to meds array
-          if (!isAnyFieldFilled && !medicine) {
-            return null; // This row gets skipped
-          }
+        // If everything is empty and no medicine, skip adding to meds array
+        if (!isAnyFieldFilled && !medicineId) {
+          return null;
+        }
   
-          // If medicine is selected and duration isn't valid
-          const duration = parseInt(durationValue);
-          if (medicine && duration < 1) {
-            toast({
-              variant: "destructive",
-              title: "Validation Error",
-              description: `Duration must be at least 1 day for ${medicine}`,
-              action: <ToastAction altText="Understand">OK</ToastAction>,
-            });
-            throw new Error("Validation failed");
-          }
+        // If medicine is selected and duration isn't valid
+        if (medicineId && duration < 1) {
+          toast({
+            variant: "destructive",
+            title: "Validation Error",
+            description: `Duration must be at least 1 day for ${medicineName}`,
+            action: <ToastAction altText="Understand">OK</ToastAction>,
+          });
+          throw new Error("Validation failed");
+        }
   
-          return {
-            medicine,
-            dosageMorning: parseFloat(dosageMorning),
-            dosageAfternoon: parseFloat(dosageAfternoon),
-            dosageEvening: parseFloat(dosageEvening),
-            duration,
-            suggestion,
-          };
-        })
-        .filter(Boolean); // Remove any null rows that are completely empty
+        return {
+          medicine: medicineId,
+          medicineName,
+          dosageMorning,
+          dosageAfternoon,
+          dosageEvening,
+          duration,
+          suggestion,
+        };
+      }).filter(Boolean);
   
       // Submit to backend
       const resp = await axios.post(
@@ -243,7 +252,7 @@ const PatientDetails = () => {
           diagnosis,
           dietaryRemarks: dietary,
           testNeeded: tests,
-          meds: medAry, // Could be an empty array and it's fine
+          meds: medAry,
         },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -338,16 +347,25 @@ const PatientDetails = () => {
   
 
   const addRow = () => setRows([...rows, { id: Date.now() }]);
-  const removeRow = (id: number) => setRows(rows.filter((row) => row.id !== id));
-
-  const handleMedicineSelect = (index: number, medicine: string) => {
-    const indx = medicine.indexOf(":");
-    setSelectedMedicine({
-      ...selectedMedicine,
-      [index]: medicine.substring(0, indx),
+  const removeRow = (id: number) => {
+    setRows(rows.filter(row => row.id !== id));
+    setSelectedMedicine(prev => {
+      const newState = { ...prev };
+      delete newState[id];
+      return newState;
     });
-    setMedLst({ ...medLst, [index]: medicine.substring(indx + 1) });
+    setMedLst(prev => {
+      const newState = { ...prev };
+      delete newState[id];
+      return newState;
+    });
+  };
 
+  const handleMedicineSelect = (rowId: number, value: string) => {
+    const [medicineId, medicineName] = value.split(':');
+    setSelectedMedicine(prev => ({ ...prev, [rowId]: medicineId }));
+    setMedLst(prev => ({ ...prev, [rowId]: medicineName }));
+  
     if (searchInputRef.current) {
       searchInputRef.current.focus();
     }
@@ -532,101 +550,113 @@ const PatientDetails = () => {
             </div>
 
             <div className="space-y-4">
-              {rows.map((row, index) => (
-                <motion.div
-                  key={row.id}
-                  variants={tableRowVariants}
-                  className="bg-slate-50 p-4 rounded-lg border border-slate-200"
+            {rows.map((row) => (
+  <motion.div
+    key={row.id}
+    variants={tableRowVariants}
+    className="bg-slate-50 p-4 rounded-lg border border-slate-200"
+  >
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-slate-600">Medicine</label>
+        <Select onValueChange={(value) => handleMedicineSelect(row.id, value)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select Medicine" />
+          </SelectTrigger>
+          <SelectContent>
+            <input
+              ref={searchInputRef}
+              placeholder="Search medicine..."
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full p-2 mb-2 border rounded-md"
+            />
+            {stock
+              .filter(medicine => 
+                medicine.medicineName.toLowerCase().includes(searchQuery.toLowerCase())
+              )
+              .filter(medicine => {
+                // Show medicine if:
+                // 1. It's selected in THIS row, OR
+                // 2. It's not selected in ANY other row
+                const isSelectedElsewhere = Object.entries(selectedMedicine).some(
+                  ([otherRowId, medId]) => 
+                    parseInt(otherRowId) !== row.id && medId === medicine.id
+                );
+                const isCurrentSelection = selectedMedicine[row.id] === medicine.id;
+                return !isSelectedElsewhere || isCurrentSelection;
+              })
+              .map(medicine => (
+                <SelectItem
+                  key={medicine.id}
+                  value={`${medicine.id}:${medicine.medicineName}`}
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-600">Medicine</label>
-                      <Select onValueChange={(value) => handleMedicineSelect(index, value)}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select Medicine" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-60 overflow-auto">
-                          <input
-                            ref={searchInputRef}
-                            placeholder="Search medicine..."
-                            className="w-full p-2 mb-2 border rounded-md"
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                          />
-                          {stock
-                            .filter((medicine) =>
-                              medicine.medicineName.toLowerCase().includes(searchQuery.toLowerCase())
-                            )
-                            .map((medicine) => (
-                              <SelectItem
-                                key={medicine.id}
-                                value={`${medicine.medicineName}:${medicine.id}`}
-                              >
-                                {medicine.medicineName} ({medicine.quantity} available)
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  {medicine.medicineName} ({medicine.quantity} available)
+                </SelectItem>
+              ))}
+          </SelectContent>
+        </Select>
+      </div>
 
-                    <div className="grid grid-cols-3 gap-2">
-                      <div>
-                        <label className="text-sm font-medium text-slate-600">Morning</label>
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.5"
-                          placeholder="0"
-                          className={`text-center dosage-morning-${index}`}
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-slate-600">Afternoon</label>
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.5"
-                          placeholder="0"
-                          className={`text-center dosage-afternoon-${index}`}
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-slate-600">Evening</label>
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.5"
-                          placeholder="0"
-                          className={`text-center dosage-evening-${index}`}
-                        />
-                      </div>
-                    </div>
+      {/* Corrected Dosage Inputs */}
+      <div className="grid grid-cols-3 gap-2">
+        <div>
+          <label className="text-sm font-medium text-slate-600">Morning</label>
+          <Input
+            type="number"
+            min="0"
+            step="0.5"
+            placeholder="0"
+            className={`dosage-morning-${row.id}`}
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-slate-600">Afternoon</label>
+          <Input
+            type="number"
+            min="0"
+            step="0.5"
+            placeholder="0"
+            className={`dosage-afternoon-${row.id}`}
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-slate-600">Evening</label>
+          <Input
+            type="number"
+            min="0"
+            step="0.5"
+            placeholder="0"
+            className={`dosage-evening-${row.id}`}
+          />
+        </div>
+      </div>
 
-                    <div>
-                      <label className="text-sm font-medium text-slate-600">Duration (days)</label>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="1"
-                        placeholder="0"
-                        className={`duration-${index}`}
-                      />
-                    </div>
+      <div>
+        <label className="text-sm font-medium text-slate-600">Duration (days)</label>
+        <Input
+          type="number"
+          min="0"
+          step="1"
+          placeholder="0"
+          className={`duration-${row.id}`}
+        />
+      </div>
 
-                    <div className="md:col-span-2">
-                      <label className="text-sm font-medium text-slate-600">Notes</label>
-                      <Textarea className={`resize-none suggestion-${index}`} />
-                    </div>
-                  </div>
-                  <div className="flex justify-end mt-4">
-                    <Button
-                      onClick={() => removeRow(row.id)}
-                      variant="destructive"
-                      size="sm"
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                </motion.div>
+      <div className="md:col-span-2">
+        <label className="text-sm font-medium text-slate-600">Notes</label>
+        <Textarea className={`suggestion-${row.id}`} />
+      </div>
+    </div>
+    <div className="flex justify-end mt-4">
+      <Button
+        onClick={() => removeRow(row.id)}
+        variant="destructive"
+        size="sm"
+      >
+        Remove
+      </Button>
+    </div>
+  </motion.div>
               ))}
             </div>
           </motion.div>

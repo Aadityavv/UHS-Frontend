@@ -17,7 +17,9 @@ import NewAssistantDoctor from "@/private/new-assistant-doctor/NewAssistantDocto
 import AnalyticsDashboardLayout from "@/private/Analytics-Dashboard/AnalyticsDashboardLayout";
 import AnalyticsDashboard from "@/private/Analytics-Dashboard/AnalyticsDashboard";
 import BackupRestore from "@/private/Backup-Restore/BackupRestore";
+import BackupRestoreLayout from "@/private/Backup-Restore/BackupRestoreLayout";
 import UserManagement from "@/private/User-Management/UserManagement";
+import UserManagementLayout from "@/private/User-Management/UserManagementLayout";
 import SystemLogs from "@/private/System-Logs/SystemLogs";
 
 
@@ -102,11 +104,17 @@ const router = createBrowserRouter([
         ),
       },{
         path: "/admin/backup",
-        element: <BackupRestore />,
+        element:(
+        <BackupRestoreLayout>
+        <BackupRestore />
+        </BackupRestoreLayout>)
       },
       {
         path: "/admin/users",
-        element: <UserManagement />,
+        element: (
+          <UserManagementLayout>
+        <UserManagement />
+        </UserManagementLayout>),
       },
       {
         path: "/admin/logs",
@@ -292,15 +300,6 @@ const router = createBrowserRouter([
           </CommonPrescriptionLayout>
         ),
       },
-      {
-        path: "/previous-prescription",
-        element: (
-          <CommonPrescriptionLayout prevRef="/patient-logs">
-            <CommonPrescription />
-          </CommonPrescriptionLayout>
-        ),
-      },
-
       {
         path: "/previous-prescription",
         element: (
