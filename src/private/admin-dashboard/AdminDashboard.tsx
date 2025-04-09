@@ -5,15 +5,12 @@ import axios from "axios";
 import {
   UserPlus,
   Stethoscope,
-  Activity,
   Clock,
   ClipboardList,
   HeartPulse,
   Users,
-  FileText,
   UserCheck,
   PieChart,
-  AlertCircle,
   Database,
   Loader2
 } from "lucide-react";
@@ -50,8 +47,8 @@ const AdminDashboard = () => {
   const [time, setTime] = useState<Date>(new Date());
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<SystemStats | null>(null);
-  const [recentActivity, setRecentActivity] = useState<ActivityLog[]>([]);
-  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [, setRecentActivity] = useState<ActivityLog[]>([]);
+  const [, setAlerts] = useState<Alert[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
   // Fetch all dashboard data
@@ -113,27 +110,6 @@ const AdminDashboard = () => {
     });
   };
 
-  // Format relative time
-  const formatRelativeTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
-    if (diffInMinutes < 1) return "Just now";
-    if (diffInMinutes < 60) return `${diffInMinutes} min ago`;
-    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} hours ago`;
-    return `${Math.floor(diffInMinutes / 1440)} days ago`;
-  };
-
-  // Get alert color based on severity
-  const getAlertColor = (severity: Alert['severity']) => {
-    switch(severity) {
-      case "low": return "bg-blue-100 text-blue-600 border-blue-200";
-      case "medium": return "bg-yellow-100 text-yellow-600 border-yellow-200";
-      case "high": return "bg-red-100 text-red-600 border-red-200";
-      default: return "bg-gray-100 text-gray-600 border-gray-200";
-    }
-  };
 
   // Handle refresh
   const handleRefresh = () => {
@@ -250,49 +226,6 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Recent Activity */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {loading ? (
-                  Array(3).fill(0).map((_, i) => (
-                    <div key={i} className="flex items-start space-x-3">
-                      <Skeleton className="h-10 w-10 rounded-full" />
-                      <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-[200px]" />
-                        <Skeleton className="h-3 w-[150px]" />
-                      </div>
-                    </div>
-                  ))
-                ) : recentActivity.length > 0 ? (
-                  recentActivity.map(activity => (
-                    <div key={activity.id} className="flex items-start space-x-3">
-                      <div className="p-2 rounded-full bg-gray-100 text-gray-600 mt-1">
-                        <Activity className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{activity.action}</p>
-                        <p className="text-sm text-gray-500">
-                          {activity.performedBy} • {formatRelativeTime(activity.timestamp)}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-gray-500 text-center py-4">No recent activity</p>
-                )}
-                <Button 
-                  variant="ghost" 
-                  className="w-full" 
-                  onClick={() => navigate("/activity-log")}
-                  disabled={loading}
-                >
-                  View All Activity
-                </Button>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Main Content */}
@@ -413,13 +346,12 @@ const AdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 {loading ? (
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <Skeleton className="h-[100px] w-full rounded-lg" />
+                  <div className="grid md:grid-cols-2 gap-4">
                     <Skeleton className="h-[100px] w-full rounded-lg" />
                     <Skeleton className="h-[100px] w-full rounded-lg" />
                   </div>
                 ) : (
-                  <div className="grid md:grid-cols-3 gap-4">
+                  <div className="grid md:grid-cols-2 gap-4">
 
 <motion.div 
   whileHover={{ scale: 1.02 }}
@@ -453,73 +385,11 @@ const AdminDashboard = () => {
   </div>
 </motion.div>
 
-<motion.div 
-  whileHover={{ scale: 1.02 }}
-  className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 cursor-pointer"
-  onClick={() => navigate("/admin/logs")}
->
-  <div className="flex items-center space-x-3">
-    <div className="p-2 rounded-lg bg-green-100 text-green-600">
-      <FileText className="h-5 w-5" />
-    </div>
-    <div>
-      <h3 className="font-medium">System Logs</h3>
-      <p className="text-sm text-gray-500">View system activity</p>
-    </div>
-  </div>
-</motion.div>
                   </div>
                 )}
               </CardContent>
             </Card>
 
-            {/* Alerts & Notifications */}
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>Recent Alerts</CardTitle>
-                  <Button 
-                    variant="ghost" 
-                    onClick={() => navigate("/alerts")}
-                    disabled={loading}
-                  >
-                    View All
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <div className="space-y-3">
-                    <Skeleton className="h-[60px] w-full rounded-lg" />
-                    <Skeleton className="h-[60px] w-full rounded-lg" />
-                  </div>
-                ) : alerts.length > 0 ? (
-                  <div className="space-y-3">
-                    {alerts.map(alert => (
-                      <div 
-                        key={alert.id}
-                        className={`flex items-start space-x-3 p-3 rounded-lg border ${getAlertColor(alert.severity)}`}
-                      >
-                        <div className="p-2 rounded-full mt-1">
-                          <AlertCircle className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <h3 className="font-medium">{alert.title}</h3>
-                          <p className="text-sm">{alert.message}</p>
-                          <p className="text-xs mt-1">
-                            {formatRelativeTime(alert.timestamp)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <p>No recent alerts</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </div>
         </motion.div>
       </div>
