@@ -11,8 +11,6 @@ import {
   HeartPulse,
   Users,
   FileText,
-  Settings,
-  Bell,
   UserCheck,
   PieChart,
   AlertCircle,
@@ -172,15 +170,6 @@ const AdminDashboard = () => {
                   Refreshing...
                 </>
               ) : "Refresh Data"}
-            </Button>
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              {alerts.length > 0 && (
-                <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
-              )}
-            </Button>
-            <Button variant="outline" onClick={() => navigate("/admin-settings")}>
-              <Settings className="h-4 w-4 mr-2" /> Settings
             </Button>
           </div>
         </div>
