@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
-import { Database, Download, Upload, Cloud, HardDrive, ShieldAlert } from "lucide-react";
+import { Database, Download, Cloud, HardDrive, ShieldAlert } from "lucide-react";
 import { useState } from "react";
 
 const BackupRestore = () => {
@@ -52,44 +52,6 @@ const BackupRestore = () => {
     }
   };
 
-  const handleRestore = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    
-    try {
-      setLoading(prev => ({...prev, restore: true}));
-      const token = localStorage.getItem("token");
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      await axios.post(
-        "https://uhs-backend.onrender.com/api/admin/restore",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
-      
-      toast({
-        title: "Restore Successful",
-        description: "System has been restored from backup.",
-      });
-    } catch (error) {
-      toast({
-        title: "Restore Failed",
-        description: "An error occurred while restoring the system.",
-        variant: "destructive",
-      });
-      console.error("Restore error:", error);
-    } finally {
-      setLoading(prev => ({...prev, restore: false}));
-      event.target.value = ''; // Reset file input
-    }
-  };
-
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="flex items-center space-x-3 mb-8">
@@ -100,7 +62,7 @@ const BackupRestore = () => {
         </div>
       </div>
       
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid md:grid-cols-1 gap-8">
         {/* Backup Card */}
         <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
           <div className="flex items-start space-x-4 mb-5">
@@ -138,62 +100,6 @@ const BackupRestore = () => {
             <div className="flex items-center text-sm text-gray-500">
               <HardDrive className="h-4 w-4 mr-2" />
               <span>Last backup: {new Date().toLocaleDateString()}</span>
-            </div>
-          </div>
-        </div>
-        
-        {/* Restore Card */}
-        <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
-          <div className="flex items-start space-x-4 mb-5">
-            <div className="p-3 bg-green-50 rounded-lg">
-              <Upload className="h-6 w-6 text-green-600" />
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-gray-800">Restore System</h2>
-              <p className="text-gray-500 text-sm">Upload a previous backup file</p>
-            </div>
-          </div>
-          <p className="text-gray-600 mb-6">
-            Upload a backup file to restore the system to a previous state. 
-            <span className="font-medium text-red-500 flex items-center mt-2">
-              <ShieldAlert className="h-4 w-4 mr-1" />
-              Warning: This will overwrite all current data.
-            </span>
-          </p>
-          <div className="flex flex-col space-y-3">
-            <input
-              type="file"
-              id="restoreFile"
-              accept=".zip"
-              onChange={handleRestore}
-              className="hidden"
-              disabled={loading.restore}
-            />
-            <label htmlFor="restoreFile" className="w-full">
-              <Button 
-                asChild 
-                variant="outline" 
-                disabled={loading.restore}
-                className="w-full"
-                size="lg"
-              >
-                <div className="flex items-center justify-center">
-                  {loading.restore ? (
-                    <>
-                      <Cloud className="h-4 w-4 mr-2 animate-pulse" />
-                      Restoring System...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="h-4 w-4 mr-2" />
-                      Select Backup File
-                    </>
-                  )}
-                </div>
-              </Button>
-            </label>
-            <div className="text-xs text-gray-400">
-              Only .zip files created by this system are accepted
             </div>
           </div>
         </div>
