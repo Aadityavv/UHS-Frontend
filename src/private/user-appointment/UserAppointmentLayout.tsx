@@ -1,8 +1,9 @@
 import Navbar from "@/components/Navbar";
 import Shared from "@/Shared";
 import React from "react";
-
+import useAutoLogout from "@/hooks/useAutoLogout"; 
 const UserAppointmentLayout = ({ children }: { children: React.ReactNode }) => {
+  useAutoLogout();
   const navsetting = {
     title: "Patient Appointment",
     titleLogo: Shared.UserPlus,

@@ -1,7 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Shared from "@/Shared";
 import React from "react";
-
+import useAutoLogout from "@/hooks/useAutoLogout"; 
 const UserPrescriptionLayout = ({
   children,
   prevRef
@@ -9,6 +9,7 @@ const UserPrescriptionLayout = ({
   children: React.ReactNode;
   prevRef: string | null;
 }) => {
+  useAutoLogout();
   const navsetting = {
     title: "Prescription History",
     titleLogo: Shared.Prescription,

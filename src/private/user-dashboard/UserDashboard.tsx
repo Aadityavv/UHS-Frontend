@@ -19,12 +19,9 @@ import {
   Thermometer,
   Weight,
   Shield,
-  Clock,
-  Zap,
   Droplet,
   Moon,
   Armchair,
-  RotateCw,
 } from "lucide-react";
 import Skeleton from '@mui/material/Skeleton';
 import { ToastAction } from "@radix-ui/react-toast";
@@ -48,13 +45,13 @@ type Prescription = {
   medications: Medication[];
 };
 
-type Exercise = {
-  id: string;
-  name: string;
-  duration: number;
-  description: string;
-  instructions: string[];
-};
+// type Exercise = {
+//   id: string;
+//   name: string;
+//   duration: number;
+//   description: string;
+//   instructions: string[];
+// };
 
 const UserDashboard = () => {
   const { toast } = useToast();
@@ -88,57 +85,57 @@ const UserDashboard = () => {
   const [, setCurrentTime] = useState<string>(dayjs().format('h:mm A'));
   const [lastPrescription, setLastPrescription] = useState<Prescription | null>(null);
   const [loadingPrescription, setLoadingPrescription] = useState(false);
-  const [exercise, setExercise] = useState({
-    active: null as Exercise | null,
-    progress: 0,
-    timeLeft: 0
-  });
+  // const [exercise, setExercise] = useState({
+  //   active: null as Exercise | null,
+  //   progress: 0,
+  //   timeLeft: 0
+  // });
   const exerciseTimer = useRef<NodeJS.Timeout | null>(null);
-  const [healthMetrics, setHealthMetrics] = useState({
-    heartRate: null as number | null,
-    respiratoryRate: null as number | null,
-    stressLevel: null as number | null,
-    lastUpdated: null as string | null
-  });
-  const [showCameraGuide, setShowCameraGuide] = useState(false);
+  // const [healthMetrics, setHealthMetrics] = useState({
+  //   heartRate: null as number | null,
+  //   respiratoryRate: null as number | null,
+  //   stressLevel: null as number | null,
+  //   lastUpdated: null as string | null
+  // });
+  // const [showCameraGuide, setShowCameraGuide] = useState(false);
 
   // Exercises data
-  const exercises: Exercise[] = [
-    {
-      id: 'breathing',
-      name: 'Deep Breathing',
-      duration: 180, // 3 minutes
-      description: 'Calms the nervous system',
-      instructions: [
-        'Place one hand on your belly',
-        'Inhale deeply for 4 seconds',
-        'Hold for 4 seconds',
-        'Exhale slowly for 6 seconds'
-      ]
-    },
-    {
-      id: 'neck',
-      name: 'Neck Relief',
-      duration: 120, // 2 minutes
-      description: 'Relieves tension',
-      instructions: [
-        'Slowly tilt head side to side',
-        'Gently roll head in circles',
-        'Bring ears to shoulders'
-      ]
-    },
-    {
-      id: 'shoulders',
-      name: 'Shoulder Relaxation',
-      duration: 90, // 1.5 minutes
-      description: 'Reduces upper body stress',
-      instructions: [
-        'Roll shoulders forward 10 times',
-        'Roll shoulders backward 10 times',
-        'Shrug and release 5 times'
-      ]
-    }
-  ];
+  // const exercises: Exercise[] = [
+  //   {
+  //     id: 'breathing',
+  //     name: 'Deep Breathing',
+  //     duration: 180, // 3 minutes
+  //     description: 'Calms the nervous system',
+  //     instructions: [
+  //       'Place one hand on your belly',
+  //       'Inhale deeply for 4 seconds',
+  //       'Hold for 4 seconds',
+  //       'Exhale slowly for 6 seconds'
+  //     ]
+  //   },
+  //   {
+  //     id: 'neck',
+  //     name: 'Neck Relief',
+  //     duration: 120, // 2 minutes
+  //     description: 'Relieves tension',
+  //     instructions: [
+  //       'Slowly tilt head side to side',
+  //       'Gently roll head in circles',
+  //       'Bring ears to shoulders'
+  //     ]
+  //   },
+  //   {
+  //     id: 'shoulders',
+  //     name: 'Shoulder Relaxation',
+  //     duration: 90, // 1.5 minutes
+  //     description: 'Reduces upper body stress',
+  //     instructions: [
+  //       'Roll shoulders forward 10 times',
+  //       'Roll shoulders backward 10 times',
+  //       'Shrug and release 5 times'
+  //     ]
+  //   }
+  // ];
 
   // Helper functions
   const calculateBMI = (heightCm: number, weightKg: number): string => {
@@ -148,11 +145,11 @@ const UserDashboard = () => {
     return bmiValue.toFixed(1);
   };
 
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-  };
+  // const formatTime = (seconds: number): string => {
+  //   const mins = Math.floor(seconds / 60);
+  //   const secs = seconds % 60;
+  //   return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  // };
 
   // Data fetching functions
   const fetchMedicalDetails = useCallback(async () => {
@@ -269,56 +266,56 @@ const UserDashboard = () => {
   }, []);
 
   // Health measurement functions
-  const measureHealth = () => {
-    setShowCameraGuide(true);
+  // const measureHealth = () => {
+  //   setShowCameraGuide(true);
     
-    // Simulate measurement (in a real app, this would use camera API)
-    setTimeout(() => {
-      setHealthMetrics({
-        heartRate: Math.floor(Math.random() * 20) + 70, // 70-90 bpm
-        respiratoryRate: Math.floor(Math.random() * 5) + 12, // 12-17 rpm
-        stressLevel: Math.floor(Math.random() * 3), // 0-2 scale
-        lastUpdated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      });
-      setShowCameraGuide(false);
-    }, 3000);
-  };
+  //   // Simulate measurement (in a real app, this would use camera API)
+  //   setTimeout(() => {
+  //     setHealthMetrics({
+  //       heartRate: Math.floor(Math.random() * 20) + 70, // 70-90 bpm
+  //       respiratoryRate: Math.floor(Math.random() * 5) + 12, // 12-17 rpm
+  //       stressLevel: Math.floor(Math.random() * 3), // 0-2 scale
+  //       lastUpdated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  //     });
+  //     setShowCameraGuide(false);
+  //   }, 3000);
+  // };
 
   // Exercise control functions
-  const startExercise = (ex: Exercise) => {
-    setExercise({
-      active: ex,
-      progress: 0,
-      timeLeft: ex.duration
-    });
+  // const startExercise = (ex: Exercise) => {
+  //   setExercise({
+  //     active: ex,
+  //     progress: 0,
+  //     timeLeft: ex.duration
+  //   });
     
-    exerciseTimer.current = setInterval(() => {
-      setExercise(prev => {
-        if (!prev.active) return prev;
+  //   exerciseTimer.current = setInterval(() => {
+  //     setExercise(prev => {
+  //       if (!prev.active) return prev;
         
-        const newTimeLeft = prev.timeLeft - 1;
-        const newProgress = ((prev.active.duration - newTimeLeft) / prev.active.duration) * 100;
+  //       const newTimeLeft = prev.timeLeft - 1;
+  //       const newProgress = ((prev.active.duration - newTimeLeft) / prev.active.duration) * 100;
         
-        if (newTimeLeft <= 0) {
-          clearInterval(exerciseTimer.current as NodeJS.Timeout);
-          toast({
-            title: "Exercise Complete!",
-            description: `Great job with ${prev.active.name}`,
-          });
-          return { active: null, progress: 0, timeLeft: 0 };
-        }
+  //       if (newTimeLeft <= 0) {
+  //         clearInterval(exerciseTimer.current as NodeJS.Timeout);
+  //         toast({
+  //           title: "Exercise Complete!",
+  //           description: `Great job with ${prev.active.name}`,
+  //         });
+  //         return { active: null, progress: 0, timeLeft: 0 };
+  //       }
         
-        return { ...prev, progress: newProgress, timeLeft: newTimeLeft };
-      });
-    }, 1000);
-  };
+  //       return { ...prev, progress: newProgress, timeLeft: newTimeLeft };
+  //     });
+  //   }, 1000);
+  // };
 
-  const stopExercise = () => {
-    if (exerciseTimer.current) {
-      clearInterval(exerciseTimer.current);
-    }
-    setExercise({ active: null, progress: 0, timeLeft: 0 });
-  };
+  // const stopExercise = () => {
+  //   if (exerciseTimer.current) {
+  //     clearInterval(exerciseTimer.current);
+  //   }
+  //   setExercise({ active: null, progress: 0, timeLeft: 0 });
+  // };
 
   // Initial data loading
   useEffect(() => {
@@ -470,7 +467,7 @@ const UserDashboard = () => {
             </motion.div>
 
             {/* HEALTH METRICS CARD */}
-            <motion.div 
+            {/* <motion.div 
               whileHover={{ scale: 1.02 }}
               className="bg-white rounded-2xl shadow-sm border border-gray-100"
             >
@@ -550,15 +547,15 @@ const UserDashboard = () => {
                   </button>
                 </div>
               )}
-            </motion.div>
+            </motion.div> */}
 
             {/* SYMPTOM ANALYSIS */}
-            <motion.div
+            {/* <motion.div
               whileHover={{ scale: 1.02 }}
               className="bg-white rounded-2xl shadow-sm border border-gray-100"
             >
               <SymptomAnalysis />
-            </motion.div>
+            </motion.div> */}
 
             {/* BREATHING EXERCISE */}
             <motion.div
@@ -835,7 +832,7 @@ const UserDashboard = () => {
             </motion.div>
 
             {/* EXERCISES SECTION */}
-            <motion.div 
+            {/* <motion.div 
               whileHover={{ scale: 1.0 }}
               className="bg-white rounded-2xl p-4 mb-6 shadow-sm border border-gray-100"
             >
@@ -897,7 +894,7 @@ const UserDashboard = () => {
                   ))}
                 </div>
               )}
-            </motion.div>
+            </motion.div> */}
 
             {/* WELLNESS TIPS */}
             <motion.div 
@@ -961,7 +958,7 @@ const UserDashboard = () => {
             </div>
 
             {/* MOBILE EXERCISES */}
-            <div className="lg:hidden mb-8">
+            {/* <div className="lg:hidden mb-8">
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1027,10 +1024,10 @@ const UserDashboard = () => {
                   </div>
                 )}
               </motion.div>
-            </div>
+            </div> */}
 
             {/* MOBILE HEALTH METRICS */}
-            <div className="lg:hidden mb-8">
+            {/* <div className="lg:hidden mb-8">
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1113,7 +1110,7 @@ const UserDashboard = () => {
                   </div>
                 )}
               </motion.div>
-            </div>
+            </div> */}
           </div>
         </motion.div>
       </div>

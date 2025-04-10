@@ -557,10 +557,10 @@ const MedicineStock = () => {
     const quantity = Number(transferData.quantity);
     const currentQuantity = Number(transferData.fromStock.quantity);
 
-    if (isNaN(quantity) || quantity <= 0) {
+    if (isNaN(quantity) || quantity <= 1) {
       toast({
         title: "Error",
-        description: "Please enter a valid quantity",
+        description: "Atleast 1 medicine should be left in this location",
         variant: "destructive",
       });
       return;
