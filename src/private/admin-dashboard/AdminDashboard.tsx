@@ -41,6 +41,18 @@ type Alert = {
   timestamp: string;
 };
 
+type ThreatLog = {
+  id: string;
+  ip: string;
+  city: string;
+  region: string;
+  country: string;
+  org: string;
+  latitude: string;
+  longitude: string;
+  timestamp: string;
+};
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -50,7 +62,8 @@ const AdminDashboard = () => {
   const [, setRecentActivity] = useState<ActivityLog[]>([]);
   const [, setAlerts] = useState<Alert[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-
+  const [threatLogs, setThreatLogs] = useState<ThreatLog[]>([]);
+  
   // Fetch all dashboard data
   const fetchDashboardData = async () => {
     try {
@@ -62,15 +75,17 @@ const AdminDashboard = () => {
       };
 
       // Using Promise.all to fetch multiple endpoints in parallel
-      const [statsRes, activityRes, alertsRes] = await Promise.all([
+      const [statsRes, activityRes, alertsRes, threatLogsRes] = await Promise.all([
         axios.get("https://uhs-backend.onrender.com/api/admin/stats", { headers }),
         axios.get("https://uhs-backend.onrender.com/api/admin/recentActivities", { headers }),
-        axios.get("https://uhs-backend.onrender.com/api/admin/alerts", { headers })
+        axios.get("https://uhs-backend.onrender.com/api/admin/alerts", { headers }),
+        axios.get("https://uhs-backend.onrender.com/api/admin/threat-logs", { headers })
       ]);
       
       setStats(statsRes.data);
       setRecentActivity(activityRes.data);
       setAlerts(alertsRes.data);
+      setThreatLogs(threatLogsRes.data);
       
     } catch (error) {
       toast({
@@ -172,64 +187,35 @@ const AdminDashboard = () => {
 
             {/* Quick Stats */}
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">System Overview</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 rounded-full bg-indigo-100 text-indigo-600">
-                      <Users className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Active Sessions</p>
-                      {loading ? (
-                        <Skeleton className="h-6 w-12" />
-                      ) : (
-                        <p className="font-semibold">{stats?.activeSessions || 0}</p>
-                      )}
-                    </div>
-                  </div>
-                </div> */}
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 rounded-full bg-green-100 text-green-600">
-                      <UserCheck className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Total Patients</p>
-                      {loading ? (
-                        <Skeleton className="h-6 w-12" />
-                      ) : (
-                        <p className="font-semibold">{stats?.totalPatients || 0}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 rounded-full bg-blue-100 text-blue-600">
-                      <ClipboardList className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Appointments Today</p>
-                      {loading ? (
-                        <Skeleton className="h-6 w-12" />
-                      ) : (
-                        <p className="font-semibold">{stats?.appointmentsToday || 0}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+  <CardHeader>
+    <CardTitle className="text-red-600">⚠️ Unauthorized Access Logs</CardTitle>
+  </CardHeader>
+  <CardContent className="space-y-2 max-h-[300px] overflow-y-auto">
+    {loading ? (
+      <Skeleton className="h-[100px] w-full rounded-lg" />
+    ) : threatLogs.length === 0 ? (
+      <p className="text-gray-500">No unauthorized access attempts found.</p>
+    ) : (
+      <ul className="divide-y divide-gray-200">
+        {threatLogs.map((log) => (
+          <li key={log.id} className="py-2 text-sm">
+            <div className="font-medium text-red-500">{log.ip} - {log.city}, {log.region}</div>
+            <div className="text-gray-600">{log.org}</div>
+            <div className="text-gray-500">
+              {log.timestamp.replace("T", " ").slice(0, 19)}
+            </div>
+          </li>
+        ))}
+      </ul>
+    )}
+  </CardContent>
+</Card>
 
           </div>
 
           {/* Main Content */}
           <div className="lg:col-span-3 space-y-6">
+
             {/* Analytics Overview */}
             <Card>
               <CardHeader>

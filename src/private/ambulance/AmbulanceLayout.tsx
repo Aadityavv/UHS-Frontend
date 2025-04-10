@@ -4,7 +4,7 @@ import React from "react";
 
 const AmbulanceLayout = ({ children }: { children: React.ReactNode }) => {
   const navsetting = {
-    title: "Ambulance Tracker",
+    title: "Ambulance Tracker (Coming Soon...)",
     titleLogo: Shared.Ambulance,
     additionalLogo: Shared.ArrowLeft,
     menu: false,

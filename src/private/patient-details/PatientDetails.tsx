@@ -212,7 +212,7 @@ const PatientDetails = () => {
           toast({
             variant: "destructive",
             title: "Validation Error",
-            description: `Choose medicine for row ${row.id}`,
+            description: `Choose medicine for incomplete row`,
             action: <ToastAction altText="Understand">OK</ToastAction>,
           });
           throw new Error("Validation failed");
