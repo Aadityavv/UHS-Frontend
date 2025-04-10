@@ -227,7 +227,7 @@ const MedicineStock = () => {
 
   const fetchLocations = async () => {
     try {
-      const resp = await axios.get("https://uhs-backend.onrender.com/api/location/");
+      const resp = await axios.get("https://uhs-backend.onrender.com/api/location");
       if (resp.status === 200) {
         const data = resp.data;
         setLocations(data);
