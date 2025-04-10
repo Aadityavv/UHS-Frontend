@@ -66,6 +66,20 @@ const [manualData, setManualData] = useState({
 
 const handleManualAppointment = async () => {
   try {
+    // Check if email already exists in patient list
+    const alreadyExists = patients.some(
+      (p) => p.email?.toLowerCase() === manualData.email.toLowerCase()
+    );
+
+    if (alreadyExists) {
+      toast({
+        title: "Appointment already queued",
+        description: "This patient already has an appointment in the queue.",
+        variant: "destructive",
+      });
+      return; // Prevent further execution
+    }
+
     setSubmitting(true);
     const token = localStorage.getItem("token");
     const headers = {
@@ -78,7 +92,7 @@ const handleManualAppointment = async () => {
         email: manualData.email,
         reason: manualData.reason,
         preferredDoctor: manualData.preferredDoctor || null,
-        reasonPrefDoctor: manualData.reasonForPref || null
+        reasonPrefDoctor: manualData.reasonForPref || null,
       },
       { headers }
     );
@@ -92,6 +106,7 @@ const handleManualAppointment = async () => {
     setSubmitting(false);
   }
 };
+
 
   const encodeEmail = (email: string) => {
     const [localPart, domain] = email.split("@");
