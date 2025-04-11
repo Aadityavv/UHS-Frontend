@@ -533,11 +533,30 @@ setFilteredPatients(uniquePatients);
                             }
                           }}
                         >
-                          <DialogTrigger asChild>
-                            <Button variant="outline" size="sm">
-                              <Stethoscope className="mr-2 h-4 w-4" /> Assign
-                            </Button>
-                          </DialogTrigger>
+<div className="flex space-x-2">
+  <DialogTrigger asChild>
+    <Button variant="outline" size="sm">
+      <Stethoscope className="mr-2 h-4 w-4" /> Assign
+    </Button>
+  </DialogTrigger>
+
+  <Button
+    variant="default"
+    size="sm"
+    onClick={() =>
+      navigate("/adhoc", {
+        state: {
+          name: patient.name,
+          email: patient.email,
+          reason: patient.reason,
+        },
+      })
+    }
+  >
+    Ad-Hoc
+  </Button>
+</div>
+
                           <DialogContent className="max-w-md">
                             <DialogHeader>
                               <DialogTitle>Assign Doctor</DialogTitle>
@@ -619,6 +638,8 @@ setFilteredPatients(uniquePatients);
                             </form>
                           </DialogContent>
                         </Dialog>
+
+                        
                       )}
 
                       {patient.status === "Appointed" && (
@@ -690,11 +711,30 @@ setFilteredPatients(uniquePatients);
                         }
                       }}
                     >
-                      <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Stethoscope className="mr-2 h-4 w-4" /> Assign
-                        </Button>
-                      </DialogTrigger>
+<div className="flex space-x-2">
+  <DialogTrigger asChild>
+    <Button variant="outline" size="sm">
+      <Stethoscope className="mr-2 h-4 w-4" /> Assign
+    </Button>
+  </DialogTrigger>
+
+  <Button
+    variant="default"
+    size="sm"
+    onClick={() =>
+      navigate("/adhoc", {
+        state: {
+          name: patient.name,
+          email: patient.email,
+          reason: patient.reason,
+        },
+      })
+    }
+  >
+    Ad-Hoc
+  </Button>
+</div>
+
                       <DialogContent className="max-w-md">
                         <DialogHeader>
                           <DialogTitle>Assign Doctor</DialogTitle>

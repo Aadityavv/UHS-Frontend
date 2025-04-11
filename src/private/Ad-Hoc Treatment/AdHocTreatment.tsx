@@ -28,6 +28,8 @@ import { motion } from "framer-motion";
 import { Clock, User, Mail, ClipboardList, Pill, PlusCircle } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { useLocation } from "react-router-dom";
+
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -62,6 +64,18 @@ const AdHocTreatment = () => {
       notes: "",
     },
   });
+
+  const location = useLocation();
+const prefillData = location.state;
+
+useEffect(() => {
+  if (prefillData) {
+    form.setValue("name", prefillData.name || "");
+    form.setValue("email", prefillData.email || "");
+    form.setValue("reason", prefillData.reason || "");
+  }
+}, [prefillData, form]);
+
 
   const [stock, setStock] = useState<
     Array<{
