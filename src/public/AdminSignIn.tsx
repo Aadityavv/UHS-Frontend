@@ -27,7 +27,7 @@ const AdminSignIn = () => {
   const handleVerifyPasswordAndSendOtp = async () => {
     try {
       setLoading(true);
-      const response = await axios.post("https://uhs-backend.onrender.com/api/auth/admin/signin", input);
+      await axios.post("https://uhs-backend.onrender.com/api/auth/admin/signin", input);
 
       toast({
         title: "Password Verified",
