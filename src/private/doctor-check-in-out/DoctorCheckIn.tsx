@@ -79,7 +79,7 @@ const DoctorCheckIn = () => {
         name: doctor.name,
         status: doctor.status ? "Available" : "Not Available",
         email: doctor.doctorEmail,
-        location: doctor.location ? doctor.location.locationName : "Main Hospital",
+        location: doctor.location ? doctor.location.locationName : "Not Available",
         designation: doctor.designation,
         specialization: doctor.specialization || "General"
       }));
