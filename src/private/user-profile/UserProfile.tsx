@@ -132,7 +132,7 @@ const UserProfile = () => {
 
         const data = res.data;
         updateFormValues(data);
-        setImg(`https://uhs-backend.onrender.com/api//${data.imageUrl}`);
+        setImg(`https://uhs-backend.onrender.com/${data.imageUrl}`);
       } catch (error: any) {
         if (error.response?.status === 404) {
           try {
@@ -142,7 +142,7 @@ const UserProfile = () => {
             );
             const dataBackup = resBackup.data;
             updateFormValues(dataBackup);
-            setImg(`https://uhs-backend.onrender.com/api//${dataBackup.imageUrl}`);
+            setImg(`https://uhs-backend.onrender.com/${dataBackup.imageUrl}`);
             toast({
               title: "Required Information",
               description: "Please complete your profile by filling all required fields",
