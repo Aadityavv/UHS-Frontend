@@ -60,7 +60,7 @@ const AdHocTreatment = () => {
       name: "",
       email: "",
       reason: "",
-      medicine: { id: "", name: "", quantity: 1 },
+      medicine: { id: "", name: "", quantity: 0 },
       notes: "",
     },
   });
