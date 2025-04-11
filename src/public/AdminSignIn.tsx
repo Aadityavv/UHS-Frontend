@@ -15,38 +15,39 @@ const AdminSignIn = () => {
   const navigate = useNavigate();
   const [input, setInput] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [otpStage, setOtpStage] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const onInputChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     const { id, value } = e.target;
     setInput((prev) => ({ ...prev, [id]: value }));
   };
 
-  const handleSignIn = async () => {
-    const apiUrl = "https://uhs-backend.onrender.com/api/auth/admin/signin";
-    const dashboardRoute = "/admin-dashboard";
-
+  const handleVerifyPasswordAndSendOtp = async () => {
     try {
-      const response = await axios.post(apiUrl, input);
-      console.log("Login response:", response.data);
-      const { token, email, roles } = response.data;
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("email", email);
-      localStorage.setItem("roles", roles[0].replace("ROLE_", "").toLowerCase());
+      setLoading(true);
+      const response = await axios.post("https://uhs-backend.onrender.com/api/auth/admin/signin", input);
 
       toast({
-        variant: "default",
-        title: "Login Successful",
-        description: `Welcome back, Admin!`,
+        title: "Password Verified",
+        description: "Sending OTP to your email...",
       });
 
-      setTimeout(() => {
-        navigate(dashboardRoute);
-      }, 1000);
+      await axios.post("https://uhs-backend.onrender.com/api/otp/send", {
+        email: input.email,
+        mobile: "",
+      });
+
+      setOtpStage(true);
+      toast({
+        title: "OTP Sent",
+        description: "Check your inbox for the OTP to proceed.",
+      });
     } catch (error: any) {
       const message =
         error.response?.status === 401
-          ? "Incorrect email or password. Please try again."
+          ? "Incorrect email or password."
           : error.response?.data?.message || "An error occurred.";
 
       toast({
@@ -55,35 +56,56 @@ const AdminSignIn = () => {
         description: message,
         action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.post("https://uhs-backend.onrender.com/api/otp/verify", {
+        emailOrMobile: input.email,
+        otp,
+      });
+
+      const { token } = response.data;
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("email", input.email);
+      localStorage.setItem("roles", "admin");
+
+      toast({
+        title: "Login Successful",
+        description: "Welcome back, Admin!",
+      });
+
+      setTimeout(() => {
+        navigate("/admin-dashboard");
+      }, 1000);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "OTP Verification Failed",
+        description: error.response?.data || "Invalid or expired OTP.",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div 
+    <div
       className="min-h-screen flex items-center justify-center p-4 lg:p-8"
       style={{ background: "linear-gradient(to right, #24186c, #530962)" }}
     >
       <Toaster />
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-4xl bg-white/90 backdrop-blur-md rounded-2xl shadow-xl grid grid-cols-1 lg:grid-cols-[45%_55%]"
       >
-        {/* Mobile Header */}
-        <div className="lg:hidden p-4 border-b border-gray-100">
-          <div className="flex items-center justify-center gap-3">
-            <img
-              src="/upes-logo.jpg"
-              alt="UPES Logo"
-              className="w-20 bg-white rounded-xl p-1 shadow-md"
-            />
-            <h2 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              UHS Admin Portal
-            </h2>
-          </div>
-        </div>
-
-        {/* Animated Branding Section */}
+        {/* Left Side Animation */}
         <div className="hidden lg:flex flex-col items-center justify-center p-6 bg-gradient-to-br from-indigo-900/20 to-purple-900/20 relative overflow-hidden">
           <motion.div
             initial={{ scale: 0 }}
@@ -95,73 +117,28 @@ const AdminSignIn = () => {
             animate={{ x: 0 }}
             className="absolute bottom-20 right-20 w-48 h-48 bg-purple-200/10 rounded-full blur-lg"
           />
-
           <div className="relative z-10 text-center space-y-6">
-            <motion.div
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 100 }}
-            >
-              <img
-                src="/upes-logo.jpg"
-                alt="UPES Logo"
-                className="w-28 mx-auto bg-white rounded-xl p-2 shadow-2xl hover:rotate-3 transition-transform duration-300"
-              />
+            <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 100 }}>
+              <img src="/upes-logo.jpg" alt="UPES Logo" className="w-28 mx-auto bg-white rounded-xl p-2 shadow-2xl" />
             </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
               <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 UHS Admin Portal
               </h2>
-              <p className="text-gray-600 mt-2 text-sm font-medium">
-                Manage healthcare services with ease
-              </p>
-            </motion.div>
-
-            <motion.div
-              className="flex justify-center gap-4 mt-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-            >
-              {[
-                { icon: Eye, label: "Monitor Systems", color: "text-indigo-600" },
-                { icon: EyeOff, label: "Secure Access", color: "text-purple-600" },
-              ].map((item, index) => (
-                <motion.div
-                  key={item.label}
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.6 + index * 0.1, type: "spring" }}
-                  className="text-center"
-                >
-                  <item.icon className={`h-6 w-6 mb-2 ${item.color}`} />
-                  <p className="text-xs text-gray-600">{item.label}</p>
-                </motion.div>
-              ))}
+              <p className="text-gray-600 mt-2 text-sm font-medium">Manage healthcare services with ease</p>
             </motion.div>
           </div>
         </div>
 
-        {/* Compact Form Section */}
+        {/* Form Section */}
         <div className="p-6 lg:p-8">
-          <div className="lg:hidden mb-4"></div>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="space-y-6"
-          >
-            <div className="space-y-4">
-              <div className="text-center">
-                <h1 className="text-2xl font-bold text-gray-900">Admin Sign In</h1>
-                <p className="text-gray-600 text-sm mt-1">Access the admin dashboard</p>
-              </div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="space-y-6">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-gray-900">Admin Sign In</h1>
+              <p className="text-gray-600 text-sm mt-1">Access the admin dashboard</p>
+            </div>
 
+            {!otpStage ? (
               <div className="space-y-3">
                 <div>
                   <Label className="text-gray-700 text-sm">Email</Label>
@@ -197,13 +174,32 @@ const AdminSignIn = () => {
                 </div>
 
                 <Button
-                  onClick={handleSignIn}
+                  onClick={handleVerifyPasswordAndSendOtp}
+                  disabled={loading}
                   className="w-full h-9 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-sm"
                 >
-                  Sign In
+                  {loading ? "Verifying..." : "Verify & Send OTP"}
                 </Button>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-4">
+                <Label className="text-gray-700 text-sm">Enter OTP sent to {input.email}</Label>
+                <Input
+                  type="text"
+                  placeholder="Enter OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="h-9 rounded-lg text-sm"
+                />
+                <Button
+                  onClick={handleVerifyOtp}
+                  disabled={loading}
+                  className="w-full h-9 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-sm"
+                >
+                  {loading ? "Verifying..." : "Verify OTP & Login"}
+                </Button>
+              </div>
+            )}
           </motion.div>
         </div>
       </motion.div>
