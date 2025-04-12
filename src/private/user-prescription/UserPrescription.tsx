@@ -28,9 +28,8 @@ const UserPrescription = () => {
   const [filteredReports, setFilteredReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // Default to descending
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [, setSortField] = useState<'date' | 'time'>('date');
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,19 +52,14 @@ const UserPrescription = () => {
           link: item.appointmentId
         }));
 
-         // Sort the data in descending order by date initially
-         const sortedData = formattedData.sort((a: any, b: any) => {
+        const sortedData = formattedData.sort((a: any, b: any) => {
           const dateA = new Date(a.date.split('/').reverse().join('-'));
           const dateB = new Date(b.date.split('/').reverse().join('-'));
-          return dateB.getTime() - dateA.getTime(); // Descending order
+          return dateB.getTime() - dateA.getTime();
         });
 
         setReports(sortedData);
         setFilteredReports(sortedData);
-
-
-        setReports(formattedData);
-        setFilteredReports(formattedData);
       } catch (error: any) {
         handleError(error);
       } finally {
@@ -106,15 +100,13 @@ const UserPrescription = () => {
 
     const sortedReports = [...filteredReports].sort((a, b) => {
       if (field === 'date') {
-        // Convert dates to timestamps for comparison
         const dateA = new Date(a.date.split('/').reverse().join('-')).getTime();
         const dateB = new Date(b.date.split('/').reverse().join('-')).getTime();
-        return order === 'asc' ? dateA - dateB : dateB - dateA; // Sort by date
+        return order === 'asc' ? dateA - dateB : dateB - dateA;
       } else if (field === 'time') {
-        // Convert times to timestamps for comparison
         const timeA = new Date(`1970-01-01T${a.time}`).getTime();
         const timeB = new Date(`1970-01-01T${b.time}`).getTime();
-        return order === 'asc' ? timeA - timeB : timeB - timeA; // Sort by time
+        return order === 'asc' ? timeA - timeB : timeB - timeA;
       }
       return 0;
     });
@@ -198,33 +190,56 @@ const UserPrescription = () => {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <div className="grid grid-cols-3 gap-4 px-4 py-2 bg-indigo-100 rounded-lg">
-                    <button onClick={() => handleSort('date')} className="flex items-center text-sm font-medium text-indigo-700">
+                  {/* Desktop Header */}
+                  <div className="hidden sm:grid grid-cols-3 gap-4 px-4 py-2 bg-indigo-100 rounded-lg">
+                    <button 
+                      onClick={() => handleSort('date')} 
+                      className="flex items-center justify-start text-sm font-medium text-indigo-700"
+                    >
                       Date <ArrowUpDown className="h-4 w-4 ml-1" />
                     </button>
-                    <p className="flex items-center text-sm font-medium text-indigo-700">
-                      Time 
-                    </p>
-                    <span className="text-sm font-medium text-indigo-700 text-right">Actions</span>
+                    <button 
+                      onClick={() => handleSort('time')}
+                      className="flex items-center justify-center text-sm font-medium text-indigo-700"
+                    >
+                      Time <ArrowUpDown className="h-4 w-4 ml-1" />
+                    </button>
+                    <span className="text-sm font-medium text-indigo-700 text-right">
+                      Actions
+                    </span>
                   </div>
 
                   {filteredReports.map((report) => (
-                    <div key={report.id} className="grid grid-cols-3 gap-4 items-center p-4 hover:bg-indigo-50 rounded-lg transition">
-                      <div className="flex items-center">
-                      <CalendarIcon className="h-4 w-4 mr-2 text-indigo-600 hidden lg:inline-block" />
-                        <span className="text-gray-700">{report.date}</span>
+                    <div 
+                      key={report.id} 
+                      className="grid grid-cols-5 sm:grid-cols-3 gap-2 sm:gap-4 items-center p-3 hover:bg-indigo-50 rounded-lg transition border border-gray-100 sm:border-none mb-2"
+                    >
+                      {/* Date */}
+                      <div className="col-span-2 sm:col-span-1 flex items-center">
+                        <CalendarIcon className="h-4 w-4 mr-2 text-indigo-600 flex-shrink-0" />
+                        <span className="text-gray-700 text-sm sm:text-base truncate">
+                          {report.date}
+                        </span>
                       </div>
-                      <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-2 text-indigo-600 hidden lg:inline-block" />
-                        <span className="text-gray-700">{report.time}</span>
+                      
+                      {/* Time */}
+                      <div className="col-span-2 sm:col-span-1 flex items-center sm:justify-center">
+                        <Clock className="h-4 w-4 mr-2 text-indigo-600 flex-shrink-0" />
+                        <span className="text-gray-700 text-sm sm:text-base">
+                          {report.time}
+                        </span>
                       </div>
-                      <div className="flex justify-end">
+                      
+                      {/* Action Button */}
+                      <div className="col-span-1 flex justify-end">
                         <Button
                           variant="outline"
                           onClick={() => navigate(`/prescription?id=${report.id}`)}
-                          className="flex items-center text-indigo-600 hover:text-indigo-700 border-indigo-600 hover:border-indigo-700"
+                          className="flex items-center text-indigo-600 hover:text-indigo-700 border-indigo-600 hover:border-indigo-700 p-2 sm:px-4 sm:py-2"
+                          size="sm"
                         >
-                          <Eye className="h-4 w-4 mr-2" /> View
+                          <Eye className="h-4 w-4" />
+                          <span className="hidden sm:inline ml-2">View</span>
                         </Button>
                       </div>
                     </div>

@@ -721,45 +721,52 @@ const UserDashboard = () => {
               
               {/* MEDICATIONS */}
               <div className="mb-6">
-                <h4 className="text-sm font-medium text-gray-500 mb-3 flex items-center">
-                  <Pill className="h-4 w-4 mr-2 text-indigo-500" />
-                  Active Medications
-                </h4>
-                {loadingMedications ? (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {[...Array(3)].map((_, i) => (
-                      <Skeleton key={i} variant="rectangular" height={80} className="rounded-xl" />
-                    ))}
-                  </div>
-                ) : activeMedications.length > 0 ? (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {activeMedications.slice(0, 3).map((med) => (
-                      <motion.div 
-                        key={med.pres_medicine_id}
-                        whileHover={{ y: -2 }}
-                        className="bg-indigo-50 p-4 rounded-xl cursor-pointer"
-                        onClick={() => setSelectedMed(med)}
-                      >
-                        <div className="flex items-center mb-2">
-                          <div className="bg-indigo-100 p-2 rounded-lg mr-3">
-                            <Pill className="h-5 w-5 text-indigo-700" />
-                          </div>
-                          <h5 className="font-medium text-indigo-900 capitalize">
-                            {med.medicineName}
-                          </h5>
-                        </div>
-                        <p className="text-xs text-indigo-700">
-                          {med.dosage || "Dosage not specified"}
-                        </p>
-                      </motion.div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="bg-gray-50 p-6 rounded-xl text-center">
-                    <p className="text-gray-500">No active medications</p>
-                  </div>
-                )}
-              </div>
+  <h4 className="text-sm font-medium text-gray-500 mb-3 flex items-center">
+    <Pill className="h-4 w-4 mr-2 text-indigo-500" />
+    Active Medications
+  </h4>
+  {loadingMedications ? (
+    <div className="grid grid-cols-1 gap-4">
+      {[...Array(3)].map((_, i) => (
+        <Skeleton key={i} variant="rectangular" height={80} className="rounded-xl" />
+      ))}
+    </div>
+  ) : activeMedications.length > 0 ? (
+    <div className="grid grid-cols-1 gap-3">
+      {activeMedications.slice(0, 3).map((med) => (
+        <motion.div 
+          key={med.pres_medicine_id}
+          whileHover={{ y: -2 }}
+          className="bg-indigo-50 p-4 rounded-xl cursor-pointer"
+          onClick={() => setSelectedMed(med)}
+        >
+          <div className="flex items-start">
+            <div className="bg-indigo-100 p-2 rounded-lg mr-3 flex-shrink-0">
+              <Pill className="h-5 w-5 text-indigo-700" />
+            </div>
+            <div className="min-w-0">
+              <h5 className="font-medium text-indigo-900 truncate">
+                {med.medicineName}
+              </h5>
+              <p className="text-xs text-indigo-700 truncate">
+                {med.dosage || "Dosage not specified"}
+              </p>
+              {med.duration && (
+                <p className="text-xs text-indigo-600 mt-1">
+                  For {med.duration} day(s)
+                </p>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  ) : (
+    <div className="bg-gray-50 p-6 rounded-xl text-center">
+      <p className="text-gray-500">No active medications</p>
+    </div>
+  )}
+</div>
 
               {/* UPCOMING APPOINTMENTS */}
               <div>
