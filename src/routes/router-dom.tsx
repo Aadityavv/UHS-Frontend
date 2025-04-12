@@ -65,6 +65,8 @@ import CommonPrescriptionLayout from "@/private/common-prescription/CommonPrescr
 import VerifyPage from "@/public/VerifyPage";
 import { UserForm } from "@/private/User-Management/UserForm";
 import { EditUser } from "@/private/User-Management/EditUser";
+import ManageDoctors from "@/private/admin-dashboard/ManageDoctors";
+import ManageAssistants from "@/private/admin-dashboard/ManageAssistants";
 
 const router = createBrowserRouter([
   // PUBLIC ROUTES
@@ -127,7 +129,17 @@ const router = createBrowserRouter([
       {
         path: "/admin/users/edit/:id",
         element: <EditUser />,
+      },
+      {
+        path: "/admin/manage-doctors",
+        element: <ManageDoctors />
+      },
+      {
+        path: "/admin/manage-assistants",
+        element: <ManageAssistants />
       }
+      
+      
     ],
   },
 

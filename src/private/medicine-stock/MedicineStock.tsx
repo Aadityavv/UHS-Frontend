@@ -254,15 +254,15 @@ const MedicineStock = () => {
     fetchStocks();
   }, []);
 
-  const handleDownloadExcel = async () => {
+  const handleDownloadExcel = async (exportType: string) => {
     try {
       const token = localStorage.getItem("token");
       let role = localStorage.getItem("roles");
-
+  
       if (role === "ad") role = role.toUpperCase();
-
+  
       const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/${role}/export`,
+        `https://uhs-backend.onrender.com/api/${role}/export?filter=${exportType}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -270,26 +270,26 @@ const MedicineStock = () => {
           responseType: "blob",
         }
       );
-
+  
       const url = window.URL.createObjectURL(
         new Blob([response.data], {
           type: response.headers["Content-Type"]?.toString(),
         })
       );
-
+  
       const a = document.createElement("a");
       a.href = url;
-      a.download = "medicine_stocks.xlsx";
+      a.download = `medicine_stocks_${exportType}.xlsx`;
       document.body.appendChild(a);
       a.click();
-
+  
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-
+  
       toast({
         variant: "default",
         title: "Success",
-        description: "Excel downloaded Successdully",
+        description: `Excel (${exportType} stocks) downloaded successfully`,
       });
     } catch (err: any) {
       return toast({
@@ -1284,19 +1284,27 @@ const MedicineStock = () => {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-            {/* Header Section */}
-            <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold text-gray-900">
-                Medicine Stock Management
-              </h1>
-              <button
-                onClick={handleDownloadExcel}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors"
-              >
-                <Download className="h-5 w-5" />
-                Export Excel
-              </button>
-            </div>
+{/* In the Header Section */}
+<div className="flex items-center justify-between">
+  <h1 className="text-3xl font-bold text-gray-900">
+    Medicine Stock Management
+  </h1>
+  <Select onValueChange={(value) => handleDownloadExcel(value)}>
+    <SelectTrigger className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors cursor-pointer">
+      <Download className="h-5 w-5" />
+      <span>Export Excel</span>
+    </SelectTrigger>
+    <SelectContent className="bg-white">
+  <SelectGroup>
+    <SelectItem value="all">All Stocks</SelectItem>
+    <SelectItem value="expiring">About to Expire (1 month)</SelectItem>
+    <SelectItem value="low">Low Quantity (&lt;50)</SelectItem>
+    <SelectItem value="expiring-low">Expiring + Low Quantity</SelectItem>
+    <SelectItem value="available">Available Stocks (&gt;0)</SelectItem>
+  </SelectGroup>
+</SelectContent>
+  </Select>
+</div>
 
             {/* Filters Section */}
             <div className="grid md:grid-cols-3 gap-4">

@@ -12,7 +12,8 @@ import {
   UserCheck,
   PieChart,
   Database,
-  Loader2
+  Loader2,
+  Pill
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -298,7 +299,7 @@ const AdminDashboard = () => {
                       <div>
                         <UserPlus className="h-8 w-8 mb-3" />
                         <h3 className="text-xl font-bold">Add New Doctor</h3>
-                        <p className="text-sm opacity-90 mt-1">Register medical staff</p>
+                        <p className="text-sm opacity-90 mt-1">Register medical doctor</p>
                       </div>
                       <Stethoscope className="h-12 w-12 opacity-20" />
                     </div>
@@ -316,7 +317,7 @@ const AdminDashboard = () => {
                       <div>
                         <UserPlus className="h-8 w-8 mb-3" />
                         <h3 className="text-xl font-bold">Add Nursing Assistant</h3>
-                        <p className="text-sm opacity-90 mt-1">Register support staff</p>
+                        <p className="text-sm opacity-90 mt-1">Register support doctor</p>
                       </div>
                       <HeartPulse className="h-12 w-12 opacity-20" />
                     </div>
@@ -332,12 +333,15 @@ const AdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 {loading ? (
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <Skeleton className="h-[100px] w-full rounded-lg" />
+                    <Skeleton className="h-[100px] w-full rounded-lg" />
+                    <Skeleton className="h-[100px] w-full rounded-lg" />
                     <Skeleton className="h-[100px] w-full rounded-lg" />
                     <Skeleton className="h-[100px] w-full rounded-lg" />
                   </div>
                 ) : (
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid md:grid-cols-3 gap-4">
 
 <motion.div 
   whileHover={{ scale: 1.02 }}
@@ -370,6 +374,55 @@ const AdminDashboard = () => {
     </div>
   </div>
 </motion.div>
+
+<motion.div 
+  whileHover={{ scale: 1.02 }}
+  className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 cursor-pointer"
+  onClick={() => navigate("/medicine-stock")}
+>
+  <div className="flex items-center space-x-3">
+    <div className="p-2 rounded-lg bg-green-100 text-green-600">
+      <Pill className="h-5 w-5" />
+    </div>
+    <div>
+      <h3 className="font-medium">Stock Management</h3>
+      <p className="text-sm text-gray-500">Manage medical stock</p>
+    </div>
+  </div>
+</motion.div>
+
+<motion.div 
+  whileHover={{ scale: 1.02 }}
+  className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 cursor-pointer"
+  onClick={() => navigate("/admin/manage-doctors")}
+>
+  <div className="flex items-center space-x-3">
+    <div className="p-2 rounded-lg bg-cyan-100 text-cyan-600">
+      <Stethoscope className="h-5 w-5" />
+    </div>
+    <div>
+      <h3 className="font-medium">Manage Doctors</h3>
+      <p className="text-sm text-gray-500">View, edit or remove doctors</p>
+    </div>
+  </div>
+</motion.div>
+
+<motion.div 
+  whileHover={{ scale: 1.02 }}
+  className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 cursor-pointer"
+  onClick={() => navigate("/admin/manage-assistants")}
+>
+  <div className="flex items-center space-x-3">
+    <div className="p-2 rounded-lg bg-rose-100 text-rose-600">
+      <HeartPulse className="h-5 w-5" />
+    </div>
+    <div>
+      <h3 className="font-medium">Manage Assistants</h3>
+      <p className="text-sm text-gray-500">View, edit or remove nursing assistants</p>
+    </div>
+  </div>
+</motion.div>
+
 
                   </div>
                 )}

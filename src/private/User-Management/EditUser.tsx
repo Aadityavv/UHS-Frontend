@@ -6,6 +6,8 @@ import axios from "axios";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
+
 
 type UserFormData = {
   email: string;
@@ -18,6 +20,9 @@ type UserFormData = {
   emergencyContact: string;
   gender: string;
   sapId: string;
+  password?: string;
+  confirmPassword?: string;
+
 };
 
 const schoolOptions = [
@@ -70,6 +75,10 @@ export const EditUser = () => {
   const [fetching, setFetching] = useState(true);
   const [programOptions, setProgramOptions] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showPasswordFields, setShowPasswordFields] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
 
   useEffect(() => {
     if (formData.school && schoolPrograms[formData.school]) {
@@ -145,6 +154,16 @@ export const EditUser = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
+    if (formData.password || formData.confirmPassword) {
+      if ((formData.password?.length ?? 0) < 8) {
+        newErrors.password = "Password must be at least 8 characters";
+      }
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = "Passwords do not match";
+      }
+    }
+    
+
     // Phone number validation
     if (!formData.phoneNumber.match(/^\d{10}$/)) {
       newErrors.phoneNumber = "Phone number must be 10 digits";
@@ -216,12 +235,25 @@ export const EditUser = () => {
       await axios.put(`https://uhs-backend.onrender.com/api/admin/${id}`, formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
+      if (formData.password) {
+        await axios.put(`https://uhs-backend.onrender.com/api/admin/password/${formData.email}`, {
+          password: formData.password
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+      
       toast({
         title: "Success",
         description: "User updated successfully",
       });
       navigate("/admin/users");
+      setFormData(prev => ({
+        ...prev,
+        password: "",
+        confirmPassword: ""
+      }));
+      
     } catch (error) {
       console.error("Error updating user:", error);
       let errorMessage = "Failed to update user";
@@ -245,55 +277,22 @@ export const EditUser = () => {
   const formFields = [
     { label: "Email", id: "email", type: "email", disabled: true },
     { label: "Full Name", id: "name", type: "text" },
-    { 
-      label: "SAP ID", 
-      id: "sapId", 
-      type: "text",
-      },
-    { 
-      label: "Phone Number", 
-      id: "phoneNumber", 
-      type: "text",
-      maxLength: 10,
-      pattern: "[0-9]{10}",
-      error: errors.phoneNumber
-    },
-    { 
-      label: "Blood Group", 
-      id: "bloodGroup", 
-      type: "select",
-      options: bloodGroupOptions
-    },
-    { 
-      label: "School", 
-      id: "school", 
-      type: "select",
-      options: schoolOptions
-    },
-    { label: "Date of Birth", id: "dateOfBirth", type: "date",
-      error: errors.dateOfBirth},
-    { 
-      label: "Program", 
-      id: "program", 
-      type: "select",
-      options: programOptions,
-      disabled: !formData.school || fetching
-    },
-    { 
-      label: "Emergency Contact", 
-      id: "emergencyContact", 
-      type: "text",
-      maxLength: 10,
-      pattern: "[0-9]{10}",
-      error: errors.emergencyContact
-    },
-    { 
-      label: "Gender", 
-      id: "gender", 
-      type: "select",
-      options: genderOptions
-    },
+    { label: "SAP ID", id: "sapId", type: "text" },
+    { label: "Phone Number", id: "phoneNumber", type: "text", maxLength: 10, pattern: "[0-9]{10}", error: errors.phoneNumber },
+    { label: "Blood Group", id: "bloodGroup", type: "select", options: bloodGroupOptions },
+    { label: "School", id: "school", type: "select", options: schoolOptions },
+    { label: "Date of Birth", id: "dateOfBirth", type: "date", error: errors.dateOfBirth },
+    { label: "Program", id: "program", type: "select", options: programOptions, disabled: !formData.school || fetching },
+    { label: "Emergency Contact", id: "emergencyContact", type: "text", maxLength: 10, pattern: "[0-9]{10}", error: errors.emergencyContact },
+    { label: "Gender", id: "gender", type: "select", options: genderOptions },
+    ...(showPasswordFields
+      ? [
+          { label: "Password", id: "password", type: "password", error: errors.password },
+          { label: "Confirm Password", id: "confirmPassword", type: "password", error: errors.confirmPassword }
+        ]
+      : [])
   ];
+  
 
   if (fetching) {
     return (
@@ -319,6 +318,8 @@ export const EditUser = () => {
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h2 className="text-xl font-bold mb-6">Edit User</h2>
+        <div className="flex justify-end mb-4">
+  </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -343,17 +344,55 @@ export const EditUser = () => {
                   </div>
                 ) : (
                   <div className="flex flex-col gap-1">
-                    <Input
-                      id={field.id}
-                      name={field.id}
-                      type={field.type}
-                      value={formData[field.id as keyof UserFormData] || ""}
-                      onChange={handleChange}
-                      disabled={field.disabled || loading}
-                      maxLength={field.maxLength}
-                      pattern={field.pattern}
-                      className={(field.disabled ? "bg-gray-100 " : "") + (loading ? "cursor-not-allowed" : "")}
-                    />
+{(field.id === "password" || field.id === "confirmPassword") ? (
+  <div className="relative">
+    <Input
+      id={field.id}
+      name={field.id}
+      type={
+        field.id === "password"
+          ? (showPassword ? "text" : "password")
+          : (showConfirmPassword ? "text" : "password")
+      }
+      value={formData[field.id as keyof UserFormData] || ""}
+      onChange={handleChange}
+      disabled={field.disabled || loading}
+      maxLength={field.maxLength}
+      pattern={field.pattern}
+      className={(field.disabled ? "bg-gray-100 " : "") + (loading ? "cursor-not-allowed" : "")}
+    />
+    <div
+      className="absolute right-3 top-2.5 cursor-pointer text-gray-500"
+      onClick={() =>
+        field.id === "password"
+          ? setShowPassword(prev => !prev)
+          : setShowConfirmPassword(prev => !prev)
+      }
+    >
+      {((field.id === "password" && showPassword) || (field.id === "confirmPassword" && showConfirmPassword)) ? (
+        <EyeOff size={18} />
+      ) : (
+        <Eye size={18} />
+      )}
+    </div>
+    {field.error && (
+      <p className="text-sm text-red-600 mt-1">{field.error}</p>
+    )}
+  </div>
+) : (
+  <Input
+    id={field.id}
+    name={field.id}
+    type={field.type}
+    value={formData[field.id as keyof UserFormData] || ""}
+    onChange={handleChange}
+    disabled={field.disabled || loading}
+    maxLength={field.maxLength}
+    pattern={field.pattern}
+    className={(field.disabled ? "bg-gray-100 " : "") + (loading ? "cursor-not-allowed" : "")}
+  />
+)}
+
                     {field.error && (
                       <p className="text-sm text-red-600">{field.error}</p>
                     )}
@@ -362,6 +401,24 @@ export const EditUser = () => {
               </div>
             ))}
           </div>
+          <Button
+    type="button"
+    variant="outline"
+    onClick={() => {
+      if (showPasswordFields) {
+        setFormData(prev => ({
+          ...prev,
+          password: "",
+          confirmPassword: ""
+        }));
+      }
+      setShowPasswordFields(prev => !prev);
+    }}
+    
+    disabled={loading}
+  >
+    {showPasswordFields ? "Cancel Password Update" : "Change Password"}
+  </Button>
 
           <div className="flex justify-end pt-4">
             <Button type="submit" disabled={loading}>
