@@ -65,8 +65,12 @@ import CommonPrescriptionLayout from "@/private/common-prescription/CommonPrescr
 import VerifyPage from "@/public/VerifyPage";
 import { UserForm } from "@/private/User-Management/UserForm";
 import { EditUser } from "@/private/User-Management/EditUser";
-import ManageDoctors from "@/private/admin-dashboard/ManageDoctors";
-import ManageAssistants from "@/private/admin-dashboard/ManageAssistants";
+import ManageDoctors from "@/private/Manage-Doctors/ManageDoctors";
+import ManageAssistants from "@/private/Manage-Assistants/ManageAssistants";
+import ManageDoctorsLayout from "@/private/Manage-Doctors/ManageDoctorsLayout";
+import ManageAssistantsLayout from "@/private/Manage-Assistants/ManageAssistantsLayout";
+import DeletedAppointments from "@/private/Deleted-Appointments/DeletedAppointments";
+import DeletedAppointmentsLayout from "@/private/Deleted-Appointments/DeletedAppointmentsLayout";
 
 const router = createBrowserRouter([
   // PUBLIC ROUTES
@@ -132,18 +136,32 @@ const router = createBrowserRouter([
       },
       {
         path: "/admin/manage-doctors",
-        element: <ManageDoctors />
+        element: ( <ManageDoctorsLayout>
+          <ManageDoctors />
+        </ManageDoctorsLayout>),
       },
       {
         path: "/admin/manage-assistants",
-        element: <ManageAssistants />
+        element: ( <ManageAssistantsLayout>
+        <ManageAssistants />
+        </ManageAssistantsLayout>
+        ),
       },
       {
         path: "/admin/patient-logs",
         element:  <PatientLogsLayout>
         <PatientLogs />
       </PatientLogsLayout>
+      },
+      {
+        path: "/admin/deleted-appointments",
+        element: (
+          <DeletedAppointmentsLayout>
+            <DeletedAppointments />
+            </DeletedAppointmentsLayout>
+        )
       }
+      
       
     ],
   },

@@ -14,7 +14,8 @@ import {
   PieChart,
   Database,
   Loader2,
-  Pill
+  Pill,
+  CircleX
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -334,20 +335,20 @@ const AdminDashboard = () => {
   <CardContent>
     {loading ? (
       <div className="grid md:grid-cols-3 gap-4">
-        {Array(6).fill(null).map((_, i) => (
+        {Array(9).fill(null).map((_, i) => (
           <Skeleton key={i} className="h-[100px] w-full rounded-lg" />
         ))}
       </div>
     ) : (
       <div className="grid md:grid-cols-3 gap-6">
         {[
-          {
-            title: "Backup & Restore",
-            subtitle: "Manage system data",
-            icon: <Database className="h-5 w-5" />,
-            bg: "bg-amber-100 text-amber-600",
-            route: "/admin/backup"
-          },
+                              // {
+                    //   title: "Appointment Management",
+                    //   subtitle: "Manage all appointments",  
+                    //   icon: <Users className="h-5 w-5" />,
+                    //   bg: "bg-amber-100 text-amber-600",
+                    //   route: "/admin/backup"
+                    // },
           {
             title: "User Management",
             subtitle: "Manage all users",
@@ -382,6 +383,20 @@ const AdminDashboard = () => {
             icon: <HeartPulse className="h-5 w-5" />,
             bg: "bg-purple-100 text-purple-600",
             route: "/admin/patient-logs"
+          },
+          {
+            title: "Rejected Appointments",
+            subtitle: "View Rejected Appointments",
+            icon: <CircleX className="h-5 w-5" />,
+            bg: "bg-red-100 text-red-700",
+            route: "/admin/deleted-appointments"
+          },
+          {
+            title: "Backup & Restore",
+            subtitle: "Manage system data",
+            icon: <Database className="h-5 w-5" />,
+            bg: "bg-amber-100 text-amber-600",
+            route: "/admin/backup"
           },
         ].map((item, idx) => (
           <motion.div
