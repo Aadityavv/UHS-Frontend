@@ -46,16 +46,32 @@ const PatientLogs = () => {
     try {
       if (!date) return;
       setLoading(true);
-      
-      let apiUrl = selectedButton === "Consultation"
-        ? `https://uhs-backend.onrender.com/api/AD/getAppointmentByDate?date=${date}`
-        : `https://uhs-backend.onrender.com/api/AD/getAdHocByDate?date=${date}`;
-
+  
+      const token = localStorage.getItem("token");
+      const userRole = localStorage.getItem("roles") || ""; // 👈 assumes you store role on login
+      console.log("User Role:", userRole);
+      let apiUrl = "";
+  
+      if (selectedButton === "Consultation") {
+        if (userRole === "admin") {
+          apiUrl = `https://uhs-backend.onrender.com/api/admin/getAppointmentsByDate?date=${date}`;
+        } else {
+          apiUrl = `https://uhs-backend.onrender.com/api/AD/getAppointmentByDate?date=${date}`;
+        }
+      } else {
+          if (userRole === "admin") {
+            apiUrl = `https://uhs-backend.onrender.com/api/admin/getAdHocByDate?date=${date}`;
+          } else {
+            apiUrl = `https://uhs-backend.onrender.com/api/AD/getAdHocByDate?date=${date}`;
+          }
+      }
+  
       const resp = await axios.get(apiUrl, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
+  
       const response = resp.data;
+  
       if (selectedButton === "Consultation") {
         const formatData = response.map((rept: any) => ({
           reportId: rept.appointmentId,
@@ -68,15 +84,15 @@ const PatientLogs = () => {
         setReports(formatData);
       } else {
         const formatData = response.map((rept: any) => ({
-          patientName: rept.PatientName,
-          medicineName: rept.MedicineName,
-          quantity: rept.Quantity,
-          patientEmail: rept.PatientEmail,
-          adName: rept.ADName,
-          adEmail: rept.ADEmail,
-          date: formatDate(rept.Date),
-          time: rept.Time,
-        }));
+          patientName: rept.PatientName || rept.patientName || "-",
+          medicineName: rept.MedicineName || rept.medicineName || "-",
+          quantity: rept.Quantity || rept.quantity || "-",
+          patientEmail: rept.PatientEmail || rept.patientEmail || "-",
+          adName: rept.ADName || rept.adName || "-",
+          adEmail: rept.ADEmail || rept.adEmail || "-",
+          date: formatDate(rept.Date || rept.date),
+          time: rept.Time || rept.time || "-",
+        }));        
         setAdHocRep(formatData);
       }
     } catch (error: any) {
@@ -90,6 +106,7 @@ const PatientLogs = () => {
       setLoading(false);
     }
   };
+  
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => setSelectedDate(e.target.value);
   const handleDateFilter = () => {

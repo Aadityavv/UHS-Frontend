@@ -74,7 +74,7 @@ const AdminSignIn = () => {
       localStorage.setItem("token", token);
       localStorage.setItem("email", input.email);
       localStorage.setItem("roles", "admin");
-
+      console.log("Roles: ", localStorage.getItem("roles"));
       toast({
         title: "Login Successful",
         description: "Welcome back, Admin!",
@@ -93,6 +93,7 @@ const AdminSignIn = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <div
