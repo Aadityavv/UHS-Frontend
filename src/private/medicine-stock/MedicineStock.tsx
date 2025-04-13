@@ -176,25 +176,29 @@ const MedicineStock = () => {
   const getRowHighlightColor = (stock: Stock): string => {
     const quantity = Number(stock.quantity);
     const isLowQuantity = !isNaN(quantity) && quantity < 50;
-    
+  
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const expirationDate = new Date(stock.expirationDate);
     expirationDate.setHours(0, 0, 0, 0);
-    
-    const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
-    const thirtyDaysFromNow = new Date(today.getTime() + thirtyDaysInMs);
-    const isExpiringSoon = !isNaN(expirationDate.getTime()) && expirationDate <= thirtyDaysFromNow;
   
-    if (isLowQuantity && isExpiringSoon) {
-      return 'bg-blue-100 hover:bg-blue-200';
+    const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const isExpired = expirationDate < today;
+    const isExpiringSoon = !isExpired && expirationDate <= thirtyDaysFromNow;
+  
+    if (isExpired) {
+      return "bg-gray-200 hover:bg-gray-300";
+    } else if (isLowQuantity && isExpiringSoon) {
+      return "bg-blue-100 hover:bg-blue-200";
     } else if (isLowQuantity) {
-      return 'bg-red-100 hover:bg-red-200';
+      return "bg-red-100 hover:bg-red-200";
     } else if (isExpiringSoon) {
-      return 'bg-yellow-100 hover:bg-yellow-200';
+      return "bg-yellow-100 hover:bg-yellow-200";
     }
-    return 'hover:bg-gray-50';
+  
+    return "hover:bg-gray-50";
   };
+  
 
   const fetchStocks = async () => {
     try {
@@ -1362,6 +1366,29 @@ const MedicineStock = () => {
                 )}
               </div>
             </div>
+
+{/* Legend Section */}
+<div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mt-4">
+  <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+    <div className="flex items-center gap-2">
+      <div className="w-4 h-4 rounded-sm bg-red-200 border border-gray-300"></div>
+      <span className="text-sm text-gray-700">Low Quantity (&lt; 50)</span>
+    </div>
+    <div className="flex items-center gap-2">
+      <div className="w-4 h-4 rounded-sm bg-yellow-200 border border-gray-300"></div>
+      <span className="text-sm text-gray-700">Expiring Soon (&lt; 30 days)</span>
+    </div>
+    <div className="flex items-center gap-2">
+      <div className="w-4 h-4 rounded-sm bg-blue-200 border border-gray-300"></div>
+      <span className="text-sm text-gray-700">Low Quantity + Expiring Soon</span>
+    </div>
+    <div className="flex items-center gap-2">
+      <div className="w-4 h-4 rounded-sm bg-gray-300 border border-gray-400"></div>
+      <span className="text-sm text-gray-700">Expired</span>
+    </div>
+  </div>
+</div>
+
 
             {/* Table Section */}
             <motion.div

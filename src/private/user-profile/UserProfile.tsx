@@ -171,6 +171,7 @@ const UserProfile = () => {
 
     const updateFormValues = (data: any) => {
       const dob = new Date(data.dateOfBirth).toLocaleDateString("en-GB");
+      console.log("Fetching user details...",data);
       setValue("name", data.name || "");
       setValue("patientId", data.email || "");
       setValue("school", data.school || "");
