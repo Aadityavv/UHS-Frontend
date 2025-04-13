@@ -24,6 +24,8 @@ const ManageAssistants = () => {
   const [showPasswordField, setShowPasswordField] = useState(false);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [confirmDeleteEmail, setConfirmDeleteEmail] = useState<string | null>(null);
+
 
   const fetchAssistants = async () => {
     try {
@@ -64,8 +66,7 @@ const ManageAssistants = () => {
     }
   };
 
-  const handleDelete = async (email: string) => {
-    if (!window.confirm("Are you sure you want to delete this assistant?")) return;
+  const performDelete = async (email: string) => {
     try {
       await axios.delete(`https://uhs-backend.onrender.com/api/admin/ad/${email}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -76,6 +77,7 @@ const ManageAssistants = () => {
       toast({ title: "Delete failed", variant: "destructive" });
     }
   };
+  
 
   useEffect(() => {
     fetchAssistants();
@@ -108,7 +110,7 @@ const ManageAssistants = () => {
                   }}>
                     <Pencil className="h-4 w-4 mr-1" /> Edit
                   </Button>
-                  <Button variant="destructive" size="sm" onClick={() => handleDelete(ad.email)}>
+                  <Button variant="destructive" size="sm" onClick={() => setConfirmDeleteEmail(ad.email)}>
                     <Trash2 className="h-4 w-4 mr-1" /> Delete
                   </Button>
                 </div>
@@ -177,6 +179,34 @@ const ManageAssistants = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!confirmDeleteEmail} onOpenChange={() => setConfirmDeleteEmail(null)}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Confirm Deletion</DialogTitle>
+    </DialogHeader>
+    <p>
+      Are you sure you want to delete <strong>
+        {assistants.find(a => a.email === confirmDeleteEmail)?.name}
+      </strong>? This action cannot be undone.
+    </p>
+    <div className="flex justify-end gap-2 mt-4">
+      <Button variant="ghost" onClick={() => setConfirmDeleteEmail(null)}>Cancel</Button>
+      <Button
+        variant="destructive"
+        onClick={() => {
+          if (confirmDeleteEmail) {
+            performDelete(confirmDeleteEmail);
+            setConfirmDeleteEmail(null);
+          }
+        }}
+      >
+        Yes, Delete
+      </Button>
+    </div>
+  </DialogContent>
+</Dialog>
+
     </div>
   );
 };

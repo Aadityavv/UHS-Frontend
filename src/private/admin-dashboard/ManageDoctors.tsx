@@ -24,6 +24,8 @@ const ManageDoctors = () => {
   const [loading, setLoading] = useState(true);
   const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [confirmDeleteName, setConfirmDeleteName] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     name: "",
     designation: "",
@@ -31,9 +33,8 @@ const ManageDoctors = () => {
     password: "",
   });
   const [showPasswordField, setShowPasswordField] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
-
-  
+  const [showPassword, setShowPassword] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const fetchDoctors = async () => {
     try {
@@ -73,8 +74,7 @@ const ManageDoctors = () => {
   };
   
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this doctor?")) return;
+  const performDelete = async (id: string) => {
     try {
       await axios.delete(`https://uhs-backend.onrender.com/api/admin/doctor/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -85,6 +85,7 @@ const ManageDoctors = () => {
       toast({ title: "Delete failed", variant: "destructive" });
     }
   };
+  
 
   useEffect(() => {
     fetchDoctors();
@@ -118,9 +119,17 @@ const ManageDoctors = () => {
                   }}>
                     <Pencil className="h-4 w-4 mr-1" /> Edit
                   </Button>
-                  <Button variant="destructive" size="sm" onClick={() => handleDelete(doctor.doctorId)}>
-                    <Trash2 className="h-4 w-4 mr-1" /> Delete
-                  </Button>
+                  <Button
+  variant="destructive"
+  size="sm"
+  onClick={() => {
+    setConfirmDeleteId(doctor.doctorId);
+    setConfirmDeleteName(doctor.name); // ✅ SET NAME HERE
+  }}
+>
+  <Trash2 className="h-4 w-4 mr-1" /> Delete
+</Button>
+
                 </div>
               </CardContent>
             </Card>
@@ -190,6 +199,42 @@ const ManageDoctors = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!confirmDeleteId} onOpenChange={() => setConfirmDeleteId(null)}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Confirm Deletion</DialogTitle>
+    </DialogHeader>
+    <p>
+  Are you sure you want to delete <strong>{confirmDeleteName}</strong>? This action cannot be undone.
+</p>
+
+    <div className="flex justify-end gap-2 mt-4">
+    <Button variant="ghost" onClick={() => {
+  setConfirmDeleteId(null);
+  setConfirmDeleteName(null); // ✅ RESET ON CANCEL
+}}>
+  Cancel
+</Button>
+
+<Button
+  variant="destructive"
+  onClick={() => {
+    if (confirmDeleteId) {
+      performDelete(confirmDeleteId);
+      setConfirmDeleteId(null);
+      setConfirmDeleteName(null); // ✅ RESET AFTER DELETE
+    }
+  }}
+>
+  Yes, Delete
+</Button>
+
+
+    </div>
+  </DialogContent>
+</Dialog>
+
     </div>
   );
 };

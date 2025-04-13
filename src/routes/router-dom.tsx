@@ -137,8 +137,13 @@ const router = createBrowserRouter([
       {
         path: "/admin/manage-assistants",
         element: <ManageAssistants />
+      },
+      {
+        path: "/admin/patient-logs",
+        element:  <PatientLogsLayout>
+        <PatientLogs />
+      </PatientLogsLayout>
       }
-      
       
     ],
   },

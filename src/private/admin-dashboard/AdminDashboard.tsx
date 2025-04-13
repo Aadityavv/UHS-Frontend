@@ -8,6 +8,7 @@ import {
   Clock,
   ClipboardList,
   HeartPulse,
+  BriefcaseMedical,
   Users,
   UserCheck,
   PieChart,
@@ -319,115 +320,92 @@ const AdminDashboard = () => {
                         <h3 className="text-xl font-bold">Add Nursing Assistant</h3>
                         <p className="text-sm opacity-90 mt-1">Register support doctor</p>
                       </div>
-                      <HeartPulse className="h-12 w-12 opacity-20" />
+                      <BriefcaseMedical className="h-12 w-12 opacity-20" />
                     </div>
                   </CardContent>
                 </Card>
               </motion.div>
             </div>
 
-            {/* System Management */}
-            <Card>
-              <CardHeader>
-                <CardTitle>System Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <Skeleton className="h-[100px] w-full rounded-lg" />
-                    <Skeleton className="h-[100px] w-full rounded-lg" />
-                    <Skeleton className="h-[100px] w-full rounded-lg" />
-                    <Skeleton className="h-[100px] w-full rounded-lg" />
-                    <Skeleton className="h-[100px] w-full rounded-lg" />
-                  </div>
-                ) : (
-                  <div className="grid md:grid-cols-3 gap-4">
+            <Card className="shadow-lg border border-gray-200">
+  <CardHeader>
+    <CardTitle className="text-xl font-semibold text-gray-800">System Management</CardTitle>
+  </CardHeader>
+  <CardContent>
+    {loading ? (
+      <div className="grid md:grid-cols-3 gap-4">
+        {Array(6).fill(null).map((_, i) => (
+          <Skeleton key={i} className="h-[100px] w-full rounded-lg" />
+        ))}
+      </div>
+    ) : (
+      <div className="grid md:grid-cols-3 gap-6">
+        {[
+          {
+            title: "Backup & Restore",
+            subtitle: "Manage system data",
+            icon: <Database className="h-5 w-5" />,
+            bg: "bg-amber-100 text-amber-600",
+            route: "/admin/backup"
+          },
+          {
+            title: "User Management",
+            subtitle: "Manage all users",
+            icon: <Users className="h-5 w-5" />,
+            bg: "bg-blue-100 text-blue-600",
+            route: "/admin/users"
+          },
+          {
+            title: "Stock Management",
+            subtitle: "Manage medical stock",
+            icon: <Pill className="h-5 w-5" />,
+            bg: "bg-green-100 text-green-600",
+            route: "/medicine-stock"
+          },
+          {
+            title: "Manage Doctors",
+            subtitle: "View, edit or remove doctors",
+            icon: <Stethoscope className="h-5 w-5" />,
+            bg: "bg-cyan-100 text-cyan-600",
+            route: "/admin/manage-doctors"
+          },
+          {
+            title: "Manage Assistants",
+            subtitle: "View, edit or remove nursing assistants",
+            icon: <BriefcaseMedical className="h-5 w-5" />,
+            bg: "bg-rose-100 text-rose-600",
+            route: "/admin/manage-assistants"
+          },
+          {
+            title: "Prescriptions",
+            subtitle: "View medical prescriptions",
+            icon: <HeartPulse className="h-5 w-5" />,
+            bg: "bg-purple-100 text-purple-600",
+            route: "/admin/patient-logs"
+          },
+        ].map((item, idx) => (
+          <motion.div
+            key={idx}
+            whileHover={{ scale: 1.02 }}
+            className="bg-white rounded-lg p-5 shadow-md border border-gray-100 cursor-pointer transition-all duration-150"
+            onClick={() => navigate(item.route)}
+          >
+            <div className="flex items-center space-x-4">
+              <div className={`p-3 rounded-full ${item.bg}`}>
+                {item.icon}
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-800">{item.title}</h3>
+                <p className="text-sm text-gray-500">{item.subtitle}</p>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    )}
+  </CardContent>
+</Card>
 
-<motion.div 
-  whileHover={{ scale: 1.02 }}
-  className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 cursor-pointer"
-  onClick={() => navigate("/admin/backup")}
->
-  <div className="flex items-center space-x-3">
-    <div className="p-2 rounded-lg bg-amber-100 text-amber-600">
-      <Database className="h-5 w-5" />
-    </div>
-    <div>
-      <h3 className="font-medium">Backup & Restore</h3>
-      <p className="text-sm text-gray-500">Manage system data</p>
-    </div>
-  </div>
-</motion.div>
-
-<motion.div 
-  whileHover={{ scale: 1.02 }}
-  className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 cursor-pointer"
-  onClick={() => navigate("/admin/users")}
->
-  <div className="flex items-center space-x-3">
-    <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
-      <Users className="h-5 w-5" />
-    </div>
-    <div>
-      <h3 className="font-medium">User Management</h3>
-      <p className="text-sm text-gray-500">Manage all users</p>
-    </div>
-  </div>
-</motion.div>
-
-<motion.div 
-  whileHover={{ scale: 1.02 }}
-  className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 cursor-pointer"
-  onClick={() => navigate("/medicine-stock")}
->
-  <div className="flex items-center space-x-3">
-    <div className="p-2 rounded-lg bg-green-100 text-green-600">
-      <Pill className="h-5 w-5" />
-    </div>
-    <div>
-      <h3 className="font-medium">Stock Management</h3>
-      <p className="text-sm text-gray-500">Manage medical stock</p>
-    </div>
-  </div>
-</motion.div>
-
-<motion.div 
-  whileHover={{ scale: 1.02 }}
-  className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 cursor-pointer"
-  onClick={() => navigate("/admin/manage-doctors")}
->
-  <div className="flex items-center space-x-3">
-    <div className="p-2 rounded-lg bg-cyan-100 text-cyan-600">
-      <Stethoscope className="h-5 w-5" />
-    </div>
-    <div>
-      <h3 className="font-medium">Manage Doctors</h3>
-      <p className="text-sm text-gray-500">View, edit or remove doctors</p>
-    </div>
-  </div>
-</motion.div>
-
-<motion.div 
-  whileHover={{ scale: 1.02 }}
-  className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 cursor-pointer"
-  onClick={() => navigate("/admin/manage-assistants")}
->
-  <div className="flex items-center space-x-3">
-    <div className="p-2 rounded-lg bg-rose-100 text-rose-600">
-      <HeartPulse className="h-5 w-5" />
-    </div>
-    <div>
-      <h3 className="font-medium">Manage Assistants</h3>
-      <p className="text-sm text-gray-500">View, edit or remove nursing assistants</p>
-    </div>
-  </div>
-</motion.div>
-
-
-                  </div>
-                )}
-              </CardContent>
-            </Card>
 
           </div>
         </motion.div>
