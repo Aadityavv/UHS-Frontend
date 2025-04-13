@@ -1290,7 +1290,7 @@ const MedicineStock = () => {
     Medicine Stock Management
   </h1>
   <Select onValueChange={(value) => handleDownloadExcel(value)}>
-    <SelectTrigger className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors cursor-pointer">
+  <SelectTrigger className="bg-indigo-600 text-white px-3 py-1.5 rounded-md flex items-center gap-1 hover:bg-indigo-700 transition-colors cursor-pointer w-auto min-w-fit">
       <Download className="h-5 w-5" />
       <span>Export Excel</span>
     </SelectTrigger>
