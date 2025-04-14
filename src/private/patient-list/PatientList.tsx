@@ -2,7 +2,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { ToastAction } from "@/components/ui/toast";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Search, FileText, Stethoscope, RefreshCcw } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -23,7 +23,9 @@ import {
 } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Search, FileText, Stethoscope, RefreshCcw } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Patient {
   id: string;
@@ -57,60 +59,65 @@ const PatientList = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [manualOpen, setManualOpen] = useState(false);
-const [manualData, setManualData] = useState({
-  email: "",
-  reason: "",
-  preferredDoctor: "",
-  reasonForPref: ""
-});
-
-const handleManualAppointment = async () => {
-  try {
-    // Check if email already exists in patient list
-    const alreadyExists = patients.some(
-      (p) => p.email?.toLowerCase() === manualData.email.toLowerCase()
-    );
-
-    if (alreadyExists) {
-      toast({
-        title: "Appointment already queued",
-        description: "This patient already has an appointment in the queue.",
-        variant: "destructive",
-      });
-      return; // Prevent further execution
-    }
-
-    setSubmitting(true);
-    const token = localStorage.getItem("token");
-    const headers = {
-      Authorization: `Bearer ${token}`,
-    };
-
-    await axios.post(
-      "https://uhs-backend.onrender.com/api/AD/manual/submitAppointment",
-      {
-        email: manualData.email,
-        reason: manualData.reason,
-        preferredDoctor: manualData.preferredDoctor || null,
-        reasonPrefDoctor: manualData.reasonForPref || null,
-      },
-      { headers }
-    );
-
-    toast({ title: "Manual appointment created successfully!" });
-    setManualOpen(false);
-    fetchAllPatients();
-  } catch (error) {
-    handleError(error, "Failed to create manual appointment");
-  } finally {
-    setSubmitting(false);
-  }
-};
-
+  const [manualData, setManualData] = useState({
+    email: "",
+    reason: "",
+    preferredDoctor: "",
+    reasonForPref: ""
+  });
 
   const encodeEmail = (email: string) => {
     const [localPart, domain] = email.split("@");
     return domain ? `${localPart}@${domain.replace(".", ",")}` : email;
+  };
+
+  const handleManualAppointment = async () => {
+    try {
+      // Check if email already exists in patient list
+      const alreadyExists = patients.some(
+        (p) => p.email?.toLowerCase() === manualData.email.toLowerCase()
+      );
+
+      if (alreadyExists) {
+        toast({
+          title: "Appointment already queued",
+          description: "This patient already has an appointment in the queue.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSubmitting(true);
+      const token = localStorage.getItem("token");
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      };
+
+      await axios.post(
+        "https://uhs-backend.onrender.com/api/AD/manual/submitAppointment",
+        {
+          email: manualData.email,
+          reason: manualData.reason,
+          preferredDoctor: manualData.preferredDoctor || null,
+          reasonPrefDoctor: manualData.reasonForPref || null,
+        },
+        { headers }
+      );
+
+      toast({ title: "Manual appointment created successfully!" });
+      setManualOpen(false);
+      setManualData({
+        email: "",
+        reason: "",
+        preferredDoctor: "",
+        reasonForPref: ""
+      });
+      fetchAllPatients();
+    } catch (error) {
+      handleError(error, "Failed to create manual appointment");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const fetchAllPatients = async () => {
@@ -164,51 +171,45 @@ const handleManualAppointment = async () => {
         rawData: p,
       }));
 
-const appointedPatients = await Promise.all(
-  appointedRes.data.map(async (p: any) => {
-    const { preferredDoctor, reasonForPref } = await fetchAppointmentDetails(p.sapEmail);
-    return {
-      id: p.Id,
-      email: p.sapEmail,
-      name: p.name,
-      reason: p.reason,
-      aptId: p.aptId,
-      doctorName: p.doctorName,
-      tokenNum: p.tokenNum || "-",
-      preferredDoctor,
-      reasonForPref,
-      status: "Appointed" as const,
-      rawData: p,
-    };
-  })
-);
-
+      const appointedPatients = await Promise.all(
+        appointedRes.data.map(async (p: any) => {
+          const { preferredDoctor, reasonForPref } = await fetchAppointmentDetails(p.sapEmail);
+          return {
+            id: p.Id,
+            email: p.sapEmail,
+            name: p.name,
+            reason: p.reason,
+            aptId: p.aptId,
+            doctorName: p.doctorName,
+            tokenNum: p.tokenNum || "-",
+            preferredDoctor,
+            reasonForPref,
+            status: "Appointed" as const,
+            rawData: p,
+          };
+        })
+      );
 
       const combinePatients = [...pendingPatients, ...assignedPatients, ...appointedPatients];
+      const statusPriority = { Pending: 0, Assigned: 1, Appointed: 2 };
+      const patientMap = new Map<string, Patient>();
 
-// Priority: Appointed > Assigned > Pending
-const statusPriority = { Pending: 0, Assigned: 1, Appointed: 2 };
+      for (const patient of combinePatients) {
+        const key = patient.email || patient.id;
+        const existing = patientMap.get(key);
 
-const patientMap = new Map<string, Patient>();
+        if (
+          !existing ||
+          statusPriority[patient.status as keyof typeof statusPriority] >
+            statusPriority[existing.status as keyof typeof statusPriority]
+        ) {
+          patientMap.set(key, patient);
+        }
+      }
 
-for (const patient of combinePatients) {
-  const key = patient.email || patient.id;
-  const existing = patientMap.get(key);
-
-  if (
-    !existing ||
-    statusPriority[patient.status as keyof typeof statusPriority] >
-      statusPriority[existing.status as keyof typeof statusPriority]
-  ) {
-    patientMap.set(key, patient);
-  }
-  
-}
-
-const uniquePatients = Array.from(patientMap.values());
-setPatients(uniquePatients);
-setFilteredPatients(uniquePatients);
-
+      const uniquePatients = Array.from(patientMap.values());
+      setPatients(uniquePatients);
+      setFilteredPatients(uniquePatients);
     } catch (error) {
       handleError(error, "Failed to fetch patients");
     } finally {
@@ -236,19 +237,6 @@ setFilteredPatients(uniquePatients);
       return { preferredDoctor: "-", reasonForPref: "-" };
     }
   };
-
-  useEffect(() => {
-    fetchAllPatients();
-    const interval = setInterval(fetchAllPatients, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const filtered = patients.filter((p) =>
-      (p.name || "").toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setFilteredPatients(filtered);
-  }, [searchQuery, patients]);
 
   const fetchAvailableDoctors = async () => {
     try {
@@ -292,11 +280,17 @@ setFilteredPatients(uniquePatients);
         const weight = parseFloat(dialogData.weight);
         const temperature = parseFloat(dialogData.temperature);
 
-        if (isNaN(weight) || weight <= 0 || weight > 300) {
-          throw new Error("Invalid weight value");
+        if (isNaN(weight)) {
+          throw new Error("Please enter a valid weight");
         }
-        if (isNaN(temperature) || temperature < 90 || temperature > 110) {
-          throw new Error("Temperature out of range");
+        if (weight <= 0 || weight > 300) {
+          throw new Error("Weight must be between 0 and 300 kg");
+        }
+        if (isNaN(temperature)) {
+          throw new Error("Please enter a valid temperature");
+        }
+        if (temperature < 90 || temperature > 110) {
+          throw new Error("Temperature must be between 90°F and 110°F");
         }
 
         await axios.post(
@@ -321,31 +315,28 @@ setFilteredPatients(uniquePatients);
           toast({ title: "Appointment Rejected" });
         } catch (err: any) {
           const errorMessage = err.response?.data?.message;
-        
           if (errorMessage && errorMessage.includes("different campus")) {
             toast({
               title: "Access Denied",
               description: "This appointment belongs to a different campus. You cannot reject it.",
               variant: "destructive",
             });
-          } else if (errorMessage) {
-            toast({
-              title: "Error",
-              description: errorMessage,
-              variant: "destructive",
-            });
           } else {
             toast({
               title: "Error",
-              description: "Something went wrong during rejection.",
+              description: errorMessage || "Something went wrong during rejection.",
               variant: "destructive",
             });
           }
-        }        
-        
+        }
       }
 
       fetchAllPatients();
+      setDialogData({
+        pref_doc: "",
+        temperature: "",
+        weight: "",
+      });
     } catch (error) {
       handleError(error, `Failed to ${action} appointment`);
     } finally {
@@ -385,467 +376,562 @@ setFilteredPatients(uniquePatients);
     });
   };
 
+  useEffect(() => {
+    fetchAllPatients();
+    const interval = setInterval(fetchAllPatients, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const filtered = patients.filter((p) =>
+      (p.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.email || "").toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredPatients(filtered);
+  }, [searchQuery, patients]);
+
   return (
-    <div className="bg-[#ECECEC] min-h-[84svh] p-4 md:p-8 space-y-8">
+    <div className="min-h-[84svh] p-4 space-y-6">
       <Toaster />
 
-      <div className="flex space-x-2 items-center bg-white p-4 rounded-lg">
-        <Search className="text-gray-500" />
-        <Input
-          placeholder="Search patients..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="bg-transparent border-none focus-visible:ring-0"
-        />
-        <Button variant="outline" onClick={fetchAllPatients}>
-          <RefreshCcw className="h-4 w-4 mr-2" /> Refresh
-        </Button>
-
-        {/* Add this button next to the Refresh button */}
-<Button variant="outline" onClick={() => setManualOpen(true)}>
-  <PlusCircle className="h-4 w-4 mr-2" /> New Appointment
-</Button>
-
-{/* Add this dialog component */}
-<Dialog open={manualOpen} onOpenChange={(open) => {
-  if (open) {
-    fetchAvailableDoctors(); // Fetch doctors when dialog opens
-  }
-  setManualOpen(open);
-}}>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Create Manual Appointment</DialogTitle>
-      <DialogDescription>
-        Add a new patient to the queue manually
-      </DialogDescription>
-    </DialogHeader>
-    <div className="space-y-4">
-      <Input
-        placeholder="Patient Email"
-        value={manualData.email}
-        onChange={(e) => setManualData({ ...manualData, email: e.target.value.toLowerCase() })}
-        type="email"
-        required
-      />
-      <Input
-        placeholder="Reason for Appointment"
-        value={manualData.reason}
-        onChange={(e) => setManualData({ ...manualData, reason: e.target.value })}
-        required
-      />
-      {/* <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">
-          Preferred Doctor (optional)
-        </label>
-        <select
-          className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-600"
-          value={manualData.preferredDoctor}
-          onChange={(e) => setManualData({ ...manualData, preferredDoctor: e.target.value })}
-        >
-          <option value="">Select a doctor</option>
-          {doctors.map((doctor) => (
-            <option key={doctor.id} value={doctor.id}>
-              {doctor.name}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">
-          Reason for Preference (optional)
-        </label>
-        <Textarea
-          value={manualData.reasonForPref}
-          onChange={(e) => setManualData({ ...manualData, reasonForPref: e.target.value })}
-          placeholder="Explain your preference"
-          rows={3}
-        />
-      </div> */}
-      <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={() => setManualOpen(false)}>
-          Cancel
-        </Button>
-        <Button 
-          onClick={handleManualAppointment}
-          disabled={submitting || !manualData.email || !manualData.reason}
-        >
-          {submitting ? "Creating..." : "Create Appointment"}
-        </Button>
-      </div>
-    </div>
-  </DialogContent>
-</Dialog>
+      {/* Search and Actions Bar */}
+      <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search patients by name or email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 bg-background"
+          />
+        </div>
+        
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={fetchAllPatients} className="flex-1 md:flex-none">
+            <RefreshCcw className="h-4 w-4 mr-2" />
+            <span className="hidden md:inline">Refresh</span>
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setManualOpen(true)}
+            className="flex-1 md:flex-none"
+          >
+            <PlusCircle className="h-4 w-4 mr-2" />
+            <span className="hidden md:inline">New Appointment</span>
+          </Button>
+        </div>
       </div>
 
+      {/* Manual Appointment Dialog */}
+      <Dialog open={manualOpen} onOpenChange={setManualOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Manual Appointment</DialogTitle>
+            <DialogDescription>
+              Add a new patient to the queue manually
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Patient Email *</label>
+              <Input
+                placeholder="patient@example.com"
+                value={manualData.email}
+                onChange={(e) => setManualData({ ...manualData, email: e.target.value.toLowerCase() })}
+                type="email"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Reason for Appointment *</label>
+              <Input
+                placeholder="Reason for visit"
+                value={manualData.reason}
+                onChange={(e) => setManualData({ ...manualData, reason: e.target.value })}
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Preferred Doctor (optional)</label>
+              <Select
+                value={manualData.preferredDoctor}
+                onValueChange={(value) => setManualData({ ...manualData, preferredDoctor: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a doctor" />
+                </SelectTrigger>
+                <SelectContent>
+                  {doctors.map((doctor) => (
+                    <SelectItem key={doctor.id} value={doctor.id}>
+                      {doctor.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Reason for Preference (optional)</label>
+              <Textarea
+                value={manualData.reasonForPref}
+                onChange={(e) => setManualData({ ...manualData, reasonForPref: e.target.value })}
+                placeholder="Explain your preference"
+                rows={3}
+              />
+            </div>
+            
+            <div className="flex justify-end gap-2 pt-2">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setManualOpen(false);
+                  setManualData({
+                    email: "",
+                    reason: "",
+                    preferredDoctor: "",
+                    reasonForPref: ""
+                  });
+                }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleManualAppointment}
+                disabled={submitting || !manualData.email || !manualData.reason}
+              >
+                {submitting ? "Creating..." : "Create Appointment"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Loading State */}
       {loading ? (
         <div className="space-y-4">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-20 w-full bg-gray-200/50 animate-pulse rounded-lg" />
+            <div key={i} className="p-4 border rounded-lg">
+              <div className="flex justify-between items-center">
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-5 w-20" />
+              </div>
+              <div className="mt-3 space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+              <div className="mt-3 flex gap-2">
+                <Skeleton className="h-9 w-20" />
+                <Skeleton className="h-9 w-20" />
+              </div>
+            </div>
           ))}
         </div>
       ) : (
         <>
-          {/* DESKTOP */}
-          <div className="hidden md:block">
-            <Table className="bg-white rounded-lg">
-              <TableHeader className="bg-gray-50">
+          {/* Desktop Table */}
+          <div className="hidden md:block border rounded-lg overflow-hidden">
+            <Table>
+              <TableHeader className="bg-muted">
                 <TableRow>
-                  <TableHead>Name</TableHead>
+                  <TableHead className="w-[200px]">Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Reason</TableHead>
                   <TableHead>Preferred Doctor</TableHead>
-                  <TableHead>Doctor</TableHead>
+                  <TableHead>Assigned Doctor</TableHead>
                   <TableHead>Token</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredPatients.map((patient) => (
-                  <TableRow key={patient.id}>
-                    <TableCell>{patient.name}</TableCell>
-                    <TableCell>{patient.email || "-"}</TableCell>
-                    <TableCell>{patient.reason || "-"}</TableCell>
-                    <TableCell>{patient.preferredDoctor || "-"}</TableCell>
-                    <TableCell>{patient.doctorName || "-"}</TableCell>
-                    <TableCell>{patient.tokenNum || "-"}</TableCell>
-                    <TableCell>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          patient.status === "Pending"
-                            ? "bg-amber-100 text-amber-800"
-                            : patient.status === "Assigned"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-green-100 text-green-800"
-                        }`}
-                      >
-                        {patient.status}
-                      </span>
-                    </TableCell>
-                    <TableCell className="space-x-2 flex justify-end">
-                      {patient.status === "Pending" && (
-                        <Dialog
-                          onOpenChange={(open) => {
-                            if (open) {
-                              setSelectedPatient(patient);
-                              fetchAvailableDoctors();
-                            }
-                          }}
+                {filteredPatients.length > 0 ? (
+                  filteredPatients.map((patient) => (
+                    <TableRow key={patient.id}>
+                      <TableCell className="font-medium">{patient.name}</TableCell>
+                      <TableCell className="text-muted-foreground">{patient.email || "-"}</TableCell>
+                      <TableCell>{patient.reason || "-"}</TableCell>
+                      <TableCell>{patient.preferredDoctor || "-"}</TableCell>
+                      <TableCell>{patient.doctorName || "-"}</TableCell>
+                      <TableCell>{patient.tokenNum || "-"}</TableCell>
+                      <TableCell>
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                            patient.status === "Pending"
+                              ? "bg-amber-100 text-amber-800"
+                              : patient.status === "Assigned"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-green-100 text-green-800"
+                          }`}
                         >
-<div className="flex space-x-2">
-  <DialogTrigger asChild>
-    <Button variant="outline" size="sm">
-      <Stethoscope className="mr-2 h-4 w-4" /> Assign
-    </Button>
-  </DialogTrigger>
+                          {patient.status}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right space-x-2">
+                        {patient.status === "Pending" && (
+                          <Dialog
+                            onOpenChange={(open) => {
+                              if (open) {
+                                setSelectedPatient(patient);
+                                fetchAvailableDoctors();
+                              }
+                            }}
+                          >
+                            <div className="flex gap-2 justify-end">
+                              <DialogTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  <Stethoscope className="mr-2 h-4 w-4" /> Assign
+                                </Button>
+                              </DialogTrigger>
 
-  <Button
-    variant="default"
-    size="sm"
-    onClick={() =>
-      navigate("/adhoc", {
-        state: {
-          name: patient.name,
-          email: patient.email,
-          reason: patient.reason,
-        },
-      })
-    }
-  >
-    Ad-Hoc
-  </Button>
-</div>
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() =>
+                                  navigate("/adhoc", {
+                                    state: {
+                                      name: patient.name,
+                                      email: patient.email,
+                                      reason: patient.reason,
+                                    },
+                                  })
+                                }
+                              >
+                                Ad-Hoc
+                              </Button>
+                            </div>
 
-                          <DialogContent className="max-w-md">
-                            <DialogHeader>
-                              <DialogTitle>Assign Doctor</DialogTitle>
-                              <DialogDescription>
-                                Assign a doctor to {patient.name}
-                                <br />
-                                <strong>Preferred Doctor:</strong> {patient.preferredDoctor}
-                                <br />
-                                <strong>Reason For Preference:</strong> {patient.reasonForPref}
-                              </DialogDescription>
-                            </DialogHeader>
-                            <form
-                              onSubmit={(e) => {
-                                e.preventDefault();
-                                handleAction("assign", selectedPatient);
-                              }}
-                              className="space-y-4"
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Assign Doctor</DialogTitle>
+                                <DialogDescription>
+                                  Assign a doctor to {patient.name}
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-1 text-sm">
+                                <p><strong>Preferred Doctor:</strong> {patient.preferredDoctor}</p>
+                                <p><strong>Reason For Preference:</strong> {patient.reasonForPref}</p>
+                              </div>
+                              <form
+                                onSubmit={(e) => {
+                                  e.preventDefault();
+                                  handleAction("assign", selectedPatient);
+                                }}
+                                className="space-y-4 pt-4"
+                              >
+                                <div>
+                                  <label className="block text-sm font-medium mb-1">Select Doctor *</label>
+                                  <Select
+                                    value={dialogData.pref_doc}
+                                    onValueChange={(value) =>
+                                      setDialogData({ ...dialogData, pref_doc: value })
+                                    }
+                                    required
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Choose a doctor" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {doctors.map((doctor) => (
+                                        <SelectItem key={doctor.id} value={doctor.id}>
+                                          {doctor.name}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="block text-sm font-medium mb-1">Temperature (°F) *</label>
+                                    <Input
+                                      type="number"
+                                      min="90"
+                                      max="110"
+                                      step="0.1"
+                                      value={dialogData.temperature}
+                                      onChange={(e) =>
+                                        setDialogData({ ...dialogData, temperature: e.target.value })
+                                      }
+                                      required
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-sm font-medium mb-1">Weight (kg) *</label>
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      step="0.1"
+                                      value={dialogData.weight}
+                                      onChange={(e) =>
+                                        setDialogData({ ...dialogData, weight: e.target.value })
+                                      }
+                                      required
+                                    />
+                                  </div>
+                                </div>
+                                <div className="flex justify-between pt-2">
+                                  <Button
+                                    type="button"
+                                    variant="destructive"
+                                    onClick={() => handleAction("reject", selectedPatient)}
+                                    disabled={submitting}
+                                  >
+                                    Reject
+                                  </Button>
+                                  <Button type="submit" disabled={submitting}>
+                                    {submitting ? "Submitting..." : "Confirm"}
+                                  </Button>
+                                </div>
+                              </form>
+                            </DialogContent>
+                          </Dialog>
+                        )}
+
+                        {patient.status === "Appointed" && (
+                          <div className="flex gap-2 justify-end">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => navigate(`/appointed-prescription?id=${patient.aptId}`)}
                             >
-                              <div>
-                                <label>Select Doctor *</label>
-                                <select
-                                  className="w-full p-2 border rounded-md"
-                                  value={dialogData.pref_doc}
-                                  onChange={(e) =>
-                                    setDialogData({ ...dialogData, pref_doc: e.target.value })
-                                  }
-                                  required
-                                >
-                                  <option value="">Choose a doctor</option>
-                                  {doctors.map((doctor) => (
-                                    <option key={doctor.id} value={doctor.id}>
-                                      {doctor.name}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <label>Temperature (°F) *</label>
-                                  <Input
-                                    type="number"
-                                    min="90"
-                                    max="110"
-                                    step="0.1"
-                                    value={dialogData.temperature}
-                                    onChange={(e) =>
-                                      setDialogData({ ...dialogData, temperature: e.target.value })
-                                    }
-                                    required
-                                  />
-                                </div>
-                                <div>
-                                  <label>Weight (kg) *</label>
-                                  <Input
-                                    type="number"
-                                    min="0"
-                                    step="0.1"
-                                    value={dialogData.weight}
-                                    onChange={(e) =>
-                                      setDialogData({ ...dialogData, weight: e.target.value })
-                                    }
-                                    required
-                                  />
-                                </div>
-                              </div>
-                              <div className="flex justify-between">
-                                <Button
-                                  type="button"
-                                  variant="destructive"
-                                  onClick={() => handleAction("reject", selectedPatient)}
-                                  disabled={submitting}
-                                >
-                                  Reject
-                                </Button>
-                                <Button type="submit" disabled={submitting}>
-                                  {submitting ? "Submitting..." : "Confirm"}
-                                </Button>
-                              </div>
-                            </form>
-                          </DialogContent>
-                        </Dialog>
-
-                        
-                      )}
-
-                      {patient.status === "Appointed" && (
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigate(`/appointed-prescription?id=${patient.aptId}`)}
-                          >
-                            <FileText className="h-4 w-4 mr-2" /> Prescription
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleCompleteAppointment(patient.email || "")}
-                          >
-                            Complete
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleAction("reject", patient)}
-                          >
-                            Reject
-                          </Button>
-                        </div>
-                      )}
+                              <FileText className="h-4 w-4 mr-2" /> Prescription
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleCompleteAppointment(patient.email || "")}
+                            >
+                              Complete
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleAction("reject", patient)}
+                            >
+                              Reject
+                            </Button>
+                          </div>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                      No patients found
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>
 
-          {/* MOBILE */}
-          <div className="md:hidden space-y-4">
-            {filteredPatients.map((patient) => (
-              <div key={patient.id} className="bg-white p-4 rounded-lg shadow-sm">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="font-medium">{patient.name}</p>
-                    <p className="text-sm text-gray-500">{patient.email || "-"}</p>
-                  </div>
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      patient.status === "Pending"
-                        ? "bg-amber-100 text-amber-800"
-                        : patient.status === "Assigned"
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-green-100 text-green-800"
-                    }`}
-                  >
-                    {patient.status}
-                  </span>
-                </div>
-                <div className="mt-4 space-y-2 text-sm">
-                  <p><strong>Reason:</strong> {patient.reason || "-"}</p>
-                  <p><strong>Preferred Doctor:</strong> {patient.preferredDoctor || "-"}</p>
-                  <p><strong>Assigned Doctor:</strong> {patient.doctorName || "-"}</p>
-                  <p><strong>Token:</strong> {patient.tokenNum || "-"}</p>
-                </div>
-                <div className="mt-4 flex space-x-2">
-                  {patient.status === "Pending" && (
-                    <Dialog
-                      onOpenChange={(open) => {
-                        if (open) {
-                          setSelectedPatient(patient);
-                          fetchAvailableDoctors();
-                        }
-                      }}
-                    >
-<div className="flex space-x-2">
-  <DialogTrigger asChild>
-    <Button variant="outline" size="sm">
-      <Stethoscope className="mr-2 h-4 w-4" /> Assign
-    </Button>
-  </DialogTrigger>
-
-  <Button
-    variant="default"
-    size="sm"
-    onClick={() =>
-      navigate("/adhoc", {
-        state: {
-          name: patient.name,
-          email: patient.email,
-          reason: patient.reason,
-        },
-      })
-    }
-  >
-    Ad-Hoc
-  </Button>
-</div>
-
-                      <DialogContent className="max-w-md">
-                        <DialogHeader>
-                          <DialogTitle>Assign Doctor</DialogTitle>
-                          <DialogDescription>
-                            Assign a doctor to {patient.name}
-                            <br />
-                            <strong>Preferred Doctor:</strong> {patient.preferredDoctor}
-                            <br />
-                            <strong>Reason For Preference:</strong> {patient.reasonForPref}
-                          </DialogDescription>
-                        </DialogHeader>
-                        <form
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                            handleAction("assign", selectedPatient);
-                          }}
-                          className="space-y-4"
-                        >
-                          <div>
-                            <label>Select Doctor *</label>
-                            <select
-                              className="w-full p-2 border rounded-md"
-                              value={dialogData.pref_doc}
-                              onChange={(e) =>
-                                setDialogData({ ...dialogData, pref_doc: e.target.value })
-                              }
-                              required
-                            >
-                              <option value="">Choose a doctor</option>
-                              {doctors.map((doctor) => (
-                                <option key={doctor.id} value={doctor.id}>
-                                  {doctor.name}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <label>Temperature (°F) *</label>
-                              <Input
-                                type="number"
-                                min="90"
-                                max="110"
-                                step="0.1"
-                                value={dialogData.temperature}
-                                onChange={(e) =>
-                                  setDialogData({ ...dialogData, temperature: e.target.value })
-                                }
-                                required
-                              />
-                            </div>
-                            <div>
-                              <label>Weight (kg) *</label>
-                              <Input
-                                type="number"
-                                min="0"
-                                step="0.1"
-                                value={dialogData.weight}
-                                onChange={(e) =>
-                                  setDialogData({ ...dialogData, weight: e.target.value })
-                                }
-                                required
-                              />
-                            </div>
-                          </div>
-                          <div className="flex justify-between">
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              onClick={() => handleAction("reject", selectedPatient)}
-                              disabled={submitting}
-                            >
-                              Reject
-                            </Button>
-                            <Button type="submit" disabled={submitting}>
-                              {submitting ? "Submitting..." : "Confirm"}
-                            </Button>
-                          </div>
-                        </form>
-                      </DialogContent>
-                    </Dialog>
-                  )}
-
-                  {patient.status === "Appointed" && (
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => navigate(`/appointed-prescription?id=${patient.aptId}`)}
-                      >
-                        <FileText className="h-4 w-4 mr-2" /> Prescription
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleCompleteAppointment(patient.email || "")}
-                      >
-                        Complete
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleAction("reject", patient)}
-                      >
-                        Reject
-                      </Button>
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3">
+            {filteredPatients.length > 0 ? (
+              filteredPatients.map((patient) => (
+                <div key={patient.id} className="border rounded-lg p-4 bg-background">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-medium">{patient.name}</h3>
+                      <p className="text-sm text-muted-foreground">{patient.email || "-"}</p>
                     </div>
-                  )}
+                    <span
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                        patient.status === "Pending"
+                          ? "bg-amber-100 text-amber-800"
+                          : patient.status === "Assigned"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      {patient.status}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-2 gap-y-2 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Reason</p>
+                      <p>{patient.reason || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Token</p>
+                      <p>{patient.tokenNum || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Preferred Doctor</p>
+                      <p>{patient.preferredDoctor || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Assigned Doctor</p>
+                      <p>{patient.doctorName || "-"}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {patient.status === "Pending" && (
+                      <Dialog
+                        onOpenChange={(open) => {
+                          if (open) {
+                            setSelectedPatient(patient);
+                            fetchAvailableDoctors();
+                          }
+                        }}
+                      >
+                        <div className="flex gap-2 w-full">
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm" className="flex-1">
+                              <Stethoscope className="h-4 w-4 mr-2" /> Assign
+                            </Button>
+                          </DialogTrigger>
+
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className="flex-1"
+                            onClick={() =>
+                              navigate("/adhoc", {
+                                state: {
+                                  name: patient.name,
+                                  email: patient.email,
+                                  reason: patient.reason,
+                                },
+                              })
+                            }
+                          >
+                            Ad-Hoc
+                          </Button>
+                        </div>
+
+                        <DialogContent className="max-w-[95vw] rounded-lg">
+                          <DialogHeader>
+                            <DialogTitle>Assign Doctor</DialogTitle>
+                            <DialogDescription>
+                              Assign a doctor to {patient.name}
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-1 text-sm">
+                            <p><strong>Preferred Doctor:</strong> {patient.preferredDoctor}</p>
+                            <p><strong>Reason For Preference:</strong> {patient.reasonForPref}</p>
+                          </div>
+                          <form
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              handleAction("assign", selectedPatient);
+                            }}
+                            className="space-y-4 pt-4"
+                          >
+                            <div>
+                              <label className="block text-sm font-medium mb-1">Select Doctor *</label>
+                              <Select
+                                value={dialogData.pref_doc}
+                                onValueChange={(value) =>
+                                  setDialogData({ ...dialogData, pref_doc: value })
+                                }
+                                required
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Choose a doctor" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {doctors.map((doctor) => (
+                                    <SelectItem key={doctor.id} value={doctor.id}>
+                                      {doctor.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-medium mb-1">Temperature (°F) *</label>
+                                <Input
+                                  type="number"
+                                  min="90"
+                                  max="110"
+                                  step="0.1"
+                                  value={dialogData.temperature}
+                                  onChange={(e) =>
+                                    setDialogData({ ...dialogData, temperature: e.target.value })
+                                  }
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium mb-1">Weight (kg) *</label>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="0.1"
+                                  value={dialogData.weight}
+                                  onChange={(e) =>
+                                    setDialogData({ ...dialogData, weight: e.target.value })
+                                  }
+                                  required
+                                />
+                              </div>
+                            </div>
+                            <div className="flex justify-between pt-2">
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                onClick={() => handleAction("reject", selectedPatient)}
+                                disabled={submitting}
+                              >
+                                Reject
+                              </Button>
+                              <Button type="submit" disabled={submitting}>
+                                {submitting ? "Submitting..." : "Confirm"}
+                              </Button>
+                            </div>
+                          </form>
+                        </DialogContent>
+                      </Dialog>
+                    )}
+
+                    {patient.status === "Appointed" && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => navigate(`/appointed-prescription?id=${patient.aptId}`)}
+                        >
+                          <FileText className="h-4 w-4 mr-2" /> Prescription
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => handleCompleteAppointment(patient.email || "")}
+                        >
+                          Complete
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => handleAction("reject", patient)}
+                        >
+                          Reject
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="flex flex-col items-center justify-center h-64 text-center">
+                <p className="text-muted-foreground">No patients found</p>
+                <Button variant="ghost" onClick={fetchAllPatients} className="mt-2">
+                  Refresh
+                </Button>
               </div>
-            ))}
+            )}
           </div>
         </>
       )}
