@@ -27,6 +27,8 @@ const PatientDetails = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
   const [isFollowUp, setIsFollowUp] = useState<boolean>(false);
+  const [fetchedOnce, setFetchedOnce] = useState(false);
+
 
   // Date formatting function
   const formatDate = (dateString: string) => {
@@ -91,9 +93,13 @@ const PatientDetails = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+
   useEffect(() => {
     const fetchData = async () => {
+      if (fetchedOnce) return;
+  
       try {
+        setFetchedOnce(true); // mark fetch started to block repeat
         const [patientResp, medResp] = await Promise.all([
           axios.get("https://uhs-backend.onrender.com/api/doctor/getPatient", {
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -106,7 +112,7 @@ const PatientDetails = () => {
             },
           }),
         ]);
-
+  
         const response = patientResp.data;
         const formatData = {
           name: response.patient.name,
@@ -129,7 +135,7 @@ const PatientDetails = () => {
           time: response.time,
           residenceType: response.medicalDetails.residenceType,
         };
-
+  
         const checkFollowUp = async (email: string) => {
           try {
             const { data } = await axios.get(
@@ -146,11 +152,10 @@ const PatientDetails = () => {
             setIsFollowUp(false);
           }
         };
-        
+  
         setNdata(formatData);
         setStock(medResp.data);
-        checkFollowUp(response.patient.email); 
-
+        checkFollowUp(response.patient.email);
       } catch (err: any) {
         toast({
           variant: "destructive",
@@ -160,9 +165,10 @@ const PatientDetails = () => {
         });
       }
     };
-
+  
     fetchData();
-  }, []);
+  }, [fetchedOnce]); // <-- Include this to ensure the useEffect watches the guard
+  
 
   const handleSubmit = async () => {
     try {
@@ -341,8 +347,7 @@ const PatientDetails = () => {
       }
   
       navigate(`/prescription?id=${appointmentId}`, {
-        state: { prevPath: window.location.pathname },
-        replace: true, 
+        state: { prevPath: window.location.pathname }
       });
     } catch (error: any) {
       toast({
