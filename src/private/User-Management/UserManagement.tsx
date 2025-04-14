@@ -22,6 +22,7 @@ type User = {
   phoneNumber: string;
   bloodGroup: string;
   school: string;
+  createdAt: string;
 };
 
 
@@ -32,13 +33,29 @@ const UserManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortKey, setSortKey] = useState<keyof User | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+
 
 // Filter users based on search term
-const filteredUsers = users.filter(user =>
+const sortedUsers = [...users].sort((a, b) => {
+  if (!sortKey) return 0;
+  const aValue = a[sortKey];
+  const bValue = b[sortKey];
+  
+  if (aValue && bValue) {
+    if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+    if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+  }
+  return 0;
+});
+
+const filteredUsers = sortedUsers.filter(user =>
   Object.values(user).some(value =>
     value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
   )
 );
+
 
   const fetchUsers = async () => {
     try {
@@ -51,6 +68,7 @@ const filteredUsers = users.filter(user =>
 
       if (Array.isArray(response.data)) {
         setUsers(response.data);
+        console.log(response.data);
       } else {
         throw new Error("Invalid users data format");
       }
@@ -83,6 +101,16 @@ const filteredUsers = users.filter(user =>
 
   useEffect(() => { fetchUsers(); }, []);
 
+  const handleSort = (key: keyof User) => {
+    if (sortKey === key) {
+      // Toggle sort direction
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDirection("asc");
+    }
+  };
+  
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -124,49 +152,69 @@ const filteredUsers = users.filter(user =>
             {users.length === 0 ? "No users found" : "No matching users found"}
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Email</TableHead>
-                <TableHead>Sap ID</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Blood Group</TableHead>
-                <TableHead>School</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.sapId}</TableCell>
-                  <TableCell>{user.name}</TableCell>
-                  <TableCell>{user.phoneNumber}</TableCell>
-                  <TableCell>{user.bloodGroup}</TableCell>
-                  <TableCell>{user.school}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => navigate(`/admin/users/edit/${user.email}`)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteUser(user.email)}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-600" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead onClick={() => handleSort("email")} className="cursor-pointer">
+        Email {sortKey === "email" && (sortDirection === "asc" ? "↑" : "↓")}
+      </TableHead>
+      <TableHead onClick={() => handleSort("sapId")} className="cursor-pointer">
+        Sap ID {sortKey === "sapId" && (sortDirection === "asc" ? "↑" : "↓")}
+      </TableHead>
+      <TableHead onClick={() => handleSort("name")} className="cursor-pointer">
+        Name {sortKey === "name" && (sortDirection === "asc" ? "↑" : "↓")}
+      </TableHead>
+      <TableHead>Phone</TableHead>
+      <TableHead>Blood Group</TableHead>
+      <TableHead>School</TableHead>
+      <TableHead onClick={() => handleSort("createdAt")} className="cursor-pointer">
+        Joined on {sortKey === "createdAt" && (sortDirection === "asc" ? "↑" : "↓")}
+      </TableHead>
+      <TableHead className="text-right">Actions</TableHead>
+    </TableRow>
+  </TableHeader>
+
+  <TableBody>
+    {filteredUsers.map((user) => (
+      <TableRow key={user.id}>
+        <TableCell>{user.email}</TableCell>
+        <TableCell>{user.sapId}</TableCell>
+        <TableCell>{user.name}</TableCell>
+        <TableCell>{user.phoneNumber}</TableCell>
+        <TableCell>{user.bloodGroup}</TableCell>
+        <TableCell>{user.school}</TableCell>
+        <TableCell>
+          {user.createdAt
+            ? new Date(user.createdAt.replace(" ", "T")).toLocaleDateString("en-IN", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })
+            : "N/A"}
+        </TableCell>
+        <TableCell className="text-right">
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(`/admin/users/edit/${user.email}`)}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => deleteUser(user.email)}
+            >
+              <Trash2 className="h-4 w-4 text-red-600" />
+            </Button>
+          </div>
+        </TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>
+
         )}
       </div>
     </div>
