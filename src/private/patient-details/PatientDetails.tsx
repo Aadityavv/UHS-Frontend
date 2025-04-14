@@ -24,8 +24,9 @@ const PatientDetails = () => {
   const [selectedMedicine, setSelectedMedicine] = useState<Record<number, string>>({}); 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
-  const [, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
+  const [isFollowUp, setIsFollowUp] = useState<boolean>(false);
 
   // Date formatting function
   const formatDate = (dateString: string) => {
@@ -37,7 +38,7 @@ const PatientDetails = () => {
     return `${day}/${month}/${year}`;
   };
 
-  const [currentDate, setCurrentDate] = useState(formatDate(new Date().toISOString())); // State for current date
+  const [currentDate, setCurrentDate] = useState(formatDate(new Date().toISOString()));
 
   // Animation variants
   const staggerContainer = {
@@ -74,11 +75,11 @@ const PatientDetails = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       const now = new Date();
-      setCurrentTime(now.toLocaleTimeString()); // Update current time
-      setCurrentDate(formatDate(now.toISOString())); // Update current date
-    }, 1000); // Update every second
+      setCurrentTime(now.toLocaleTimeString());
+      setCurrentDate(formatDate(now.toISOString()));
+    }, 1000);
 
-    return () => clearInterval(interval); // Cleanup interval on unmount
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -124,13 +125,32 @@ const PatientDetails = () => {
           weight: response.medicalDetails.weight,
           temp: response.temp,
           designation: response.designation,
-          date: formatDate(currentDate), // Use formatted date
+          date: formatDate(currentDate),
           time: response.time,
           residenceType: response.medicalDetails.residenceType,
         };
 
+        const checkFollowUp = async (email: string) => {
+          try {
+            const { data } = await axios.get(
+              `https://uhs-backend.onrender.com/api/doctor/appointment/isFollowUp/${email}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              }
+            );
+            setIsFollowUp(data);
+          } catch (err) {
+            console.error("Failed to fetch follow-up status");
+            setIsFollowUp(false);
+          }
+        };
+        
         setNdata(formatData);
         setStock(medResp.data);
+        checkFollowUp(response.patient.email); 
+
       } catch (err: any) {
         toast({
           variant: "destructive",
@@ -146,7 +166,6 @@ const PatientDetails = () => {
 
   const handleSubmit = async () => {
     try {
-      // Validate Diagnosis
       if (!diagnosis.trim()) {
         toast({
           variant: "destructive",
@@ -157,7 +176,6 @@ const PatientDetails = () => {
         return;
       }
   
-      // Validate Recommendations
       if (!dietary.trim()) {
         toast({
           variant: "destructive",
@@ -168,7 +186,6 @@ const PatientDetails = () => {
         return;
       }
   
-      // Validate Tests
       if (!tests.trim()) {
         toast({
           variant: "destructive",
@@ -179,7 +196,6 @@ const PatientDetails = () => {
         return;
       }
   
-      // Validate Medications
       const medAry = rows.map(row => {
         const medicineId = selectedMedicine[row.id];
         const medicineName = medLst[row.id];
@@ -199,7 +215,6 @@ const PatientDetails = () => {
           (document.querySelector(`.suggestion-${row.id}`) as HTMLTextAreaElement)?.value || ""
         );
   
-        // Check if any field is filled in (duration or dosage)
         const isAnyFieldFilled =
           duration > 0 ||
           dosageMorning > 0 ||
@@ -207,7 +222,6 @@ const PatientDetails = () => {
           dosageEvening > 0 ||
           suggestion.trim() !== "";
   
-        // If fields are filled but medicine is NOT selected
         if (isAnyFieldFilled && !medicineId) {
           toast({
             variant: "destructive",
@@ -218,12 +232,10 @@ const PatientDetails = () => {
           throw new Error("Validation failed");
         }
   
-        // If everything is empty and no medicine, skip adding to meds array
         if (!isAnyFieldFilled && !medicineId) {
           return null;
         }
   
-        // If medicine is selected and duration isn't valid
         if (medicineId && duration < 1) {
           toast({
             variant: "destructive",
@@ -245,7 +257,6 @@ const PatientDetails = () => {
         };
       }).filter(Boolean);
   
-      // Submit to backend
       const resp = await axios.post(
         "https://uhs-backend.onrender.com/api/doctor/prescription/submit",
         {
@@ -272,7 +283,6 @@ const PatientDetails = () => {
       }
     }
   };
-  
 
   const handleRelease = async () => {
     try {
@@ -308,44 +318,43 @@ const PatientDetails = () => {
         toast({
           variant: "destructive",
           title: "Missing Email",
-          description: "No patient email found for fetching prescription history.",
+          description: "No patient email found for fetching prescription.",
         });
         return;
       }
-
   
       const { data } = await axios.get(
-        `https://uhs-backend.onrender.com/api/doctor/prescription/${rawEmail}`,
+        `https://uhs-backend.onrender.com/api/doctor/prescription/latest/${rawEmail}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
   
-      const history = data?.response;
-  
-      if (!history || Object.keys(history).length === 0) {
+      const appointmentId = data.appointmentId;
+      if (!appointmentId) {
         toast({
           variant: "destructive",
-          title: "No Prescription History",
-          description: "This patient has no past prescriptions.",
+          title: "No Last Prescription Found",
+          description: "Could not find a valid previous prescription record.",
         });
         return;
       }
   
-      navigate(`/prescription-history?email=${rawEmail}`);
+      navigate(`/prescription?id=${appointmentId}`, {
+        state: { prevPath: window.location.pathname },
+        replace: true, 
+      });
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Error Fetching Prescription History",
+        title: "Error Fetching Last Prescription",
         description:
           error.response?.data?.message || "Failed to fetch previous prescription.",
       });
     }
+  
   };
   
-  
-  
-
   const addRow = () => setRows([...rows, { id: Date.now() }]);
   const removeRow = (id: number) => {
     setRows(rows.filter(row => row.id !== id));
@@ -371,27 +380,25 @@ const PatientDetails = () => {
     }
   };
 
-  // Helper component for detail items
-
   return (
     <>
       <Toaster />
-      <div className="min-h-[84svh] p-4 bg-slate-50">
+      <div className="min-h-[84svh] p-2 sm:p-4 bg-slate-50">
         <motion.div
           initial="hidden"
           animate="visible"
           variants={staggerContainer}
-          className="max-w-6xl mx-auto space-y-8"
+          className="max-w-6xl mx-auto space-y-4 sm:space-y-8"
         >
           {/* Patient Header Card */}
           <motion.div
             variants={cardVariants}
-            className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200"
+            className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-slate-200"
           >
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
+              <div className="flex items-center gap-3 sm:gap-4">
                 <img
-                  className="w-24 h-24 rounded-xl border-2 border-indigo-100 object-cover"
+                  className="w-16 h-16 sm:w-24 sm:h-24 rounded-lg sm:rounded-xl border-2 border-indigo-100 object-cover"
                   src={ndata.imageUrl || "/default-user.jpg"}
                   alt="Patient"
                   onError={(e) => {
@@ -399,12 +406,12 @@ const PatientDetails = () => {
                   }}
                 />
                 <div>
-                  <h1 className="text-2xl font-bold text-indigo-800">{ndata.name}</h1>
-                  <p className="text-slate-500">Patient</p>
+                  <h1 className="text-xl sm:text-2xl font-bold text-indigo-800">{ndata.name}</h1>
+                  <p className="text-sm sm:text-base text-slate-500">Patient</p>
                 </div>
               </div>
-              <div className="text-center md:text-right">
-                <div className="space-y-1 text-md font-medium">
+              <div className="text-center sm:text-right">
+                <div className="space-y-1 text-sm sm:text-base font-medium">
                   <div className="text-indigo-600">{currentDate}</div>
                   <div className="text-slate-500">{currentTime}</div>
                 </div>
@@ -415,59 +422,59 @@ const PatientDetails = () => {
           {/* Patient Info Grid */}
           <motion.div
             variants={cardVariants}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+            className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4"
           >
-            <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <div className="bg-white p-2 sm:p-4 rounded-lg sm:rounded-xl border border-slate-200">
               <label className="text-xs font-semibold text-slate-500 uppercase">Student ID</label>
-              <div className="text-lg font-medium text-indigo-800 mt-1">{ndata.id}</div>
+              <div className="text-sm sm:text-lg font-medium text-indigo-800 mt-1">{ndata.id}</div>
             </div>
-            <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <div className="bg-white p-2 sm:p-4 rounded-lg sm:rounded-xl border border-slate-200">
               <label className="text-xs font-semibold text-slate-500 uppercase">Age & Gender</label>
-              <div className="text-lg font-medium text-indigo-800 mt-1">
+              <div className="text-sm sm:text-lg font-medium text-indigo-800 mt-1">
                 {ndata.age} / {ndata.sex}
               </div>
             </div>
-            <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <div className="bg-white p-2 sm:p-4 rounded-lg sm:rounded-xl border border-slate-200">
               <label className="text-xs font-semibold text-slate-500 uppercase">School</label>
-              <div className="text-lg font-medium text-indigo-800 mt-1">{ndata.course}</div>
+              <div className="text-sm sm:text-lg font-medium text-indigo-800 mt-1">{ndata.course}</div>
             </div>
-            <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <div className="bg-white p-2 sm:p-4 rounded-lg sm:rounded-xl border border-slate-200">
               <label className="text-xs font-semibold text-slate-500 uppercase">Residence Type</label>
-              <div className="text-lg font-medium text-indigo-800 mt-1">{ndata.residenceType}</div>
+              <div className="text-sm sm:text-lg font-medium text-indigo-800 mt-1">{ndata.residenceType}</div>
             </div>
           </motion.div>
 
           {/* Medical Information */}
           <motion.div
             variants={cardVariants}
-            className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200"
+            className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-slate-200"
           >
-            <h3 className="text-lg font-bold text-indigo-800 mb-4 flex items-center gap-2">
-              <span className="w-2 h-6 bg-indigo-500 rounded-full"></span>
+            <h3 className="text-lg font-bold text-indigo-800 mb-3 sm:mb-4 flex items-center gap-2">
+              <span className="w-2 h-5 sm:h-6 bg-indigo-500 rounded-full"></span>
               Medical Details
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-slate-50 p-4 rounded-lg">
-                <label className="text-sm text-slate-500">Height</label>
-                <div className="text-lg font-medium text-indigo-800">{ndata.height} cm</div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+              <div className="bg-slate-50 p-2 sm:p-4 rounded-lg">
+                <label className="text-xs sm:text-sm text-slate-500">Height</label>
+                <div className="text-sm sm:text-lg font-medium text-indigo-800">{ndata.height} cm</div>
               </div>
-              <div className="bg-slate-50 p-4 rounded-lg">
-                <label className="text-sm text-slate-500">Weight</label>
-                <div className="text-lg font-medium text-indigo-800">{ndata.weight} kg</div>
+              <div className="bg-slate-50 p-2 sm:p-4 rounded-lg">
+                <label className="text-xs sm:text-sm text-slate-500">Weight</label>
+                <div className="text-sm sm:text-lg font-medium text-indigo-800">{ndata.weight} kg</div>
               </div>
-              <div className="bg-slate-50 p-4 rounded-lg">
-                <label className="text-sm text-slate-500">Temperature</label>
-                <div className="text-lg font-medium text-indigo-800">{ndata.temp} °F</div>
+              <div className="bg-slate-50 p-2 sm:p-4 rounded-lg">
+                <label className="text-xs sm:text-sm text-slate-500">Temperature</label>
+                <div className="text-sm sm:text-lg font-medium text-indigo-800">{ndata.temp} °F</div>
               </div>
               <div
-                className={`p-4 rounded-lg ${
+                className={`p-2 sm:p-4 rounded-lg ${
                   ndata.allergies
                     ? "bg-gradient-to-r from-red-400 to-red-500 text-white"
                     : "bg-gradient-to-r from-green-400 to-green-500 text-white"
                 }`}
               >
-                <label className="text-sm">Allergies</label>
-                <div className="text-lg font-medium">
+                <label className="text-xs sm:text-sm">Allergies</label>
+                <div className="text-sm sm:text-lg font-medium">
                   {ndata.allergies ? "Yes" : "No"}
                 </div>
               </div>
@@ -477,20 +484,20 @@ const PatientDetails = () => {
           {/* Medical History Sections */}
           <motion.div
             variants={cardVariants}
-            className="grid grid-cols-1 md:grid-cols-3 gap-4"
+            className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4"
           >
             <Popover>
               <PopoverTrigger asChild>
                 <motion.div
                   whileHover={{ scale: 1.02 }}
-                  className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200 cursor-pointer"
+                  className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-slate-200 cursor-pointer"
                 >
                   <h3 className="text-lg font-bold text-indigo-800 mb-2">Medical History</h3>
-                  <p className="text-slate-600 line-clamp-3">{ndata.medHis || "No history available"}</p>
+                  <p className="text-xs sm:text-sm text-slate-600 line-clamp-3">{ndata.medHis || "No history available"}</p>
                 </motion.div>
               </PopoverTrigger>
-              <PopoverContent className="max-w-sm p-4 bg-white rounded-xl shadow-lg border border-slate-200">
-                <p className="text-indigo-800">{ndata.medHis}</p>
+              <PopoverContent className="max-w-xs sm:max-w-sm p-3 sm:p-4 bg-white rounded-lg sm:rounded-xl shadow-lg border border-slate-200">
+                <p className="text-sm sm:text-base text-indigo-800">{ndata.medHis}</p>
               </PopoverContent>
             </Popover>
 
@@ -498,34 +505,34 @@ const PatientDetails = () => {
               <PopoverTrigger asChild>
                 <motion.div
                   whileHover={{ scale: 1.02 }}
-                  className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200 cursor-pointer"
+                  className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-slate-200 cursor-pointer"
                 >
                   <h3 className="text-lg font-bold text-indigo-800 mb-2">Family History</h3>
-                  <p className="text-slate-600 line-clamp-3">{ndata.famHis || "No family history"}</p>
+                  <p className="text-xs sm:text-sm text-slate-600 line-clamp-3">{ndata.famHis || "No family history"}</p>
                 </motion.div>
               </PopoverTrigger>
-              <PopoverContent className="max-w-sm p-4 bg-white rounded-xl shadow-lg border border-slate-200">
-                <p className="text-indigo-800">{ndata.famHis}</p>
+              <PopoverContent className="max-w-xs sm:max-w-sm p-3 sm:p-4 bg-white rounded-lg sm:rounded-xl shadow-lg border border-slate-200">
+                <p className="text-sm sm:text-base text-indigo-800">{ndata.famHis}</p>
               </PopoverContent>
             </Popover>
 
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
+            <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-slate-200">
               <h3 className="text-lg font-bold text-indigo-800 mb-2">Consultation Reason</h3>
-              <p className="text-slate-600">{ndata.reason}</p>
+              <p className="text-xs sm:text-sm text-slate-600">{ndata.reason}</p>
             </div>
           </motion.div>
 
           {/* Diagnosis Section */}
           <motion.div
             variants={cardVariants}
-            className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200"
+            className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-slate-200"
           >
-            <h3 className="text-lg font-bold text-indigo-800 mb-4 flex items-center gap-2">
-              <span className="w-2 h-6 bg-indigo-500 rounded-full"></span>
+            <h3 className="text-lg font-bold text-indigo-800 mb-3 sm:mb-4 flex items-center gap-2">
+              <span className="w-2 h-5 sm:h-6 bg-indigo-500 rounded-full"></span>
               Diagnosis
             </h3>
             <Textarea
-              className="mt-2 bg-slate-50 border-slate-200 focus:border-indigo-300 rounded-xl h-32"
+              className="mt-2 bg-slate-50 border-slate-200 focus:border-indigo-300 rounded-lg sm:rounded-xl h-32 text-sm sm:text-base"
               placeholder="Enter diagnosis..."
               onChange={(e) => setDiagnosis(e.target.value)}
             />
@@ -534,129 +541,127 @@ const PatientDetails = () => {
           {/* Medications Section */}
           <motion.div
             variants={cardVariants}
-            className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200"
+            className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-slate-200"
           >
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3">
               <h3 className="text-lg font-bold text-indigo-800 flex items-center gap-2">
-                <span className="w-2 h-6 bg-indigo-500 rounded-full"></span>
+                <span className="w-2 h-5 sm:h-6 bg-indigo-500 rounded-full"></span>
                 Prescribed Medications
               </h3>
               <Button
                 onClick={addRow}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white w-full sm:w-auto"
+                size={isMobile ? "sm" : "default"}
               >
                 + Add Medication
               </Button>
             </div>
 
-            <div className="space-y-4">
-            {rows.map((row) => (
-  <motion.div
-    key={row.id}
-    variants={tableRowVariants}
-    className="bg-slate-50 p-4 rounded-lg border border-slate-200"
-  >
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-slate-600">Medicine</label>
-        <Select onValueChange={(value) => handleMedicineSelect(row.id, value)}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select Medicine" />
-          </SelectTrigger>
-          <SelectContent>
-            <input
-              ref={searchInputRef}
-              placeholder="Search medicine..."
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full p-2 mb-2 border rounded-md"
-            />
-            {stock
-              .filter(medicine => 
-                medicine.medicineName.toLowerCase().includes(searchQuery.toLowerCase())
-              )
-              .filter(medicine => {
-                // Show medicine if:
-                // 1. It's selected in THIS row, OR
-                // 2. It's not selected in ANY other row
-                const isSelectedElsewhere = Object.entries(selectedMedicine).some(
-                  ([otherRowId, medId]) => 
-                    parseInt(otherRowId) !== row.id && medId === medicine.id
-                );
-                const isCurrentSelection = selectedMedicine[row.id] === medicine.id;
-                return !isSelectedElsewhere || isCurrentSelection;
-              })
-              .map(medicine => (
-                <SelectItem
-                  key={medicine.id}
-                  value={`${medicine.id}:${medicine.medicineName}`}
+            <div className="space-y-3 sm:space-y-4">
+              {rows.map((row) => (
+                <motion.div
+                  key={row.id}
+                  variants={tableRowVariants}
+                  className="bg-slate-50 p-3 sm:p-4 rounded-lg border border-slate-200"
                 >
-                  {medicine.medicineName} ({medicine.quantity} available)
-                </SelectItem>
-              ))}
-          </SelectContent>
-        </Select>
-      </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="space-y-1 sm:space-y-2">
+                      <label className="text-xs sm:text-sm font-medium text-slate-600">Medicine</label>
+                      <Select onValueChange={(value) => handleMedicineSelect(row.id, value)}>
+                        <SelectTrigger className="text-xs sm:text-sm">
+                          <SelectValue placeholder="Select Medicine" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60 overflow-y-auto">
+                          <input
+                            ref={searchInputRef}
+                            placeholder="Search medicine..."
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full p-2 mb-2 border rounded-md text-xs sm:text-sm"
+                          />
+                          {stock
+                            .filter(medicine => 
+                              medicine.medicineName.toLowerCase().includes(searchQuery.toLowerCase())
+                            )
+                            .filter(medicine => {
+                              const isSelectedElsewhere = Object.entries(selectedMedicine).some(
+                                ([otherRowId, medId]) => 
+                                  parseInt(otherRowId) !== row.id && medId === medicine.id
+                              );
+                              const isCurrentSelection = selectedMedicine[row.id] === medicine.id;
+                              return !isSelectedElsewhere || isCurrentSelection;
+                            })
+                            .map(medicine => (
+                              <SelectItem
+                                key={medicine.id}
+                                value={`${medicine.id}:${medicine.medicineName}`}
+                                className="text-xs sm:text-sm"
+                              >
+                                {medicine.medicineName} ({medicine.quantity} available)
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-      {/* Corrected Dosage Inputs */}
-      <div className="grid grid-cols-3 gap-2">
-        <div>
-          <label className="text-sm font-medium text-slate-600">Morning</label>
-          <Input
-            type="number"
-            min="0"
-            step="0.5"
-            placeholder="0"
-            className={`dosage-morning-${row.id}`}
-          />
-        </div>
-        <div>
-          <label className="text-sm font-medium text-slate-600">Afternoon</label>
-          <Input
-            type="number"
-            min="0"
-            step="0.5"
-            placeholder="0"
-            className={`dosage-afternoon-${row.id}`}
-          />
-        </div>
-        <div>
-          <label className="text-sm font-medium text-slate-600">Evening</label>
-          <Input
-            type="number"
-            min="0"
-            step="0.5"
-            placeholder="0"
-            className={`dosage-evening-${row.id}`}
-          />
-        </div>
-      </div>
+                    <div className="grid grid-cols-3 gap-1 sm:gap-2">
+                      <div>
+                        <label className="text-xs sm:text-sm font-medium text-slate-600">Morning</label>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.5"
+                          placeholder="0"
+                          className={`dosage-morning-${row.id} text-xs sm:text-sm h-8 sm:h-10`}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs sm:text-sm font-medium text-slate-600">Afternoon</label>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.5"
+                          placeholder="0"
+                          className={`dosage-afternoon-${row.id} text-xs sm:text-sm h-8 sm:h-10`}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs sm:text-sm font-medium text-slate-600">Evening</label>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.5"
+                          placeholder="0"
+                          className={`dosage-evening-${row.id} text-xs sm:text-sm h-8 sm:h-10`}
+                        />
+                      </div>
+                    </div>
 
-      <div>
-        <label className="text-sm font-medium text-slate-600">Duration (days)</label>
-        <Input
-          type="number"
-          min="0"
-          step="1"
-          placeholder="0"
-          className={`duration-${row.id}`}
-        />
-      </div>
+                    <div>
+                      <label className="text-xs sm:text-sm font-medium text-slate-600">Duration (days)</label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="0"
+                        className={`duration-${row.id} text-xs sm:text-sm h-8 sm:h-10`}
+                      />
+                    </div>
 
-      <div className="md:col-span-2">
-        <label className="text-sm font-medium text-slate-600">Notes</label>
-        <Textarea className={`suggestion-${row.id}`} />
-      </div>
-    </div>
-    <div className="flex justify-end mt-4">
-      <Button
-        onClick={() => removeRow(row.id)}
-        variant="destructive"
-        size="sm"
-      >
-        Remove
-      </Button>
-    </div>
-  </motion.div>
+                    <div className="sm:col-span-2">
+                      <label className="text-xs sm:text-sm font-medium text-slate-600">Notes</label>
+                      <Textarea className={`suggestion-${row.id} text-xs sm:text-sm h-16 sm:h-20`} />
+                    </div>
+                  </div>
+                  <div className="flex justify-end mt-3 sm:mt-4">
+                    <Button
+                      onClick={() => removeRow(row.id)}
+                      variant="destructive"
+                      size={isMobile ? "sm" : "default"}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                </motion.div>
               ))}
             </div>
           </motion.div>
@@ -664,28 +669,28 @@ const PatientDetails = () => {
           {/* Recommendations & Tests */}
           <motion.div
             variants={cardVariants}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+            className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4"
           >
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
-              <h3 className="text-lg font-bold text-indigo-800 mb-4 flex items-center gap-2">
-                <span className="w-2 h-6 bg-indigo-500 rounded-full"></span>
+            <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-slate-200">
+              <h3 className="text-lg font-bold text-indigo-800 mb-3 sm:mb-4 flex items-center gap-2">
+                <span className="w-2 h-5 sm:h-6 bg-indigo-500 rounded-full"></span>
                 Recommendations
               </h3>
               <Textarea
-                className="bg-slate-50 border-slate-200 h-32"
+                className="bg-slate-50 border-slate-200 h-32 text-sm sm:text-base"
                 placeholder="Enter recommendations..."
                 value={dietary}
                 onChange={(e) => setDietary(e.target.value)}
               />
             </div>
 
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
-              <h3 className="text-lg font-bold text-indigo-800 mb-4 flex items-center gap-2">
-                <span className="w-2 h-6 bg-indigo-500 rounded-full"></span>
+            <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-slate-200">
+              <h3 className="text-lg font-bold text-indigo-800 mb-3 sm:mb-4 flex items-center gap-2">
+                <span className="w-2 h-5 sm:h-6 bg-indigo-500 rounded-full"></span>
                 Required Tests
               </h3>
               <Textarea
-                className="bg-slate-50 border-slate-200 h-32"
+                className="bg-slate-50 border-slate-200 h-32 text-sm sm:text-base"
                 placeholder="Enter required tests..."
                 value={tests}
                 onChange={(e) => setTests(e.target.value)}
@@ -696,34 +701,37 @@ const PatientDetails = () => {
           {/* Action Buttons */}
           <motion.div
             variants={cardVariants}
-            className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200"
+            className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-slate-200"
           >
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <div className="space-y-1">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="space-y-1 text-center sm:text-left">
                 <div className="text-lg font-bold text-indigo-800">{ndata.docName}</div>
-                <div className="text-slate-600">{ndata.designation}</div>
+                <div className="text-sm sm:text-base text-slate-600">{ndata.designation}</div>
               </div>
-              <div className="flex gap-4 w-full md:w-auto">
-  <Button
-    onClick={handleSubmit}
-    className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700"
-  >
-    Submit Prescription
-  </Button>
-  <Button
-    onClick={handleViewPreviousPrescription}
-    className="w-full md:w-auto bg-blue-600 hover:bg-blue-700"
-  >
-    View Previous Prescription
-  </Button>
-  <Button
-    onClick={handleRelease}
-    className="w-full md:w-auto bg-rose-600 hover:bg-rose-700"
-  >
-    Release Patient
-  </Button>
-</div>
-
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
+                <Button
+                  onClick={handleSubmit}
+                  className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700"
+                  size={isMobile ? "sm" : "default"}
+                >
+                  Submit Prescription
+                </Button>
+                <Button
+                  onClick={handleViewPreviousPrescription}
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
+                  disabled={!isFollowUp}
+                  size={isMobile ? "sm" : "default"}
+                >
+                  View Previous Prescription
+                </Button>
+                <Button
+                  onClick={handleRelease}
+                  className="w-full sm:w-auto bg-rose-600 hover:bg-rose-700"
+                  size={isMobile ? "sm" : "default"}
+                >
+                  Release Patient
+                </Button>
+              </div>
             </div>
           </motion.div>
         </motion.div>

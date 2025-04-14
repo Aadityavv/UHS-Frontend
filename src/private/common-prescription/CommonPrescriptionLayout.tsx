@@ -1,22 +1,30 @@
+// In CommonPrescriptionLayout.tsx
 import Navbar from "@/components/Navbar";
 import Shared from "@/Shared";
 import React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const CommonPrescriptionLayout = ({
   children,
-  prevRef
 }: {
   children: React.ReactNode;
-  prevRef: string | null;
 }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Get the previous path from location state or default to doctor dashboard
+  const prevPath = location.state?.prevPath || "/doctor-dashboard";
+
   const navsetting = {
     title: "Prescription",
     titleLogo: Shared.Prescription,
     additionalLogo: Shared.ArrowLeft,
     menu: false,
     role: localStorage.getItem("roles"),
-    prevRef:prevRef
+    prevRef: prevPath, // Use the previous path from location state
+    onBackClick: () => navigate(prevPath) // Explicit back navigation handler
   };
+  
   return (
     <div className="min-h-[100svh]">
       <Navbar props={navsetting} />

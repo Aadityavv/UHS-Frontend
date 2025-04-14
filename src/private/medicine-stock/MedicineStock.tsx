@@ -183,7 +183,7 @@ const MedicineStock = () => {
     expirationDate.setHours(0, 0, 0, 0);
   
     const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
-    const isExpired = expirationDate < today;
+    const isExpired = expirationDate <= today;
     const isExpiringSoon = !isExpired && expirationDate <= thirtyDaysFromNow;
   
     if (isExpired) {
