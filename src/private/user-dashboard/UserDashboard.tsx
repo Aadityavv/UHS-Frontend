@@ -6,6 +6,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import dayjs from 'dayjs';
+import useSound from 'use-sound';
+import notificationSound from '/sounds/notification.mp3';
+
 import {
   Activity,
   Calendar,
@@ -57,6 +60,8 @@ const UserDashboard = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const [prevDoctorName, setPrevDoctorName] = useState<string>("Not Appointed");
+
   const [status, setStatus] = useState({
     appointmentStatus: "",
     doctorName: "",
@@ -85,6 +90,8 @@ const UserDashboard = () => {
   const [, setCurrentTime] = useState<string>(dayjs().format('h:mm A'));
   const [lastPrescription, setLastPrescription] = useState<Prescription | null>(null);
   const [loadingPrescription, setLoadingPrescription] = useState(false);
+  const [playNotification] = useSound(notificationSound);
+
   // const [exercise, setExercise] = useState({
   //   active: null as Exercise | null,
   //   progress: 0,
@@ -136,7 +143,6 @@ const UserDashboard = () => {
   //     ]
   //   }
   // ];
-
   // Helper functions
   const calculateBMI = (heightCm: number, weightKg: number): string => {
     if (!heightCm || !weightKg) return "N/A";
@@ -265,6 +271,15 @@ const UserDashboard = () => {
     }
   }, []);
 
+
+  useEffect(() => {
+    const pollInterval = setInterval(() => {
+      fetchCurrentTokenNumber();
+    }, 60000); // Check every 30 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [fetchCurrentTokenNumber]);
+
   // Health measurement functions
   // const measureHealth = () => {
   //   setShowCameraGuide(true);
@@ -347,13 +362,33 @@ const UserDashboard = () => {
 
         if (statusRes.status === "fulfilled" && statusRes.value?.data) {
           const data = statusRes.value.data;
+          const newDoctorName = data.Doctor ? data.DoctorName : "Not Appointed";
+        
+          // ✅ Notify user immediately if doctor has just been assigned
+          if (
+            newDoctorName !== prevDoctorName &&
+            newDoctorName !== "Not Appointed"
+          ) {
+            playNotification();
+        
+            toast({
+              title: "Doctor Assigned!",
+              description: `Dr. ${newDoctorName} has been assigned to you. Your token number is ${data.TokenNo || "N/A"}.`,
+              duration: 10000,
+            });
+        
+            setPrevDoctorName(newDoctorName); // ✅ Immediately update
+          }
+        
+          // ✅ Now update the status box
           setStatus({
             appointmentStatus: data.Appointment ? "Queued" : "NA",
-            doctorName: data.Doctor ? data.DoctorName : "Not Appointed",
+            doctorName: newDoctorName,
             tokenNo: data.TokenNo || "N/A",
             currentTokenNo: data.currentTokenNo || "...",
           });
         }
+        
 
         if (lastAppointmentRes.status === "fulfilled" && lastAppointmentRes.value?.data) {
           setLastAppointmentDate(dayjs(lastAppointmentRes.value.data).format("DD/MM/YYYY"));
@@ -365,6 +400,7 @@ const UserDashboard = () => {
           fetchCurrentTokenNumber(),
           fetchLastPrescription()
         ]);
+
 
       } catch (error) {
         console.error("Dashboard data fetch error:", error);
@@ -385,7 +421,7 @@ const UserDashboard = () => {
     // Update time every minute
     const timeInterval = setInterval(() => {
       setCurrentTime(dayjs().format('h:mm A'));
-    }, 60000);
+    }, 300);
 
     return () => {
       clearInterval(timeInterval);

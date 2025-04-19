@@ -25,7 +25,39 @@ const ManageAssistants = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [confirmDeleteEmail, setConfirmDeleteEmail] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
+  const validatePassword = (password: string): boolean => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    if (password.length < minLength) {
+      setPasswordError("Password must be at least 8 characters long");
+      return false;
+    }
+    if (!hasUpperCase) {
+      setPasswordError("Password must contain at least one uppercase letter");
+      return false;
+    }
+    if (!hasLowerCase) {
+      setPasswordError("Password must contain at least one lowercase letter");
+      return false;
+    }
+    if (!hasNumber) {
+      setPasswordError("Password must contain at least one number");
+      return false;
+    }
+    if (!hasSpecialChar) {
+      setPasswordError("Password must contain at least one special character");
+      return false;
+    }
+
+    setPasswordError(null);
+    return true;
+  };
 
   const fetchAssistants = async () => {
     try {
@@ -43,6 +75,11 @@ const ManageAssistants = () => {
 
   const handleUpdate = async () => {
     if (!editingAssistant) return;
+
+    // Only validate password if it's being changed (not empty)
+    if (password.trim() && !validatePassword(password)) {
+      return;
+    }
 
     try {
       const updatePayload = {
@@ -77,14 +114,12 @@ const ManageAssistants = () => {
       toast({ title: "Delete failed", variant: "destructive" });
     }
   };
-  
 
   useEffect(() => {
     fetchAssistants();
   }, []);
 
   return (
-    
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
         <HeartPulse className="h-6 w-6" />
@@ -107,6 +142,8 @@ const ManageAssistants = () => {
                   <Button variant="secondary" size="sm" onClick={() => {
                     setEditingAssistant({ ...ad });
                     setIsDialogOpen(true);
+                    setPassword("");
+                    setPasswordError(null);
                   }}>
                     <Pencil className="h-4 w-4 mr-1" /> Edit
                   </Button>
@@ -121,14 +158,21 @@ const ManageAssistants = () => {
       )}
 
       {/* Edit Modal */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Edit Assistant</DialogTitle>
-      <DialogDescription>
-        Update assistant details and optionally change their password.
-      </DialogDescription>
-    </DialogHeader>
+      <Dialog open={isDialogOpen} onOpenChange={(open) => {
+        setIsDialogOpen(open);
+        if (!open) {
+          setShowPasswordField(false);
+          setPassword("");
+          setPasswordError(null);
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Assistant</DialogTitle>
+            <DialogDescription>
+              Update assistant details and optionally change their password.
+            </DialogDescription>
+          </DialogHeader>
           {editingAssistant ? (
             <div className="space-y-3">
               <Input
@@ -146,7 +190,11 @@ const ManageAssistants = () => {
                 type="button"
                 variant="outline"
                 className="w-full"
-                onClick={() => setShowPasswordField(!showPasswordField)}
+                onClick={() => {
+                  setShowPasswordField(!showPasswordField);
+                  setPassword("");
+                  setPasswordError(null);
+                }}
               >
                 {showPasswordField ? "Cancel Password Change" : "Change Password"}
               </Button>
@@ -157,9 +205,16 @@ const ManageAssistants = () => {
                   <input
                     type={showPassword ? "text" : "password"}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 pr-10"
-                    placeholder="Leave blank to keep current password"
+                    placeholder="Enter new password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (e.target.value) {
+                        validatePassword(e.target.value);
+                      } else {
+                        setPasswordError(null);
+                      }
+                    }}
                   />
                   <div
                     className="absolute right-3 top-9 cursor-pointer text-gray-500"
@@ -167,6 +222,12 @@ const ManageAssistants = () => {
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </div>
+                  {passwordError && (
+                    <p className="mt-1 text-sm text-red-600">{passwordError}</p>
+                  )}
+                  {!passwordError && password && (
+                    <p className="mt-1 text-sm text-green-600">Password is valid</p>
+                  )}
                 </div>
               )}
 
@@ -181,32 +242,31 @@ const ManageAssistants = () => {
       </Dialog>
 
       <Dialog open={!!confirmDeleteEmail} onOpenChange={() => setConfirmDeleteEmail(null)}>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Confirm Deletion</DialogTitle>
-    </DialogHeader>
-    <p>
-      Are you sure you want to delete <strong>
-        {assistants.find(a => a.email === confirmDeleteEmail)?.name}
-      </strong>? This action cannot be undone.
-    </p>
-    <div className="flex justify-end gap-2 mt-4">
-      <Button variant="ghost" onClick={() => setConfirmDeleteEmail(null)}>Cancel</Button>
-      <Button
-        variant="destructive"
-        onClick={() => {
-          if (confirmDeleteEmail) {
-            performDelete(confirmDeleteEmail);
-            setConfirmDeleteEmail(null);
-          }
-        }}
-      >
-        Yes, Delete
-      </Button>
-    </div>
-  </DialogContent>
-</Dialog>
-
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+          </DialogHeader>
+          <p>
+            Are you sure you want to delete <strong>
+              {assistants.find(a => a.email === confirmDeleteEmail)?.name}
+            </strong>? This action cannot be undone.
+          </p>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="ghost" onClick={() => setConfirmDeleteEmail(null)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (confirmDeleteEmail) {
+                  performDelete(confirmDeleteEmail);
+                  setConfirmDeleteEmail(null);
+                }
+              }}
+            >
+              Yes, Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

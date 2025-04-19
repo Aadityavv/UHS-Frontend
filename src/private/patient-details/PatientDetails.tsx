@@ -147,6 +147,7 @@ const PatientDetails = () => {
               }
             );
             setIsFollowUp(data);
+            console.log("Follow-up status:", data);
           } catch (err) {
             console.error("Failed to fetch follow-up status");
             setIsFollowUp(false);

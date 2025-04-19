@@ -110,6 +110,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 const AnalyticsDashboard = () => {
   const [view, setView] = useState<ViewType>("daily");
+  const [range, setRange] = useState<7 | 30 | 90 | number>(30);
   const [totalPatient, setTotalPatient] = useState(0);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -213,7 +214,7 @@ const AnalyticsDashboard = () => {
       
       try {
         // Get Total Patient
-        const responseAllPatient = await axios.get("https://uhs-backend.onrender.com/api/analytics/getTotalPatient", {
+        const responseAllPatient = await axios.get(`https://uhs-backend.onrender.com/api/analytics/getTotalPatient?range=${range}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -230,7 +231,7 @@ const AnalyticsDashboard = () => {
         }
 
         // Get School wise data
-        const responseSchoolWise = await axios.get("https://uhs-backend.onrender.com/api/analytics/getSchoolWise", {
+        const responseSchoolWise = await axios.get(`https://uhs-backend.onrender.com/api/analytics/getSchoolWise?range=${range}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (responseSchoolWise.status === 200) {
@@ -241,7 +242,7 @@ const AnalyticsDashboard = () => {
         }
 
         // Get Top 10 medicine
-        const responseTopMedsPres = await axios.get("https://uhs-backend.onrender.com/api/analytics/getTopMeds", {
+        const responseTopMedsPres = await axios.get(`https://uhs-backend.onrender.com/api/analytics/getTopMeds?range=${range}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (responseTopMedsPres.status === 200) {
@@ -249,7 +250,7 @@ const AnalyticsDashboard = () => {
         }
 
         // Get Data By Residence Type
-        const responseByResType = await axios.get("https://uhs-backend.onrender.com/api/analytics/getByResidenceType", {
+        const responseByResType = await axios.get(`https://uhs-backend.onrender.com/api/analytics/getByResidenceType?range=${range}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (responseByResType.status === 200) {
@@ -260,7 +261,7 @@ const AnalyticsDashboard = () => {
         }
 
         // Get Doctor-Wise Distribution
-        const responseDoctorWise = await axios.get("https://uhs-backend.onrender.com/api/analytics/getByDoctorName", {
+        const responseDoctorWise = await axios.get(`https://uhs-backend.onrender.com/api/analytics/getByDoctorName?range=${range}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (responseDoctorWise.status === 200) {
@@ -268,7 +269,7 @@ const AnalyticsDashboard = () => {
         }
 
         // Get Patient Visits Monthly
-        const responseMonthlyData = await axios.get("https://uhs-backend.onrender.com/api/analytics/getMonthlyData", {
+        const responseMonthlyData = await axios.get(`https://uhs-backend.onrender.com/api/analytics/getMonthlyData?range=${range}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (responseMonthlyData.status === 200) {
@@ -276,7 +277,7 @@ const AnalyticsDashboard = () => {
         }
 
         // Get Patient Visits Yearly
-        const responseYearlyData = await axios.get("https://uhs-backend.onrender.com/api/analytics/getYearlyData", {
+        const responseYearlyData = await axios.get(`https://uhs-backend.onrender.com/api/analytics/getYearlyData?range=${range}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (responseYearlyData.status === 200) {
@@ -284,7 +285,7 @@ const AnalyticsDashboard = () => {
         }
 
         // Get Daily Data
-        const responseDailyData = await axios.get("https://uhs-backend.onrender.com/api/analytics/getDailyData", {
+        const responseDailyData = await axios.get(`https://uhs-backend.onrender.com/api/analytics/daily?range=${range}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (responseDailyData.status === 200) {
@@ -305,7 +306,7 @@ const AnalyticsDashboard = () => {
     };
 
     getAllData();
-  }, []);
+  }, [range]);
 
   const getChartData = (view: ViewType) => {
     switch (view) {
@@ -396,7 +397,10 @@ const AnalyticsDashboard = () => {
     doc.text("UHS Full Analytics Report", 14, y);
     doc.setFontSize(12);
     y += 10;
-    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, y);
+    const today = new Date();
+    const formattedDate = `${String(today.getDate()).padStart(2, "0")}/${String(today.getMonth() + 1).padStart(2, "0")}/${today.getFullYear()}`;
+    doc.text(`Generated on: ${formattedDate}`, 14, y);
+
     y += 10;
   
     const addSection = (title: string, headers: string[], rows: any[][]) => {
@@ -420,7 +424,12 @@ const AnalyticsDashboard = () => {
     addSection(
       "Daily Patient Visits",
       ["Day", "Bidholi", "Kandoli", "Total"],
-      dailyData.map((d) => [d.day, d.bidholi, d.kandoli, d.bidholi + d.kandoli])
+      dailyData.map((d) => {
+        const date = new Date(d.day);
+        const formatted = `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
+        return [formatted, d.bidholi, d.kandoli, d.bidholi + d.kandoli];
+      })
+      
     );
   
     // Monthly Visits
@@ -487,10 +496,21 @@ const AnalyticsDashboard = () => {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="gap-2">
-              <Calendar className="w-4 h-4" />
-              Last 30 Days
-            </Button>
+          <div className="flex gap-1">
+  {[7, 30, 90].map((r) => (
+    <Button
+      key={r}
+      variant={range === r ? "default" : "outline"}
+      size="sm"
+      className={`gap-1 rounded-full ${range === r ? "" : "text-gray-600"}`}
+      onClick={() => setRange(r)}
+    >
+      <Calendar className="w-4 h-4" />
+      Last {r} Days
+    </Button>
+  ))}
+</div>
+
             <Button onClick={handleExportPDF}>Export Report</Button>
           </div>
         </div>
@@ -498,7 +518,7 @@ const AnalyticsDashboard = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            title="Total Patients"
+            title="Total Appointments Handled"
             value={totalPatient}
             icon={<Users className="w-5 h-5 text-indigo-600" />}
             color="#6366f1"

@@ -25,6 +25,7 @@ const ManageDoctors = () => {
   const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [confirmDeleteName, setConfirmDeleteName] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -35,6 +36,38 @@ const ManageDoctors = () => {
   const [showPasswordField, setShowPasswordField] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  const validatePassword = (password: string): boolean => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    if (password.length < minLength) {
+      setPasswordError("Password must be at least 8 characters long");
+      return false;
+    }
+    if (!hasUpperCase) {
+      setPasswordError("Password must contain at least one uppercase letter");
+      return false;
+    }
+    if (!hasLowerCase) {
+      setPasswordError("Password must contain at least one lowercase letter");
+      return false;
+    }
+    if (!hasNumber) {
+      setPasswordError("Password must contain at least one number");
+      return false;
+    }
+    if (!hasSpecialChar) {
+      setPasswordError("Password must contain at least one special character");
+      return false;
+    }
+
+    setPasswordError(null);
+    return true;
+  };
 
   const fetchDoctors = async () => {
     try {
@@ -52,10 +85,16 @@ const ManageDoctors = () => {
 
   const handleUpdate = async () => {
     if (!editingDoctor) return;
+    
+    // Only validate password if it's being changed (not empty)
+    if (formData.password.trim() && !validatePassword(formData.password)) {
+      return;
+    }
+
     try {
       const updatePayload = {
         ...editingDoctor,
-        ...(formData.password.trim() && { password: formData.password }) // only include password if not empty
+        ...(formData.password.trim() && { password: formData.password })// only include password if not empty
       };
   
       await axios.put(
@@ -67,12 +106,12 @@ const ManageDoctors = () => {
       toast({ title: "Doctor updated successfully" });
       setIsDialogOpen(false);
       setFormData({ ...formData, password: "" }); // reset password field
+      setShowPasswordField(false); // hide password field after save
       fetchDoctors();
     } catch {
       toast({ title: "Update failed", variant: "destructive" });
     }
   };
-  
 
   const performDelete = async (id: string) => {
     try {
@@ -85,7 +124,6 @@ const ManageDoctors = () => {
       toast({ title: "Delete failed", variant: "destructive" });
     }
   };
-  
 
   useEffect(() => {
     fetchDoctors();
@@ -120,16 +158,15 @@ const ManageDoctors = () => {
                     <Pencil className="h-4 w-4 mr-1" /> Edit
                   </Button>
                   <Button
-  variant="destructive"
-  size="sm"
-  onClick={() => {
-    setConfirmDeleteId(doctor.doctorId);
-    setConfirmDeleteName(doctor.name); // ✅ SET NAME HERE
-  }}
->
-  <Trash2 className="h-4 w-4 mr-1" /> Delete
-</Button>
-
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      setConfirmDeleteId(doctor.doctorId);
+                      setConfirmDeleteName(doctor.name);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" /> Delete
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -138,7 +175,14 @@ const ManageDoctors = () => {
       )}
 
       {/* Edit Modal */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog open={isDialogOpen} onOpenChange={(open) => {
+        if (!open) {
+          setIsDialogOpen(false);
+          setShowPasswordField(false);
+          setFormData({ ...formData, password: "" });
+          setPasswordError(null);
+        }
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Doctor</DialogTitle>
@@ -160,35 +204,51 @@ const ManageDoctors = () => {
                 onChange={(e) => setEditingDoctor({ ...editingDoctor, designation: e.target.value })}
                 placeholder="Designation"
               />
-{/* Toggle button to show password field */}
-<Button
-  type="button"
-  variant="outline"
-  className="w-full"
-  onClick={() => setShowPasswordField(!showPasswordField)}
->
-  {showPasswordField ? "Cancel Password Change" : "Change Password"}
-</Button>
+              {/* Toggle button to show password field */}
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  setShowPasswordField(!showPasswordField);
+                  setFormData({ ...formData, password: "" });
+                  setPasswordError(null);
+                }}
+              >
+                {showPasswordField ? "Cancel Password Change" : "Change Password"}
+              </Button>
 
-{showPasswordField && (
-  <div className="mb-4 relative">
-    <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-    <input
-      type={showPassword ? "text" : "password"}
-      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 pr-10"
-      placeholder="Leave blank to keep current password"
-      value={formData.password}
-      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-    />
-    <div
-      className="absolute right-3 top-9 cursor-pointer text-gray-500"
-      onClick={() => setShowPassword(!showPassword)}
-    >
-      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-    </div>
-  </div>
-)}
-
+              {showPasswordField && (
+                <div className="mb-4 relative">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 pr-10"
+                    placeholder="Enter new password"
+                    value={formData.password}
+                    onChange={(e) => {
+                      setFormData({ ...formData, password: e.target.value });
+                      if (e.target.value) {
+                        validatePassword(e.target.value);
+                      } else {
+                        setPasswordError(null);
+                      }
+                    }}
+                  />
+                  <div
+                    className="absolute right-3 top-9 cursor-pointer text-gray-500"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </div>
+                  {passwordError && (
+                    <p className="mt-1 text-sm text-red-600">{passwordError}</p>
+                  )}
+                  {!passwordError && formData.password && (
+                    <p className="mt-1 text-sm text-green-600">Password is valid</p>
+                  )}
+                </div>
+              )}
 
               <Button onClick={handleUpdate} className="w-full">
                 Save Changes
@@ -200,41 +260,40 @@ const ManageDoctors = () => {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!confirmDeleteId} onOpenChange={() => setConfirmDeleteId(null)}>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Confirm Deletion</DialogTitle>
-    </DialogHeader>
-    <p>
-  Are you sure you want to delete <strong>{confirmDeleteName}</strong>? This action cannot be undone.
-</p>
+      <Dialog open={!!confirmDeleteId} onOpenChange={() => {
+        setConfirmDeleteId(null);
+        setConfirmDeleteName(null);
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+          </DialogHeader>
+          <p>
+            Are you sure you want to delete <strong>{confirmDeleteName}</strong>? This action cannot be undone.
+          </p>
 
-    <div className="flex justify-end gap-2 mt-4">
-    <Button variant="ghost" onClick={() => {
-  setConfirmDeleteId(null);
-  setConfirmDeleteName(null); // ✅ RESET ON CANCEL
-}}>
-  Cancel
-</Button>
-
-<Button
-  variant="destructive"
-  onClick={() => {
-    if (confirmDeleteId) {
-      performDelete(confirmDeleteId);
-      setConfirmDeleteId(null);
-      setConfirmDeleteName(null); // ✅ RESET AFTER DELETE
-    }
-  }}
->
-  Yes, Delete
-</Button>
-
-
-    </div>
-  </DialogContent>
-</Dialog>
-
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="ghost" onClick={() => {
+              setConfirmDeleteId(null);
+              setConfirmDeleteName(null);
+            }}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (confirmDeleteId) {
+                  performDelete(confirmDeleteId);
+                  setConfirmDeleteId(null);
+                  setConfirmDeleteName(null);
+                }
+              }}
+            >
+              Yes, Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
