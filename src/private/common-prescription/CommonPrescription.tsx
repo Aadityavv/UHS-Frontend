@@ -126,6 +126,8 @@ const handleBackendPDFDownload = async () => {
             ? `https://uhs-backend.onrender.com/api/doctor/getPrescription/${urlParam}`
             : role === "ad"
             ? `https://uhs-backend.onrender.com/api/AD/getPrescription/${urlParam}`
+            : role === "admin"
+            ? `https://uhs-backend.onrender.com/api/admin/getPrescription/${urlParam}`
             : `https://uhs-backend.onrender.com/api/patient/getPrescription/${urlParam}`;
 
         const { data } = await axios.get(apiUrl, {

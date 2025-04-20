@@ -328,7 +328,9 @@ const PatientLogs = () => {
                                         <Button 
                                           variant="outline" 
                                           size="sm"
-                                          onClick={() => navigate(`/previous-prescription?id=${item.reportId}`)}
+                                          onClick={() => navigate(`/previous-prescription?id=${item.reportId}`, {
+                                            state: { prevPath: "/patient-logs" }
+                                          })}                                          
                                           className="border-indigo-500 text-indigo-600 hover:bg-indigo-50"
                                         >
                                           <EyeIcon className="h-4 w-4 mr-2" /> View
@@ -378,7 +380,9 @@ const PatientLogs = () => {
                                   <Button 
                                     variant="outline" 
                                     size="sm"
-                                    onClick={() => navigate(`/previous-prescription?id=${item.reportId}`)}
+                                    onClick={() => navigate(`/previous-prescription?id=${item.reportId}`, {
+                                      state: { prevPath: "/patient-logs" }
+                                    })}                                    
                                     className="border-indigo-500 text-indigo-600 hover:bg-indigo-50"
                                   >
                                     <EyeIcon className="h-4 w-4" />

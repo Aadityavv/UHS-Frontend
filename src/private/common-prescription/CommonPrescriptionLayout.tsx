@@ -12,9 +12,14 @@ const CommonPrescriptionLayout = ({
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Get the previous path from location state or default to doctor dashboard
-  const prevPath = location.state?.prevPath || "/doctor-dashboard";
-
+  const role = localStorage.getItem("roles");
+  let fallbackPath = "/doctor-dashboard"; // default fallback
+  if (role === "admin") fallbackPath = "/admin/patient-logs";
+  else if (role === "patient") fallbackPath = "/patient-dashboard";
+  else if (role === "ad") fallbackPath = "/ad-dashboard";
+  
+  const prevPath = location.state?.prevPath || fallbackPath;
+  
   const navsetting = {
     title: "Prescription",
     titleLogo: Shared.Prescription,
