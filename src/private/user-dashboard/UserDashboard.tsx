@@ -10,7 +10,6 @@ import useSound from 'use-sound';
 import notificationSound from '/sounds/notification.mp3';
 
 import {
-  Activity,
   Calendar,
   AlertCircle,
   Stethoscope,
@@ -455,7 +454,6 @@ const UserDashboard = () => {
                   <div className="mt-6 space-y-3">
                     <Skeleton variant="text" width={180} height={16} />
                     <Skeleton variant="text" width={180} height={16} />
-                    <Skeleton variant="text" width={180} height={16} />
                   </div>
                 </div>
               ) : (
@@ -489,10 +487,10 @@ const UserDashboard = () => {
                           : "N/A"}
                       </span>
                     </div>
-                    <div className="flex items-center text-sm text-gray-600">
+                    {/* <div className="flex items-center text-sm text-gray-600">
                       <Activity className="h-4 w-4 mr-2 text-indigo-600" />
                       <span>{userDetails.bloodGroup || "N/A"}</span>
-                    </div>
+                    </div> */}
                     <div className="flex items-center text-sm text-gray-600">
                       <MapPin className="h-4 w-4 mr-2 text-indigo-600" />
                       <span>{locationName}</span>

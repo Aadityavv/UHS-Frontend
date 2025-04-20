@@ -13,12 +13,14 @@ const CommonPrescriptionLayout = ({
   const navigate = useNavigate();
   
   const role = localStorage.getItem("roles");
-  let fallbackPath = "/doctor-dashboard"; // default fallback
+  let fallbackPath = "/doctor-dashboard"; // default
+  
   if (role === "admin") fallbackPath = "/admin/patient-logs";
+  else if (role === "ad") fallbackPath = "/patient-logs";
   else if (role === "patient") fallbackPath = "/patient-dashboard";
-  else if (role === "ad") fallbackPath = "/ad-dashboard";
   
   const prevPath = location.state?.prevPath || fallbackPath;
+  
   
   const navsetting = {
     title: "Prescription",

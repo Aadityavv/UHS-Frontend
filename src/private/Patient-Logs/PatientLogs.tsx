@@ -328,9 +328,14 @@ const PatientLogs = () => {
                                         <Button 
                                           variant="outline" 
                                           size="sm"
-                                          onClick={() => navigate(`/previous-prescription?id=${item.reportId}`, {
-                                            state: { prevPath: "/patient-logs" }
-                                          })}                                          
+                                          onClick={() => {
+                                            const role = localStorage.getItem("roles");
+                                            const prevPath = role === "admin" ? "/admin/patient-logs" : "/patient-logs";
+                                            navigate(`/previous-prescription?id=${item.reportId}`, {
+                                              state: { prevPath }
+                                            });
+                                          }}
+                                          
                                           className="border-indigo-500 text-indigo-600 hover:bg-indigo-50"
                                         >
                                           <EyeIcon className="h-4 w-4 mr-2" /> View
