@@ -19,7 +19,7 @@
         {
           "key": "Permissions-Policy",
           "value": "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
-        },                
+        },
         {
           "key": "X-Frame-Options",
           "value": "DENY"
@@ -52,12 +52,19 @@
           "key": "Cross-Origin-Opener-Policy",
           "value": "same-origin"
         },
-        { "key": "Frame-Options", "value": "DENY" },
-        { "key": "Form-Action", "value": "self" }        
+        {
+          "key": "Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Form-Action",
+          "value": "self"
+        }
       ]
     }
   ],
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
-  ]
+  ],
+  "buildCommand": "npm install --legacy-peer-deps && npm run build"
 }
