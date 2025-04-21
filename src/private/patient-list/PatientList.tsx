@@ -26,6 +26,15 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(relativeTime);
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.tz.setDefault("Asia/Kolkata");
 
 interface Patient {
   id: string;
@@ -39,6 +48,7 @@ interface Patient {
   tokenNum?: string;
   status: "Pending" | "Assigned" | "Appointed";
   rawData: any;
+  createdAt?: string;
 }
 
 const PatientList = () => {
@@ -141,6 +151,7 @@ const PatientList = () => {
       const pendingPatients = await Promise.all(
         pendingRes.data.map(async (p: any) => {
           const { preferredDoctor, reasonForPref } = await fetchAppointmentDetails(p.sapEmail);
+          console.log("Raw appointment:", p); // inside map callback
           return {
             id: p.Id,
             email: p.sapEmail,
@@ -153,8 +164,10 @@ const PatientList = () => {
             preferredDoctor,
             reasonForPref,
             rawData: p,
+            createdAt: p.createdAt || p.aptForm?.createdAt || "-",
           };
-        })
+        }
+      )
       );
 
       const assignedPatients = assignedRes.data.map((p: any) => ({
@@ -186,6 +199,7 @@ const PatientList = () => {
             reasonForPref,
             status: "Appointed" as const,
             rawData: p,
+            createdAt: p.createdAt || p.aptForm?.createdAt || "-",
           };
         })
       );
@@ -407,7 +421,7 @@ const PatientList = () => {
         </div>
         
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={fetchAllPatients} className="flex-1 md:flex-none">
+          <Button size="sm" onClick={fetchAllPatients} className="flex-1 md:flex-none">
             <RefreshCcw className="h-4 w-4 mr-2" />
             <span className="hidden md:inline">Refresh</span>
           </Button>
@@ -545,6 +559,7 @@ const PatientList = () => {
                   <TableHead>Assigned Doctor</TableHead>
                   <TableHead>Token</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Booked At</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -570,6 +585,9 @@ const PatientList = () => {
                         >
                           {patient.status}
                         </span>
+                      </TableCell>
+                      <TableCell>
+                      {dayjs.utc(patient.createdAt).tz("Asia/Kolkata").fromNow()}
                       </TableCell>
                       <TableCell className="text-right space-x-2">
                         {patient.status === "Pending" && (
@@ -762,6 +780,11 @@ const PatientList = () => {
                       <p className="text-muted-foreground">Token</p>
                       <p>{patient.tokenNum || "-"}</p>
                     </div>
+                    <div>
+  <p className="text-muted-foreground">Booked At</p>
+  <p>{patient.createdAt ? new Date(patient.createdAt).toLocaleString() : "-"}</p>
+</div>
+
                     <div>
                       <p className="text-muted-foreground">Preferred Doctor</p>
                       <p>{patient.preferredDoctor || "-"}</p>
