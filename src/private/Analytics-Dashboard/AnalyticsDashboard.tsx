@@ -525,14 +525,14 @@ const AnalyticsDashboard = () => {
             loading={loading}
           />
           <StatCard
-            title="Bidholi Patients"
+            title="Total Bidholi Appointments"
             value={dailyData.reduce((sum, item) => sum + item.bidholi, 0)}
             icon={<Home className="w-5 h-5 text-emerald-600" />}
             color="#10b981"
             loading={loading}
           />
           <StatCard
-            title="Kandoli Patients"
+            title="Total Kandoli Appointments"
             value={dailyData.reduce((sum, item) => sum + item.kandoli, 0)}
             icon={<School className="w-5 h-5 text-blue-600" />}
             color="#3b82f6"

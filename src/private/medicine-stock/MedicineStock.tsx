@@ -729,7 +729,7 @@ const MedicineStock = () => {
                 onChange={() => handleSelectStock(stock.id)}
               />
             </TableCell>
-            <TableCell className="text-gray-700">
+            <TableCell className="text-gray-700 whitespace-normal break-words max-w-xs">
               {editStock?.id === stock.id ? (
                 <Input
                   value={editStock.batchNumber.toString()}
@@ -739,7 +739,7 @@ const MedicineStock = () => {
                 stock.batchNumber
               )}
             </TableCell>
-            <TableCell className="text-gray-700">
+            <TableCell className="text-gray-700 whitespace-normal break-words max-w-xs">
               {editStock?.id === stock.id ? (
                 <Input
                   value={editStock.medicineName}
@@ -749,7 +749,7 @@ const MedicineStock = () => {
                 stock.medicineName
               )}
             </TableCell>
-            <TableCell className="text-gray-700">
+            <TableCell className="text-gray-700 whitespace-normal break-words max-w-xs">
               {editStock?.id === stock.id ? (
                 <Input
                   value={editStock.composition}
@@ -759,7 +759,7 @@ const MedicineStock = () => {
                 stock.composition
               )}
             </TableCell>
-            <TableCell className="text-gray-700">
+            <TableCell className="text-gray-700 whitespace-normal break-words max-w-xs">
               {editStock?.id === stock.id ? (
                 <Input
                   value={editStock.quantity.toString()}
@@ -769,7 +769,7 @@ const MedicineStock = () => {
                 stock.quantity
               )}
             </TableCell>
-            <TableCell className="text-gray-700">
+            <TableCell className="text-gray-700 whitespace-normal break-words max-w-xs">
               {editStock?.id === stock.id ? (
                 <Input
                   value={editStock.medicineType}
@@ -779,7 +779,7 @@ const MedicineStock = () => {
                 stock.medicineType
               )}
             </TableCell>
-            <TableCell className="text-gray-700">
+            <TableCell className="text-gray-700 whitespace-normal break-words max-w-xs">
               {editStock?.id === stock.id ? (
                 <Input
                   type="date"
@@ -795,7 +795,7 @@ const MedicineStock = () => {
                 formatExpirationDateForDisplay(stock.expirationDate)
               )}
             </TableCell>
-            <TableCell className="text-gray-700">
+            <TableCell className="text-gray-700 whitespace-normal break-words max-w-xs">
               {editStock?.id === stock.id ? (
                 <Input
                   value={editStock.company}
@@ -805,7 +805,7 @@ const MedicineStock = () => {
                 stock.company
               )}
             </TableCell>
-            <TableCell className="text-gray-700">
+            <TableCell className="text-gray-700 whitespace-normal break-words max-w-xs">
               {editStock?.id === stock.id ? (
                 <Select
                   onValueChange={(value) => handleLocationChange(value, true)}
@@ -827,7 +827,7 @@ const MedicineStock = () => {
                 stock.location?.locationName || "N/A"
               )}
             </TableCell>
-            <TableCell className="text-gray-700">
+            <TableCell className="text-gray-700 whitespace-normal break-words max-w-xs">
               {editStock?.id === stock.id ? (
                 <div className="flex gap-2">
                   <Save
