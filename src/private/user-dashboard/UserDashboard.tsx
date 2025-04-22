@@ -745,12 +745,6 @@ const UserDashboard = () => {
             >
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-semibold text-gray-900">Health Overview</h3>
-                <button 
-                  onClick={() => navigate("/patient-prescription")}
-                  className="text-sm text-indigo-600 hover:underline"
-                >
-                  View All
-                </button>
               </div>
               
               {/* MEDICATIONS */}
