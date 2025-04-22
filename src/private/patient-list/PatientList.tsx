@@ -170,19 +170,25 @@ const PatientList = () => {
       )
       );
 
-      const assignedPatients = assignedRes.data.map((p: any) => ({
-        id: p.PatientToken,
-        name: p.PatientName,
-        email: p.sapEmail,
-        reason: p.reason,
-        aptId: p.aptId,
-        tokenNum: p.PatientToken,
-        doctorName: p.doctorName,
-        preferredDoctor: "-",
-        reasonForPref: "-",
-        status: "Assigned" as const,
-        rawData: p,
-      }));
+      const assignedPatients = await Promise.all(
+        assignedRes.data.map(async (p: any) => {
+          const { preferredDoctor, reasonForPref } = await fetchAppointmentDetails(p.sapEmail);
+          return {
+            id: p.PatientToken,
+            name: p.PatientName,
+            email: p.sapEmail,
+            reason: p.reason,
+            aptId: p.aptId,
+            tokenNum: p.PatientToken,
+            doctorName: p.doctorName,
+            preferredDoctor,
+            reasonForPref,
+            status: "Assigned" as const,
+            rawData: p,
+          };
+        })
+      );
+      
 
       const appointedPatients = await Promise.all(
         appointedRes.data.map(async (p: any) => {
