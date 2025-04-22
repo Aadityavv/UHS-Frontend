@@ -745,7 +745,7 @@ const PatientList = () => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                    <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
                       No patients found
                     </TableCell>
                   </TableRow>
