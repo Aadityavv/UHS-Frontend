@@ -477,17 +477,16 @@ const SignIn = () => {
             </div>
 
             <div className="text-center space-y-2">
-              {role === "patient" && (
-                <p className="text-sm text-gray-600">
-                  New User?{" "}
-                  <Link
-                    to="/register"
-                    className="text-indigo-600 hover:underline font-medium"
-                  >
-                    Create account
-                  </Link>
-                </p>
-              )}
+            <p className={`text-sm text-gray-600 transition-opacity duration-300 ${role === "patient" ? "opacity-100" : "opacity-0 pointer-events-none select-none"}`}>
+  New User?{" "}
+  <Link
+    to="/register"
+    className="text-indigo-600 hover:underline font-medium"
+  >
+    Create account
+  </Link>
+</p>
+
               <Dialog>
   <DialogTrigger asChild>
     <button className="text-sm text-indigo-600 hover:underline font-medium">
