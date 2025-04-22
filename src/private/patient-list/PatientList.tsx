@@ -782,7 +782,7 @@ const PatientList = () => {
                     </div>
                     <div>
   <p className="text-muted-foreground">Booked At</p>
-  <p>{patient.createdAt ? new Date(patient.createdAt).toLocaleString() : "-"}</p>
+  <p>{dayjs.utc(patient.createdAt).tz("Asia/Kolkata").fromNow()}</p>
 </div>
 
                     <div>
