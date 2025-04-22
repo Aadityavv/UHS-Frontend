@@ -575,7 +575,9 @@ const PatientList = () => {
                     <TableRow key={patient.id}>
                       <TableCell className="font-medium">{patient.name}</TableCell>
                       <TableCell className="text-muted-foreground">{patient.email || "-"}</TableCell>
-                      <TableCell>{patient.reason || "-"}</TableCell>
+                      <TableCell className="whitespace-normal break-words max-w-xs">
+  {patient.reason || "-"}
+</TableCell>
                       <TableCell>{patient.preferredDoctor || "-"}</TableCell>
                       <TableCell>{patient.doctorName || "-"}</TableCell>
                       <TableCell>{patient.tokenNum || "-"}</TableCell>
@@ -638,7 +640,7 @@ const PatientList = () => {
                               </DialogHeader>
                               <div className="space-y-1 text-sm">
                                 <p><strong>Preferred Doctor:</strong> {patient.preferredDoctor}</p>
-                                <p><strong>Reason For Preference:</strong> {patient.reasonForPref}</p>
+                                <p className="whitespace-normal break-words max-w-xs"><strong>Reason For Preference:</strong> {patient.reasonForPref}</p>
                               </div>
                               <form
                                 onSubmit={(e) => {
