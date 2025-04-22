@@ -565,7 +565,7 @@ const PatientList = () => {
                   <TableHead>Assigned Doctor</TableHead>
                   <TableHead>Token</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Booked At</TableHead>
+                  <TableHead>Booked</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -787,7 +787,7 @@ const PatientList = () => {
                       <p>{patient.tokenNum || "-"}</p>
                     </div>
                     <div>
-  <p className="text-muted-foreground">Booked At</p>
+  <p className="text-muted-foreground">Booked</p>
   <p>{dayjs.utc(patient.createdAt).tz("Asia/Kolkata").fromNow()}</p>
 </div>
 
