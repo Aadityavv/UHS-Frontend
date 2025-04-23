@@ -146,7 +146,9 @@ const DeletedAppointments = () => {
                     <TableRow key={appt.id}>
                       <TableCell>{appt.patientName}</TableCell>
                       <TableCell>{appt.patientEmail}</TableCell>
-                      <TableCell>{appt.reason}</TableCell>
+                      <TableCell className="whitespace-normal break-words max-w-xs">
+  {appt.reason}
+</TableCell>
                       <TableCell>{appt.deletedBy || "N/A"}</TableCell>
                       <TableCell>{formatDate(appt.deletedAt)}</TableCell>
                     </TableRow>
