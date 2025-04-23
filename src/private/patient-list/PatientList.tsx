@@ -398,7 +398,7 @@ const PatientList = () => {
 
   useEffect(() => {
     fetchAllPatients();
-    const interval = setInterval(fetchAllPatients, 60000);
+    const interval = setInterval(fetchAllPatients, 30000);
     return () => clearInterval(interval);
   }, []);
 
