@@ -153,6 +153,7 @@ const UserAppointment = () => {
       }
     };
     
+    checkCompletedAppointmentForFeedback();
     
   }, [navigate]);
 
