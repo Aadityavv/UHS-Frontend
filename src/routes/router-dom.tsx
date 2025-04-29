@@ -6,6 +6,7 @@ import SignIn from "@/public/SignIn";
 import AdminSignIn from "@/public/AdminSignIn";
 import UserRegister from "@/public/UserRegister";
 import PassChange from "@/public/PassChange";
+import UserFeedback from "@/private/user-feedback/userfeedback";
 
 // Admin routes
 import AdminDashboard from "@/private/admin-dashboard/AdminDashboard";
@@ -32,6 +33,7 @@ import UserAppointment from "@/private/user-appointment/UserAppointment";
 import UserAppointmentLayout from "@/private/user-appointment/UserAppointmentLayout";
 import UserPrescription from "@/private/user-prescription/UserPrescription";
 import UserPrescriptionLayout from "@/private/user-prescription/UserPrescriptionLayout";
+import ThankYou from "@/private/user-feedback/ThankYou";
 
 // Doctor routes
 import DoctorDashboard from "@/private/doctor-dashboard/DoctorDashboard";
@@ -210,6 +212,15 @@ const router = createBrowserRouter([
           </UserPrescriptionLayout>
         ),
       },
+      {
+        path: "/feedback",
+        element: <UserFeedback />,
+      },
+      {
+        path: "/thank-you",
+        element: <ThankYou />,
+      },
+      
     ],
   },
 

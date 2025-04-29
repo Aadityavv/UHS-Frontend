@@ -416,6 +416,7 @@ const UserDashboard = () => {
     };
 
     fetchData();
+    
 
     // Update time every minute
     const timeInterval = setInterval(() => {
@@ -429,6 +430,32 @@ const UserDashboard = () => {
       }
     };
   }, [navigate, toast, fetchActiveMedications, fetchMedicalDetails, fetchCurrentTokenNumber, fetchLastPrescription]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+  
+    const checkFeedbackPending = async () => {
+      try {
+        const res = await axios.get("https://uhs-backend.onrender.com/api/patient/getCurrentAppointment", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+  
+        const appointment = res.data;
+  
+        if (appointment && appointment.status === "COMPLETED_BY_AD" && !appointment.feedbackGiven) {
+          // Store appointmentId for feedback form
+          localStorage.setItem("appointmentId", appointment.appointmentId);
+          navigate("/feedback");  // 🚀 Redirect to feedback page
+        }
+      } catch (error) {
+        console.log("No pending completed appointment found or error fetching", error);
+      }
+    };
+  
+    checkFeedbackPending();
+  }, [navigate]);
+  
 
   return (
     <div className="min-h-[79vh] overflow-x-hidden bg-gray-50">

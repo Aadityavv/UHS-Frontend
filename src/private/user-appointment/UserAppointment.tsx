@@ -131,6 +131,29 @@ const UserAppointment = () => {
     
     
     fetchData();
+
+    const checkCompletedAppointmentForFeedback = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+    
+      try {
+        const res = await axios.get("https://uhs-backend.onrender.com/api/patient/getCurrentAppointment", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+    
+        const appointment = res.data;
+    
+        if (appointment && appointment.status === "COMPLETED_BY_AD") {
+          // Store appointmentId in localStorage for feedback submission
+          localStorage.setItem("appointmentId", appointment.appointmentId);
+          navigate("/feedback");
+        }
+      } catch (error) {
+        console.log("No active completed appointment found or API failed", error);
+      }
+    };
+    
+    
   }, [navigate]);
 
   // Fetch last appointment date (optional debounce can be added)
