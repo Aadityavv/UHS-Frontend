@@ -14,21 +14,25 @@ const UserFeedback = () => {
   const [comments, setComments] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const appointmentId = localStorage.getItem("appointmentId");
-  const token = localStorage.getItem("token");
-  const patientEmail = localStorage.getItem("email");
+  const [appointmentId] = useState(() => localStorage.getItem("appointmentId"));
+  const [token] = useState(() => localStorage.getItem("token"));
+  const [patientEmail] = useState(() => localStorage.getItem("email"));
+  
 
   useEffect(() => {
     if (!appointmentId || !token || !patientEmail) {
-      toast({
-        title: "Session Expired",
-        description: "Please login again.",
-        variant: "destructive",
-      });
-      navigate("/patient-dashboard");
+      const pathname = window.location.pathname;
+      if (!pathname.includes("thank-you")) {
+        toast({
+          title: "Session Expired",
+          description: "Please login again.",
+          variant: "destructive",
+        });
+        navigate("/patient-dashboard");
+      }
     }
   }, [appointmentId, token, patientEmail, navigate, toast]);
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (rating === 0) {
