@@ -20,6 +20,9 @@ const DoctorDashboard = () => {
   const [inQueue, setInQueue] = useState(0);
   const [status, setStatus] = useState<"check-in" | "check-out" | "Available" | "Not Available">("check-out");
   const [loading, setLoading] = useState(true);
+  const [avgRating, setAvgRating] = useState<number | null>(null);
+const [feedbackCount, setFeedbackCount] = useState<number | null>(null);
+
 
   const fetchPatientData = async () => {
     try {
@@ -237,6 +240,36 @@ const DoctorDashboard = () => {
     fetchPatientData();
     fetchTokenNum();
     fetchDoctorStatus();
+
+    const fetchFeedbackSummary = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+    
+      try {
+        const response = await axios.get(
+          "https://uhs-backend.onrender.com/api/feedback/summary",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+    
+        if (response.data.averageRating !== undefined) {
+          setAvgRating(response.data.averageRating);
+          setFeedbackCount(response.data.totalCount);
+        } else if (response.data.message) {
+          setAvgRating(null);
+          setFeedbackCount(0); // or null
+        }
+      } catch (err) {
+        console.error("Feedback fetch error:", err);
+      }
+    };
+    
+    
+    fetchFeedbackSummary();
+    
 
     const interval = setInterval(() => {
       fetchPatientData();
@@ -493,6 +526,19 @@ const DoctorDashboard = () => {
                       <AlertCircle className="h-5 w-5" />
                     </button>
                   </motion.div>
+
+                  <motion.div className="bg-white p-4 rounded-xl shadow-sm mt-4">
+  <p className="text-sm text-gray-500">Average Feedback Rating</p>
+  {avgRating !== null ? (
+    <>
+      <p className="text-2xl font-bold">{avgRating.toFixed(2)} ★</p>
+      <p className="text-xs text-gray-500">{feedbackCount} total feedback</p>
+    </>
+  ) : (
+    <p className="text-xs text-gray-400">Minimum 5 feedback responses required.</p>
+  )}
+</motion.div>
+
 
                   <BreathingExercise/>
                 </div>
