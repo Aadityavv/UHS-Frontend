@@ -410,6 +410,26 @@ const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   ))}
 </div>
 
+
+{/* Feedback Button for Mobile View */}
+<div className="mt-4">
+  <div
+    className="bg-white p-4 rounded-xl shadow-sm cursor-pointer hover:bg-gray-100 transition"
+    onClick={() => setIsFeedbackModalOpen(true)}
+  >
+    <p className="text-sm text-gray-500">Average Feedback Rating</p>
+    {avgRating !== null && feedbackCount !== null && feedbackCount >= 10 ? (
+      <>
+        <p className="text-2xl font-bold">{avgRating.toFixed(2)} ★</p>
+        <p className="text-xs text-gray-500">{feedbackCount} total feedback</p>
+      </>
+    ) : (
+      <p className="text-xs text-gray-400">Minimum 10 feedback responses required.</p>
+    )}
+  </div>
+</div>
+
+
                 {/* Diagnosis Word Cloud */}
                 <div className="mt-0">
                   <DiagnosisWordCloud />
@@ -545,8 +565,6 @@ const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   )}
 </motion.div>
 
-<FeedbackModal isOpen={isFeedbackModalOpen} onClose={() => setIsFeedbackModalOpen(false)} />
-
 
 
                   <BreathingExercise/>
@@ -677,6 +695,8 @@ const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
             </div>
           </>
         )}
+
+<FeedbackModal isOpen={isFeedbackModalOpen} onClose={() => setIsFeedbackModalOpen(false)} />
       </div>
     </>
   );
