@@ -9,6 +9,8 @@ import { motion } from "framer-motion";
 import Skeleton from '@mui/material/Skeleton';
 import { AlertCircle, Stethoscope, ChevronRight, LogOut } from "lucide-react";
 import BreathingExercise from "@/components/BreathingExercise";
+import FeedbackModal from "@/components/FeedbackModal";
+
 
 const DoctorDashboard = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
@@ -22,6 +24,7 @@ const DoctorDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [avgRating, setAvgRating] = useState<number | null>(null);
 const [feedbackCount, setFeedbackCount] = useState<number | null>(null);
+const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
 
 
   const fetchPatientData = async () => {
@@ -527,7 +530,10 @@ const [feedbackCount, setFeedbackCount] = useState<number | null>(null);
                     </button>
                   </motion.div>
 
-                  <motion.div className="bg-white p-4 rounded-xl shadow-sm mt-4">
+                  <motion.div
+  className="bg-white p-4 rounded-xl shadow-sm mt-4 cursor-pointer hover:bg-gray-100 transition"
+  onClick={() => setIsFeedbackModalOpen(true)}
+>
   <p className="text-sm text-gray-500">Average Feedback Rating</p>
   {avgRating !== null ? (
     <>
@@ -538,6 +544,9 @@ const [feedbackCount, setFeedbackCount] = useState<number | null>(null);
     <p className="text-xs text-gray-400">Minimum 5 feedback responses required.</p>
   )}
 </motion.div>
+
+<FeedbackModal isOpen={isFeedbackModalOpen} onClose={() => setIsFeedbackModalOpen(false)} />
+
 
 
                   <BreathingExercise/>

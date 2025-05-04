@@ -81,7 +81,7 @@ const UserFeedback = () => {
       <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
         <h2 className="text-2xl font-bold text-center mb-6 text-gray-900">
           <h1 className="text-3xl font-bold text-center text-gray-900">Appointment Completed</h1>
-          We Value Your Feedback
+          Give Feedback for the Doctor.
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
