@@ -20,7 +20,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import axios from "axios";
-import { Pill, Home, School, Users, Calendar } from "lucide-react";
+import { Pill, Home, School, Users, Calendar, Clock } from "lucide-react";
 
 // Types
 type ViewType = "daily" | "monthly" | "yearly";
@@ -30,6 +30,7 @@ interface DataPoint {
   kandoli: number;
   [key: string]: string | number;
 }
+
 
 interface DailyData extends DataPoint {
   day: string;
@@ -112,6 +113,7 @@ const AnalyticsDashboard = () => {
   const [view, setView] = useState<ViewType>("daily");
   const [range, setRange] = useState<7 | 30 | 90 | number>(30);
   const [totalPatient, setTotalPatient] = useState(0);
+  const [avgTAT, setAvgTAT] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -291,6 +293,15 @@ const AnalyticsDashboard = () => {
         if (responseDailyData.status === 200) {
           setDailyData(transformDataDaily(responseDailyData.data));
         }
+
+        // Get Average Turnaround Time
+const responseTAT = await axios.get(`https://uhs-backend.onrender.com/api/analytics/turnaroundTime?range=${range}`, {
+  headers: { Authorization: `Bearer ${token}` }
+});
+if (responseTAT.status === 200) {
+  setAvgTAT(responseTAT.data); // Store in state
+}
+
 
       } catch (err: any) {
         toast({
@@ -474,6 +485,16 @@ const AnalyticsDashboard = () => {
       schoolData.map((s) => [s.name, s.count])
     );
   
+    // Average Turnaround Time
+if (avgTAT !== null) {
+  doc.setFontSize(14);
+  doc.text("Average Turnaround Time", 14, y);
+  doc.setFontSize(12);
+  y += 7;
+  doc.text(`The average time between booking and prescription completion is approximately ${avgTAT.toFixed(1)} minutes.`, 14, y);
+  y += 10;
+}
+
     // Save the PDF
     doc.save("UHS_Full_Analytics_Report.pdf");
   };
@@ -516,7 +537,7 @@ const AnalyticsDashboard = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <StatCard
             title="Total Appointments Handled"
             value={totalPatient}
@@ -524,6 +545,14 @@ const AnalyticsDashboard = () => {
             color="#6366f1"
             loading={loading}
           />
+          <StatCard
+  title="Avg Turnaround Time"
+  value={avgTAT !== null ? `${avgTAT.toFixed(1)} min` : "N/A"}
+  icon={<Clock className="w-5 h-5 text-red-600" />}
+  color="#ef4444"
+  loading={loading}
+/>
+
           <StatCard
             title="Total Bidholi Appointments"
             value={dailyData.reduce((sum, item) => sum + item.bidholi, 0)}
