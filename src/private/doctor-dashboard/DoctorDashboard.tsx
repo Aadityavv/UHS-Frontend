@@ -412,6 +412,7 @@ const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
 
 
 {/* Feedback Button for Mobile View */}
+
 <div className="mt-4">
   <div
     className="bg-white p-4 rounded-xl shadow-sm cursor-pointer hover:bg-gray-100 transition"
