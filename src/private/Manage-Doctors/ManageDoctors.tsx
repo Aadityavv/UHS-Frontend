@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Eye, EyeOff } from "lucide-react";
-
+import DoctorFeedbackModalForAdmin from "@/components/DoctorFeedbackModalForAdmin";
 type Doctor = {
   doctorId: string;
   doctorEmail: string;
@@ -26,6 +26,7 @@ const ManageDoctors = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [confirmDeleteName, setConfirmDeleteName] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+
 
   const [formData, setFormData] = useState({
     name: "",
@@ -83,6 +84,22 @@ const ManageDoctors = () => {
     }
   };
 
+  // const fetchDoctorFeedback = async (doctorId: string) => {
+  //   try {
+  //     const res = await axios.get(
+  //       `https://uhs-backend.onrender.com/api/feedback/allByDoctor?doctorId=${doctorId}`,
+  //       {
+  //         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+  //       }
+  //     );
+  //     setSelectedDoctorFeedback(res.data.data);
+  //     setIsFeedbackOpen(true);
+  //   } catch (err) {
+  //     toast({ title: "Failed to fetch feedback", variant: "destructive" });
+  //   }
+  // };
+  
+
   const handleUpdate = async () => {
     if (!editingDoctor) return;
     
@@ -124,6 +141,9 @@ const ManageDoctors = () => {
       toast({ title: "Delete failed", variant: "destructive" });
     }
   };
+
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+const [selectedDoctorFeedback, setSelectedDoctorFeedback] = useState<any[]>([]);
 
   useEffect(() => {
     fetchDoctors();
@@ -167,6 +187,29 @@ const ManageDoctors = () => {
                   >
                     <Trash2 className="h-4 w-4 mr-1" /> Delete
                   </Button>
+                  <Button
+  variant="outline"
+  size="sm"
+  onClick={async () => {
+    try {
+      const res = await axios.get(
+        `https://uhs-backend.onrender.com/api/feedback/admin/doctorFeedback/${doctor.doctorId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      setSelectedDoctorFeedback(res.data.data);
+      setIsFeedbackOpen(true);
+    } catch {
+      toast({ title: "Failed to fetch feedback", variant: "destructive" });
+    }
+  }}
+>
+  View Feedback
+</Button>
+
                 </div>
               </CardContent>
             </Card>
@@ -294,6 +337,16 @@ const ManageDoctors = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <DoctorFeedbackModalForAdmin
+  isOpen={isFeedbackOpen}
+  onClose={() => setIsFeedbackOpen(false)}
+  feedbackData={selectedDoctorFeedback}
+/>
+
+
+
+
     </div>
   );
 };
