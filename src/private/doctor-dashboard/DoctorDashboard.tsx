@@ -664,6 +664,15 @@ const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
                     <motion.div
                       whileHover={{ scale: 1.02 }}
                       className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 cursor-pointer"
+                      onClick={() => navigate("/medicine-usage")}
+                    >
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Medicine Usage</h3>
+                      <p className="text-sm text-gray-600">View medicine usage details.</p>
+                    </motion.div>
+
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 cursor-pointer"
                       onClick={() => navigate("/analytics-dashboard")}
                     >
                       <h3 className="text-lg font-semibold text-gray-900 mb-4">UHS Analysis</h3>
@@ -679,14 +688,14 @@ const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
                       <p className="text-sm text-gray-600">Manage ambulance services.</p>
                     </motion.div>
 
-                    <motion.div
+                    {/* <motion.div
                       whileHover={{ scale: 1.02 }}
                       className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 cursor-pointer"
                       onClick={() => navigate("/emergency")}
                     >
                       <h3 className="text-lg font-semibold text-gray-900 mb-4">Emergency Contacts</h3>
                       <p className="text-sm text-gray-600">Access emergency contact information.</p>
-                    </motion.div>
+                    </motion.div> */}
                   </motion.div>
 
                   {/* Diagnosis Word Cloud */}

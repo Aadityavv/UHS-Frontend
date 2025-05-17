@@ -40,6 +40,8 @@ import DoctorDashboard from "@/private/doctor-dashboard/DoctorDashboard";
 import DoctorDashboardLayout from "@/private/doctor-dashboard/DoctorDashboardLayout";
 import DoctorCheckIn from "@/private/doctor-check-in-out/DoctorCheckIn";
 import DoctorCheckInLayout from "@/private/doctor-check-in-out/DoctorCheckInLayout";
+import MedicineUsage from "@/private/medicine-usage/MedicineUsage";
+import MedicineUsageLayout from "@/private/medicine-usage/MedicineUsageLayout";
 
 // AD (Assistant Doctor) routes
 import AssistantDoctorDashboard from "@/private/assistant-dashboard/AssistantDoctorDashboard";
@@ -250,6 +252,14 @@ const router = createBrowserRouter([
           <PatientDetailsLayout>
             <PatientDetails />
           </PatientDetailsLayout>
+        ),
+      },
+            {
+        path: "/medicine-usage",
+        element: (
+          <MedicineUsageLayout>
+            <MedicineUsage />
+          </MedicineUsageLayout>
         ),
       },
     ],
