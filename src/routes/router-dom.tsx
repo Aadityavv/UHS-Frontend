@@ -164,6 +164,14 @@ const router = createBrowserRouter([
             <DeletedAppointments />
             </DeletedAppointmentsLayout>
         )
+      },
+            {
+        path: "/admin/medicine-usage",
+        element: (
+          <MedicineUsageLayout>
+            <MedicineUsage/>
+            </MedicineUsageLayout>
+        )
       }
       
       

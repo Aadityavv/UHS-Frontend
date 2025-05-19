@@ -384,6 +384,13 @@ const AdminDashboard = () => {
             bg: "bg-purple-100 text-purple-600",
             route: "/admin/patient-logs"
           },
+                    {
+            title: "Medicine Usage",
+            subtitle: "View medicine usage logs",
+            icon: <ClipboardList className="h-5 w-5" />,
+            bg: "bg-orange-100 text-orange-600",
+            route: "/admin/medicine-usage"
+          },
           {
             title: "Rejected Appointments",
             subtitle: "View Rejected Appointments",

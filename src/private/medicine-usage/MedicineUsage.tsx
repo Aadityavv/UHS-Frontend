@@ -31,7 +31,13 @@ const MedicineUsage: React.FC = () => {
   useEffect(() => {
     const fetchMedicineNames = async () => {
       try {
-        const response = await axios.get("https://uhs-backend.onrender.com/api/medicine/all");
+        const token = localStorage.getItem("token");
+        const response = await axios.get("https://uhs-backend.onrender.com/api/medicine/all", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        });
         setMedicines(response.data);
       } catch (error) {
         console.error("Failed to fetch medicine names:", error);
@@ -42,10 +48,19 @@ const MedicineUsage: React.FC = () => {
 
   const fetchMedicineUsage = async (medicineName: string) => {
     try {
-      const response = await axios.get(`https://uhs-backend.onrender.com/api/medicine/usage/${medicineName}`);
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `https://uhs-backend.onrender.com/api/medicine/usage/${medicineName}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        }
+      );
       const dataWithQuantity = response.data.map((usage: MedicineUsage) => ({
         ...usage,
-        totalQuantity: parseDosage(usage.dosage) * parseInt(usage.duration)
+        totalQuantity: parseDosage(usage.dosage) * parseInt(usage.duration),
       }));
       setUsageDetails(dataWithQuantity);
       setSelectedMedicine(medicineName);
@@ -78,9 +93,9 @@ const MedicineUsage: React.FC = () => {
                   <FiArrowLeft className="text-lg" />
                   <span className="font-semibold">Back to Medicines</span>
                 </button>
-                <h1 className="mt-4 text-3xl font-bold flex items-center gap-3">
-                  <Pill className="text-2xl" />
-                  {selectedMedicine}
+                <h1 className="mt-4 text-3xl font-bold flex items-center gap-3 truncate">
+                  <Pill className="text-2xl flex-shrink-0" />
+                  <span className="truncate">{selectedMedicine}</span>
                 </h1>
                 <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="bg-white/10 p-4 rounded-xl">
@@ -101,29 +116,47 @@ const MedicineUsage: React.FC = () => {
                   <table className="w-full">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="p-4 text-left text-sm font-medium text-gray-600"><FiUser className="inline mr-2" />Patient</th>
-                        <th className="p-4 text-left text-sm font-medium text-gray-600">Prescribed By</th>
-                        <th className="p-4 text-left text-sm font-medium text-gray-600">Dosage</th>
-                        <th className="p-4 text-left text-sm font-medium text-gray-600"><FiCalendar className="inline mr-2" />Duration</th>
-                        <th className="p-4 text-left text-sm font-medium text-gray-600">Total Quantity</th>
-                        <th className="p-4 text-left text-sm font-medium text-gray-600"><FiClock className="inline mr-2" />Time</th>
+                        <th className="p-4 text-left text-sm font-medium text-gray-600 min-w-[180px]">
+                          <FiUser className="inline mr-2" />Patient
+                        </th>
+                        <th className="p-4 text-left text-sm font-medium text-gray-600 min-w-[180px]">
+                          Prescribed By
+                        </th>
+                        <th className="p-4 text-left text-sm font-medium text-gray-600">
+                          Dosage
+                        </th>
+                        <th className="p-4 text-left text-sm font-medium text-gray-600">
+                          <FiCalendar className="inline mr-2" />Duration
+                        </th>
+                        <th className="p-4 text-left text-sm font-medium text-gray-600">
+                          Total Quantity
+                        </th>
+                        <th className="p-4 text-left text-sm font-medium text-gray-600">
+                          <FiClock className="inline mr-2" />Time
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                       {usageDetails.map((usage, index) => (
                         <tr key={index} className="hover:bg-gray-50 transition-colors">
-                          <td className="p-4 text-sm font-medium text-gray-800">{usage.patientName}</td>
-                          <td className="p-4 text-sm text-gray-600">{usage.prescribedBy}</td>
+                          <td className="p-4 text-sm font-medium text-gray-800 truncate max-w-[180px]">
+                            {usage.patientName}
+                          </td>
+                          <td className="p-4 text-sm text-gray-600 truncate max-w-[180px]">
+                            {usage.prescribedBy}
+                          </td>
                           <td className="p-4 text-sm text-gray-600">
-                            <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-md">
+                            <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-md whitespace-nowrap">
                               {usage.dosage}
                             </span>
                           </td>
-                          <td className="p-4 text-sm text-gray-600">{usage.duration} days</td>
-                          <td className="p-4 text-sm font-semibold text-blue-600">
+                          <td className="p-4 text-sm text-gray-600 whitespace-nowrap">
+                            {usage.duration} days
+                          </td>
+                          <td className="p-4 text-sm font-semibold text-blue-600 whitespace-nowrap">
                             {usage.totalQuantity} units
                           </td>
-                          <td className="p-4 text-sm text-gray-600">
+                          <td className="p-4 text-sm text-gray-600 whitespace-nowrap">
                             {new Date(usage.prescriptionTime).toLocaleDateString('en-GB', {
                               day: 'numeric',
                               month: 'short',
@@ -151,12 +184,12 @@ const MedicineUsage: React.FC = () => {
               className="bg-white rounded-2xl shadow-lg overflow-hidden"
             >
               <div className="p-6 border-b border-gray-100">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
                     <Pill className="text-2xl text-purple-600" />
                     Medicine Directory
                   </h1>
-                  <div className="relative w-96">
+                  <div className="relative w-full md:w-96">
                     <FiSearch className="absolute left-4 top-3.5 text-gray-400" />
                     <input
                       type="text"
@@ -175,17 +208,17 @@ const MedicineUsage: React.FC = () => {
                     <motion.div
                       key={index}
                       whileHover={{ y: -4 }}
-                      className="group bg-white rounded-xl border border-gray-200 hover:border-purple-200 cursor-pointer transition-all"
+                      className="group bg-white rounded-xl border border-gray-200 hover:border-purple-200 cursor-pointer transition-all overflow-hidden"
                       onClick={() => fetchMedicineUsage(medicine)}
                     >
                       <div className="p-6">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-lg font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="text-lg font-semibold text-gray-800 group-hover:text-purple-600 transition-colors truncate flex-1">
                             {medicine}
                           </h3>
-                          <Pill className="text-xl text-gray-400 group-hover:text-purple-500 transition-colors" />
+                          <Pill className="text-xl text-gray-400 group-hover:text-purple-500 transition-colors flex-shrink-0" />
                         </div>
-                        <div className="mt-4 text-sm text-gray-500">
+                        <div className="mt-4 text-sm text-gray-500 truncate">
                           Click to view prescription details
                         </div>
                       </div>
