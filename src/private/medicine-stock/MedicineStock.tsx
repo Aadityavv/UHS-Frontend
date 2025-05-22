@@ -34,6 +34,7 @@ import {
   ChevronDown,
   ChevronUp,
   Truck,
+  Upload
 } from "lucide-react";
 
 interface Stock {
@@ -109,6 +110,7 @@ const MedicineStock = () => {
     quantity: "",
   });
   const [showTransferModal, setShowTransferModal] = useState(false);
+  const [importing, setImporting] = useState(false); 
 
   const isMobile = useMobile();
 
@@ -257,6 +259,95 @@ const MedicineStock = () => {
     fetchLocations();
     fetchStocks();
   }, []);
+
+const handleCSVImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  // Validate file type
+  if (file.type !== "text/csv" && !file.name.endsWith(".csv")) {
+    toast({
+      title: "Invalid File",
+      description: "Only .csv files are supported",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  // Validate file size (max 2MB)
+  const maxSizeMB = 2;
+  if (file.size > maxSizeMB * 1024 * 1024) {
+    toast({
+      title: "File Too Large",
+      description: `Maximum allowed size is ${maxSizeMB}MB`,
+      variant: "destructive",
+    });
+    return;
+  }
+
+  // Ensure location is selected
+  if (!location) {
+    toast({
+      title: "Location Required",
+      description: "Please select a location before importing",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("locationId", location);
+
+  setImporting(true);
+  try {
+    const token = localStorage.getItem("token");
+    let role = localStorage.getItem("roles");
+    if (role === "ad") role = role.toUpperCase();
+
+    const resp = await axios.post(
+      `https://uhs-backend.onrender.com/api/${role}/stocks/import`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    const summary = resp.data?.summary;
+    if (summary && typeof summary === "object") {
+      toast({
+        title: "Import Complete",
+        description: `✅ Added: ${summary.added}, ✏️ Updated: ${summary.updated}, ⏭️ Skipped: ${summary.skipped}`,
+      });
+    } else {
+      toast({
+        title: "Import Complete",
+        description: resp.data?.message || "CSV imported successfully.",
+      });
+    }
+
+    fetchStocks();
+  } catch (error: any) {
+    console.error("CSV import failed:", error);
+
+    const message =
+      error.response?.data?.message ||
+      (typeof error.response?.data === "string" ? error.response.data : null) ||
+      "CSV import failed. Please check the format and try again.";
+
+    toast({
+      title: "Import Failed",
+      description: message,
+      variant: "destructive",
+    });
+  } finally {
+    setImporting(false);
+  }
+};
+
 
   const handleDownloadExcel = async (exportType: string) => {
     try {
@@ -1289,25 +1380,77 @@ const MedicineStock = () => {
             className="space-y-6"
           >
 {/* In the Header Section */}
+{/* In the Header Section */}
 <div className="flex items-center justify-between">
   <h1 className="text-3xl font-bold text-gray-900">
     Medicine Stock Management
   </h1>
-  <Select onValueChange={(value) => handleDownloadExcel(value)}>
-  <SelectTrigger className="bg-indigo-600 text-white px-3 py-1.5 rounded-md flex items-center gap-1 hover:bg-indigo-700 transition-colors cursor-pointer w-auto min-w-fit">
-      <Download className="h-5 w-5" />
-      <span>Export Excel</span>
-    </SelectTrigger>
-    <SelectContent className="bg-white">
-  <SelectGroup>
-    <SelectItem value="all">All Stocks</SelectItem>
-    <SelectItem value="expiring">About to Expire (1 month)</SelectItem>
-    <SelectItem value="low">Low Quantity (&lt;50)</SelectItem>
-    <SelectItem value="expiring-low">Expiring + Low Quantity</SelectItem>
-    <SelectItem value="available">Available Stocks (&gt;0)</SelectItem>
-  </SelectGroup>
-</SelectContent>
-  </Select>
+  
+  <div className="flex items-center gap-4">
+    {/* Export Excel Button */}
+    <Select onValueChange={(value) => handleDownloadExcel(value)}>
+      <SelectTrigger className="bg-indigo-600 text-white px-3 py-1.5 rounded-md flex items-center gap-1 hover:bg-indigo-700 transition-colors cursor-pointer w-auto min-w-fit">
+        <Download className="h-5 w-5" />
+        <span>Export Excel</span>
+      </SelectTrigger>
+      <SelectContent className="bg-white">
+        <SelectGroup>
+          <SelectItem value="all">All Stocks</SelectItem>
+          <SelectItem value="expiring">About to Expire (1 month)</SelectItem>
+          <SelectItem value="low">Low Quantity (&lt;50)</SelectItem>
+          <SelectItem value="expiring-low">Expiring + Low Quantity</SelectItem>
+          <SelectItem value="available">Available Stocks (&gt;0)</SelectItem>
+        </SelectGroup>
+      </SelectContent>
+    </Select>
+
+    {/* CSV Import with Location Dropdown */}
+    <div className="relative">
+<button
+    onClick={() => document.getElementById('csvLocationDropdown')?.classList.toggle('hidden')}
+    className="px-3 py-1.5 bg-green-600 text-white rounded-md flex items-center gap-2 hover:bg-green-700 transition-colors"
+    disabled={importing}
+  >
+    <Upload className="h-5 w-5" />
+    <span>{importing ? "Importing..." : "Import CSV"}</span>
+    {importing && (
+      <svg className="animate-spin h-4 w-4 ml-1" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="white" strokeWidth="4" fill="none" />
+        <path className="opacity-75" fill="white" d="M4 12a8 8 0 018-8v8z" />
+      </svg>
+    )}
+  </button>
+      
+      <div 
+        id="csvLocationDropdown"
+        className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-10 hidden"
+      >
+        <div className="py-1">
+          {locations.map((loc) => (
+            <div 
+              key={loc.locId}
+              className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+              onClick={() => {
+                setLocation(loc.locId);
+                document.getElementById('csvFileInput')?.click();
+                document.getElementById('csvLocationDropdown')?.classList.add('hidden');
+              }}
+            >
+              {loc.locationName}
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      <input
+        id="csvFileInput"
+        type="file"
+        accept=".csv"
+        onChange={handleCSVImport}
+        className="hidden"
+      />
+    </div>
+  </div>
 </div>
 
             {/* Filters Section */}
