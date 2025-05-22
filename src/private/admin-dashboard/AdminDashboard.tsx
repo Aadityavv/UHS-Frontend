@@ -20,9 +20,7 @@ import {
   RefreshCw,
   User,
   Box,
-  Shield,
-  FileText
-} from "lucide-react";
+  Shield} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -69,8 +67,8 @@ const AdminDashboard = () => {
   const [time, setTime] = useState<Date>(new Date());
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<SystemStats | null>(null);
-  const [recentActivity, setRecentActivity] = useState<ActivityLog[]>([]);
-  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [, setRecentActivity] = useState<ActivityLog[]>([]);
+  const [, setAlerts] = useState<Alert[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [threatLogs, setThreatLogs] = useState<ThreatLog[]>([]);
   const [isMobile, setIsMobile] = useState(false);
