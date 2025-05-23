@@ -110,7 +110,7 @@ const MedicineStock = () => {
     quantity: "",
   });
   const [showTransferModal, setShowTransferModal] = useState(false);
-  const [importing, setImporting] = useState(false); 
+  const [, setImporting] = useState(false); 
 
   const isMobile = useMobile();
 
