@@ -1379,79 +1379,112 @@ const handleCSVImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-{/* In the Header Section */}
-{/* In the Header Section */}
-<div className="flex items-center justify-between">
-  <h1 className="text-3xl font-bold text-gray-900">
-    Medicine Stock Management
-  </h1>
-  
-  <div className="flex items-center gap-4">
-    {/* Export Excel Button */}
-    <Select onValueChange={(value) => handleDownloadExcel(value)}>
-      <SelectTrigger className="bg-indigo-600 text-white px-3 py-1.5 rounded-md flex items-center gap-1 hover:bg-indigo-700 transition-colors cursor-pointer w-auto min-w-fit">
-        <Download className="h-5 w-5" />
-        <span>Export Excel</span>
-      </SelectTrigger>
-      <SelectContent className="bg-white">
-        <SelectGroup>
-          <SelectItem value="all">All Stocks</SelectItem>
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                Medicine Stock Management
+              </h1>
+              
+              {/* Action Buttons */}
+              {isMobile ? (
+                <div className="flex flex-col w-full gap-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Export Excel Button for Mobile */}
+                    <Select onValueChange={(value) => handleDownloadExcel(value)}>
+                      <SelectTrigger className="bg-indigo-600 text-white px-3 py-1.5 rounded-md flex items-center gap-1 hover:bg-indigo-700 transition-colors">
+                        <Download className="h-4 w-4" />
+                        <span className="truncate">Export Excel</span>
+                        <ChevronDown className="h-4 w-4 ml-auto opacity-50" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white">
+                        <SelectGroup>
+           <SelectItem value="all">All Stocks</SelectItem>
           <SelectItem value="expiring">About to Expire (1 month)</SelectItem>
           <SelectItem value="low">Low Quantity (&lt;50)</SelectItem>
           <SelectItem value="expiring-low">Expiring + Low Quantity</SelectItem>
           <SelectItem value="available">Available Stocks (&gt;0)</SelectItem>
-        </SelectGroup>
-      </SelectContent>
-    </Select>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
 
-    {/* CSV Import with Location Dropdown */}
-    <div className="relative">
-<button
-    onClick={() => document.getElementById('csvLocationDropdown')?.classList.toggle('hidden')}
-    className="px-3 py-1.5 bg-green-600 text-white rounded-md flex items-center gap-2 hover:bg-green-700 transition-colors"
-    disabled={importing}
-  >
-    <Upload className="h-5 w-5" />
-    <span>{importing ? "Importing..." : "Import CSV"}</span>
-    {importing && (
-      <svg className="animate-spin h-4 w-4 ml-1" viewBox="0 0 24 24">
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="white" strokeWidth="4" fill="none" />
-        <path className="opacity-75" fill="white" d="M4 12a8 8 0 018-8v8z" />
-      </svg>
-    )}
-  </button>
-      
-      <div 
-        id="csvLocationDropdown"
-        className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-10 hidden"
-      >
-        <div className="py-1">
-          {locations.map((loc) => (
-            <div 
-              key={loc.locId}
-              className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-              onClick={() => {
-                setLocation(loc.locId);
-                document.getElementById('csvFileInput')?.click();
-                document.getElementById('csvLocationDropdown')?.classList.add('hidden');
-              }}
-            >
-              {loc.locationName}
+                    {/* CSV Import Button for Mobile */}
+                    <Select 
+                      onValueChange={(value) => {
+                        setLocation(value);
+                        document.getElementById('csvFileInput')?.click();
+                      }}
+                    >
+                      <SelectTrigger className="bg-green-600 text-white px-3 py-1.5 rounded-md flex items-center gap-1 hover:bg-green-700 transition-colors">
+                        <Upload className="h-4 w-4" />
+                        <span className="truncate">Import CSV</span>
+                        <ChevronDown className="h-4 w-4 ml-auto opacity-50" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white">
+                        <SelectGroup>
+                          {locations.map((loc) => (
+                            <SelectItem key={loc.locId} value={loc.locId}>
+                              {loc.locationName}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  {/* Export Excel Button for Desktop */}
+                  <Select onValueChange={(value) => handleDownloadExcel(value)}>
+                    <SelectTrigger className="bg-indigo-600 text-white px-4 py-2 rounded-md flex items-center gap-2 hover:bg-indigo-700 transition-colors w-[180px]">
+                      <Download className="h-5 w-5" />
+                      <span>Export Excell </span>
+                      <ChevronDown className="h-4 w-4 ml-auto opacity-50" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      <SelectGroup>
+                                  <SelectItem value="all">All Stocks</SelectItem>
+          <SelectItem value="expiring">About to Expire (1 month)</SelectItem>
+          <SelectItem value="low">Low Quantity (&lt;50)</SelectItem>
+          <SelectItem value="expiring-low">Expiring + Low Quantity</SelectItem>
+          <SelectItem value="available">Available Stocks (&gt;0)</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+
+                  {/* CSV Import Button for Desktop */}
+                  <Select 
+                    onValueChange={(value) => {
+                      setLocation(value);
+                      document.getElementById('csvFileInput')?.click();
+                    }}
+                  >
+                    <SelectTrigger className="bg-green-600 text-white px-4 py-2 rounded-md flex items-center gap-2 hover:bg-green-700 transition-colors w-[180px]">
+                      <Upload className="h-5 w-5" />
+                      <span>Import CSV</span>
+                      <ChevronDown className="h-4 w-4 ml-auto opacity-50" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      <SelectGroup>
+                        {locations.map((loc) => (
+                          <SelectItem key={loc.locId} value={loc.locId}>
+                            {loc.locationName}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Hidden file input */}
+              <input
+                id="csvFileInput"
+                type="file"
+                accept=".csv"
+                onChange={handleCSVImport}
+                className="hidden"
+              />
             </div>
-          ))}
-        </div>
-      </div>
-      
-      <input
-        id="csvFileInput"
-        type="file"
-        accept=".csv"
-        onChange={handleCSVImport}
-        className="hidden"
-      />
-    </div>
-  </div>
-</div>
 
             {/* Filters Section */}
             <div className="grid md:grid-cols-3 gap-4">

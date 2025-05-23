@@ -325,6 +325,14 @@ const router = createBrowserRouter([
           </AdHocTreatmentLayout>
         ),
       },
+                  {
+        path: "/ad/medicine-usage",
+        element: (
+          <MedicineUsageLayout>
+            <MedicineUsage/>
+            </MedicineUsageLayout>
+        )
+      }
     ],
   },
 

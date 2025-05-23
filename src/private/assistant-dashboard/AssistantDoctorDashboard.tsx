@@ -133,6 +133,12 @@ const AssistantDoctorDashboard = () => {
       navigate: "/medicine-stock",
     },
     {
+      title: "Medicine Usage",
+      icon: <Pill className="h-6 w-6 text-red-600 mb-2" />,
+      bgColor: "bg-red-50",
+      navigate: "/ad/medicine-usage",
+    },
+    {
       title: "UHS Analytics",
       icon: <BookOpen className="h-6 w-6 text-yellow-600 mb-2" />,
       bgColor: "bg-yellow-50",
@@ -140,126 +146,160 @@ const AssistantDoctorDashboard = () => {
     },
   ];
 
-
   return (
     <>
       <Toaster />
       <div className="min-h-screen bg-gray-50">
         {/* Mobile-Specific Elements */}
         {isMobile && (
-          
-          <>
-            {/* Feature List */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <motion.div
+          <div className="pb-16"> {/* Added padding to prevent bottom nav overlap */}
+            {/* Header with time and date */}
+            <div className="bg-white shadow-sm p-4 sticky top-0 z-10">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Current Time</p>
+                  <p className="text-lg font-bold">{formatTime(time)}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-600">Today's Date</p>
+                  <p className="text-sm">
+                    {date?.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="px-4 py-4 space-y-4">
+              {/* Patient Stats Cards */}
+              <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col gap-2"
+                className="bg-white rounded-xl shadow-sm p-4"
               >
-                <div className="w-full space-y-6">
-                {/* Patient Stats Grid */}
-                <div className="grid grid-cols-3 gap-3 pb-4">
+                <h3 className="font-semibold text-lg text-gray-800 mb-3">Patient Overview</h3>
+                <div className="grid grid-cols-3 gap-2">
                   <div className="text-center p-3 bg-indigo-50 rounded-lg">
-                    <p className="text-xs text-gray-600 mb-1">Total Patients</p>
-                    <p className="text-md font-medium">{isLoading ? "..." : totalPatients}</p>
+                    <p className="text-xs text-gray-600 mb-1">Total</p>
+                    <p className="text-md font-bold">{isLoading ? "..." : totalPatients}</p>
                   </div>
                   <div className="text-center p-3 bg-emerald-50 rounded-lg">
                     <p className="text-xs text-gray-600 mb-1">In Queue</p>
-                    <p className="text-md font-medium">{isLoading ? "..." : inQueue}</p>
+                    <p className="text-md font-bold">{isLoading ? "..." : inQueue}</p>
                   </div>
                   <div className="text-center p-3 bg-amber-50 rounded-lg">
                     <p className="text-xs text-gray-600 mb-1">Treated</p>
-                    <p className="text-md font-medium">{isLoading ? "..." : patientsLeft}</p>
+                    <p className="text-md font-bold">{isLoading ? "..." : patientsLeft}</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
-
-                {/* Features List */}
-                <div className="bg-white rounded-xl shadow-sm pb-1">
+              {/* Quick Actions - Larger touch targets */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-xl shadow-sm p-4"
+              >
+                <h3 className="font-semibold text-lg text-gray-800 mb-3">Quick Actions</h3>
+                <div className="grid grid-cols-2 gap-3">
                   {[
                     {
                       title: "Patient List",
-                      icon: <Users className="h-5 w-5 text-indigo-600" />,
+                      icon: <Users className="h-6 w-6 text-indigo-600" />,
+                      bgColor: "bg-indigo-50",
                       action: () => navigate("/patient-list"),
                     },
                     {
-                      title: "Doctor Availability",
-                      icon: <Stethoscope className="h-5 w-5 text-blue-600" />,
+                      title: "Doctors",
+                      icon: <Stethoscope className="h-6 w-6 text-blue-600" />,
+                      bgColor: "bg-blue-50",
                       action: () => navigate("/doctor-check-in-out"),
                     },
                     {
-                      title: "Patient Log Book",
-                      icon: <BookOpen className="h-5 w-5 text-purple-600" />,
+                      title: "Patient Logs",
+                      icon: <BookOpen className="h-6 w-6 text-purple-600" />,
+                      bgColor: "bg-purple-50",
                       action: () => navigate("/patient-logs"),
                     },
                     {
-                      title: "Ad-Hoc Treatment",
-                      icon: <Syringe className="h-5 w-5 text-green-600" />,
+                      title: "Med Usage",
+                      icon: <Pill className="h-6 w-6 text-red-600" />,
+                      bgColor: "bg-red-50",
+                      action: () => navigate("/medicine-usage"),
+                    },
+                    {
+                      title: "Ad-Hoc",
+                      icon: <Syringe className="h-6 w-6 text-green-600" />,
+                      bgColor: "bg-green-50",
                       action: () => navigate("/adhoc"),
                     },
+                    {
+                      title: "Med Stock",
+                      icon: <Pill className="h-6 w-6 text-green-600" />,
+                      bgColor: "bg-green-50",
+                      action: () => navigate("/medicine-stock"),
+                    },
                   ].map((feature, index) => (
-                    <div
+                    <motion.button
                       key={index}
+                      whileTap={{ scale: 0.98 }}
+                      className={`p-4 ${feature.bgColor} rounded-lg flex flex-col items-center text-center`}
                       onClick={feature.action}
-                      className="flex items-center justify-between p-4 border-b last:border-b-0 hover:bg-gray-50 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="bg-indigo-50 p-2 rounded-lg">
-                          {feature.icon}
-                        </div>
-                        <p className="font-medium">{feature.title}</p>
+                      <div className="bg-white p-2 rounded-full mb-2">
+                        {feature.icon}
                       </div>
-                      <ChevronRight className="h-5 w-5 text-gray-400" />
-                    </div>
+                      <p className="text-sm font-medium">{feature.title}</p>
+                    </motion.button>
                   ))}
                 </div>
-                <div className="fixed bottom-24 right-4 z-50 flex flex-col gap-1">
-             
-            </div>
+              </motion.div>
 
-                {/* Diagnosis Word Cloud */}
-                <div className="mt-0">
-                  <DiagnosisWordCloud />
+              {/* Emergency Actions */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-xl shadow-sm p-4"
+              >
+                <h3 className="font-semibold text-lg text-gray-800 mb-3">Emergency</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    className="p-4 bg-red-50 rounded-lg flex flex-col items-center text-center"
+                    onClick={() => navigate("/Emergency")}
+                  >
+                    <div className="bg-white p-2 rounded-full mb-2">
+                      <AlertCircle className="h-6 w-6 text-red-600" />
+                    </div>
+                    <p className="text-sm font-medium">Emergency</p>
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    className="p-4 bg-blue-50 rounded-lg flex flex-col items-center text-center"
+                    onClick={() => navigate("/Ambulance")}
+                  >
+                    <div className="bg-white p-2 rounded-full mb-2">
+                      <Ambulance className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <p className="text-sm font-medium">Ambulance</p>
+                  </motion.button>
                 </div>
               </motion.div>
-            </div>
 
-            {/* Sticky Bottom Navigation */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50">
-              <BottomNavigation
-                showLabels
-                sx={{
-                  bgcolor: "white",
-                  borderTop: "1px solid #e5e7eb",
-                  height: "64px",
-                }}
+              {/* Diagnosis Word Cloud */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-xl shadow-sm p-4"
               >
-                <BottomNavigationAction
-                  label="Emergency"
-                  icon={<AlertCircle className="h-5 w-5 text-red-600" />}
-                  onClick={() => navigate("/Emergency")}
-                />
-                <BottomNavigationAction
-                  label="Ambulance"
-                  icon={<Ambulance className="h-5 w-5 text-blue-600" />}
-                  onClick={() => navigate("/Ambulance")}
-                />
-                <BottomNavigationAction
-                  label="Stock"
-                  icon={<Pill className="h-5 w-5 text-green-600" />}
-                  onClick={() => navigate("/medicine-stock")}
-                />
-                <BottomNavigationAction
-                  label="Analytics"
-                  icon={<BookOpen className="h-5 w-5 text-yellow-600" />}
-                  onClick={() => navigate("/Analytics-Dashboard")}
-                />
-              </BottomNavigation>
+                <h3 className="font-semibold text-lg text-gray-800 mb-3">Common Diagnoses</h3>
+                <DiagnosisWordCloud />
+              </motion.div>
             </div>
-
-           
-          </>
+          </div>
         )}
 
         {/* Desktop View */}
@@ -358,23 +398,27 @@ const AssistantDoctorDashboard = () => {
                 </div>
 
                 {/* Services Grid */}
-                <motion.div className="rounded-2xl p-6 shadow-md mb-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 gap-4">
+                <motion.div className="rounded-2xl p-6 shadow-md mb-8 bg-white">
+                  <div className="grid grid-cols-5 gap-4">
                     {services.map((service) => (
                       <motion.div
                         key={service.title}
                         whileHover={{ scale: 1.02 }}
-                        className={`p-4 ${service.bgColor} rounded-xl cursor-pointer`}
+                        className={`p-4 ${service.bgColor} rounded-xl cursor-pointer flex flex-col items-center text-center h-full`}
                         onClick={() => navigate(service.navigate)}
                       >
-                        {service.icon}
+                        <div className="mb-3">{service.icon}</div>
                         <h3 className="font-semibold mb-1">{service.title}</h3>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-xs text-gray-600">
                           {service.title === "Doctor Availability"
                             ? "Manage doctor schedules"
                             : service.title === "Patient Log Book"
                             ? "Historical records"
-                            : "Health Analysis"}
+                            : service.title === "Medical Stock"
+                            ? "Medicine inventory"
+                            : service.title === "Medicine Usage"
+                            ? "Track medicine consumption"
+                            : "Health Analytics"}
                         </p>
                       </motion.div>
                     ))}
@@ -387,6 +431,41 @@ const AssistantDoctorDashboard = () => {
                 </motion.div>
               </div>
             </motion.div>
+          </div>
+        )}
+
+        {/* Mobile Bottom Navigation - Fixed at bottom */}
+        {isMobile && (
+          <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50">
+            <BottomNavigation
+              showLabels
+              sx={{
+                bgcolor: "white",
+                borderTop: "1px solid #e5e7eb",
+                height: "64px",
+              }}
+            >
+              <BottomNavigationAction
+                label="Patients"
+                icon={<Users className="h-5 w-5 text-indigo-600" />}
+                onClick={() => navigate("/patient-list")}
+              />
+              <BottomNavigationAction
+                label="Med Stock"
+                icon={<Pill className="h-5 w-5 text-green-600" />}
+                onClick={() => navigate("/medicine-stock")}
+              />
+              <BottomNavigationAction
+                label="Emergency"
+                icon={<AlertCircle className="h-5 w-5 text-red-600" />}
+                onClick={() => navigate("/Emergency")}
+              />
+              <BottomNavigationAction
+                label="Analytics"
+                icon={<BookOpen className="h-5 w-5 text-yellow-600" />}
+                onClick={() => navigate("/Analytics-Dashboard")}
+              />
+            </BottomNavigation>
           </div>
         )}
       </div>
