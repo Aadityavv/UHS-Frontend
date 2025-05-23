@@ -15,7 +15,6 @@ import {
   BookOpen,
   Syringe,
   CalendarIcon,
-  ChevronRight,
   Users,
 } from "lucide-react";
 import { BottomNavigation, BottomNavigationAction } from "@mui/material";
