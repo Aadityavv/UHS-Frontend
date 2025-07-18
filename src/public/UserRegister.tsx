@@ -26,7 +26,7 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { Eye, EyeOff, User, MapPin, HeartPulse } from "lucide-react";
+import { Eye, EyeOff, User, MapPin, HeartPulse, Mail, Lock, Phone, AlertCircle, Calendar, BookOpen, Droplet, Camera } from "lucide-react";
 import { motion } from "framer-motion";
 
 const schoolOptions = [
@@ -104,10 +104,10 @@ const formSchema = z
       ),
     emergencyContact: z
       .string()
-      .regex(/^\d{10}$/, "Emergency contact must be a 10-digit number"),
+      .regex(/^[6-9][0-9]{9}$/, "Emergency contact must be a valid 10-digit Indian mobile number starting with 6-9"),
     phoneNumber: z
       .string()
-      .regex(/^\d{10}$/, "Phone number must be a 10-digit number"),
+      .regex(/^[6-9][0-9]{9}$/, "Phone number must be a valid 10-digit Indian mobile number starting with 6-9"),
     gender: z
       .enum(["Male", "Female", "Other"])
       .refine((value) => value !== undefined, {
@@ -264,396 +264,400 @@ const UserRegister = () => {
     >
       <Toaster />
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-6xl bg-white/90 backdrop-blur-md rounded-2xl shadow-xl grid grid-cols-1 lg:grid-cols-[40%_60%]"
+        className="w-full max-w-6xl bg-white/80 backdrop-blur-2xl rounded-2xl shadow-2xl grid grid-cols-1 lg:grid-cols-[40%_60%] overflow-hidden z-10"
       >
-        {/* Animated Branding Section */}
-        <div className="hidden lg:flex flex-col items-center justify-center p-8 bg-gradient-to-br from-indigo-900/20 to-purple-900/20 relative overflow-hidden">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="absolute -top-32 -left-32 w-64 h-64 bg-indigo-200/10 rounded-full blur-xl"
-          />
-          <motion.div
-            initial={{ x: -100 }}
-            animate={{ x: 0 }}
-            className="absolute bottom-20 right-20 w-48 h-48 bg-purple-200/10 rounded-full blur-lg"
-          />
-
-          <div className="relative z-10 text-center space-y-6">
-            <motion.div
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 100 }}
-            >
-              <img
+        {/* Branding Panel */}
+        <div className="hidden lg:flex flex-col bg-gradient-to-br from-indigo-900/80 to-purple-900/80 min-h-screen">
+          <div className="sticky top-1/2 w-full" style={{ transform: 'translateY(-50%)' }}>
+            <div className="flex flex-col items-center justify-center w-full">
+              <motion.img
+                initial={{ scale: 0.8, rotate: -10 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", stiffness: 120 }}
                 src="/upes-logo.jpg"
                 alt="UPES Logo"
-                className="w-28 mx-auto bg-white rounded-xl p-2 shadow-2xl hover:rotate-3 transition-transform duration-300"
+                className="w-32 mx-auto bg-white rounded-2xl p-3 shadow-2xl mb-8 hover:rotate-3 transition-transform duration-300"
               />
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              <h2 className="text-4xl font-extrabold bg-gradient-to-r from-indigo-300 to-purple-300 bg-clip-text text-transparent mb-2 text-center drop-shadow-lg">
                 UHS Portal
               </h2>
-              <p className="text-gray-600 mt-2 text-sm font-medium">
-                UPES Health Services
-              </p>
-            </motion.div>
-
-            <motion.div
-              className="flex justify-center gap-4 mt-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-            >
-              {[
-                { icon: User, label: "Patient Registration", color: "text-indigo-600" },
-                { icon: HeartPulse, label: "24/7 Support", color: "text-purple-600" },
-                { icon: MapPin, label: "Campus Wide", color: "text-pink-600" },
-              ].map((item, index) => (
+              <p className="text-gray-200 text-lg font-medium mb-8 text-center">UPES Health Services</p>
+              <div className="flex flex-col gap-6 w-full items-center">
                 <motion.div
-                  key={item.label}
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.6 + index * 0.1, type: "spring" }}
-                  className="text-center"
+                  initial={{ x: -40, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3 w-64 shadow-lg"
                 >
-                  <item.icon className={`h-6 w-6 mb-2 ${item.color}`} />
-                  <p className="text-xs text-gray-600">{item.label}</p>
+                  <User className="h-6 w-6 text-indigo-200" />
+                  <span className="text-indigo-100 font-semibold">Patient Registration</span>
                 </motion.div>
-              ))}
-            </motion.div>
+                <motion.div
+                  initial={{ x: -40, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3 w-64 shadow-lg"
+                >
+                  <HeartPulse className="h-6 w-6 text-pink-200" />
+                  <span className="text-pink-100 font-semibold">24/7 Support</span>
+                </motion.div>
+                <motion.div
+                  initial={{ x: -40, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.7 }}
+                  className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3 w-64 shadow-lg"
+                >
+                  <MapPin className="h-6 w-6 text-purple-200" />
+                  <span className="text-purple-100 font-semibold">Campus Wide</span>
+                </motion.div>
+              </div>
+            </div>
           </div>
         </div>
-
-        {/* Compact Form Section */}
-        <div className="p-6 lg:p-8">
+        {/* Form Section */}
+        <div className="p-6 lg:p-12 flex flex-col justify-center">
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="space-y-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="space-y-8"
           >
-            <div className="space-y-4">
-              <div className="text-center">
-                <h1 className="text-2xl font-bold text-gray-900">Patient Registration</h1>
-                <p className="text-gray-600 text-sm mt-1">Create your account to access health services</p>
-              </div>
-
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Left Column */}
-                    <div className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter your name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter your email" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input
-                                  type={showPassword ? "text" : "password"}
-                                  placeholder="Enter your password"
-                                  {...field}
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => setShowPassword(!showPassword)}
-                                  className="absolute right-2 top-2 text-gray-500 hover:text-indigo-600"
-                                >
-                                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                </button>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="confirmPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Confirm Password</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input
-                                  type={showConfirmPassword ? "text" : "password"}
-                                  placeholder="Confirm password"
-                                  {...field}
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                  className="absolute right-2 top-2 text-gray-500 hover:text-indigo-600"
-                                >
-                                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                </button>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="dateOfBirth"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Date of Birth</FormLabel>
-                            <FormControl>
-                              <Input type="date" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="gender"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Gender</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select gender" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectGroup>
-                                  <SelectItem value="Male">Male</SelectItem>
-                                  <SelectItem value="Female">Female</SelectItem>
-                                  <SelectItem value="Other">Other</SelectItem>
-                                </SelectGroup>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    {/* Right Column */}
-                    <div className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="sapID"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>SapID</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="Enter your SapID"
-                                {...field}
-                                disabled={form.watch("school") === "Guest"}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="school"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>School</FormLabel>
-                            <Select
-                              onValueChange={(value) => {
-                                field.onChange(value);
-                                handleSchoolChange(value as keyof typeof programOptions);
-                              }}
-                              value={field.value}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select school" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectGroup>
-                                  {Object.keys(programOptions).map((school) => (
-                                    <SelectItem key={school} value={school}>
-                                      {school}
-                                    </SelectItem>
-                                  ))}
-                                </SelectGroup>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="program"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Program</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value}
-                              disabled={!availablePrograms.length}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select program" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectGroup>
-                                  {availablePrograms.map((program) => (
-                                    <SelectItem key={program} value={program}>
-                                      {program}
-                                    </SelectItem>
-                                  ))}
-                                </SelectGroup>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="phoneNumber"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Phone Number</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter your phone number" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="emergencyContact"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Emergency Contact</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter emergency contact" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="bloodGroup"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Blood Group</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select blood group" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectGroup>
-                                  {bloodGroup.map((group) => (
-                                    <SelectItem key={group} value={group}>
-                                      {group}
-                                    </SelectItem>
-                                  ))}
-                                </SelectGroup>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Image Upload */}
-                  <div className="flex flex-col items-center space-y-3">
-                    <Label htmlFor="upload-image" className="text-sm text-gray-700">
-                      Upload Profile Picture
-                    </Label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      id="upload-image"
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="upload-image"
-                      className="cursor-pointer p-2 bg-gray-100 rounded-lg hover:bg-gray-200"
-                    >
-                      {uploadedImage ? (
-                        <img
-                          src={uploadedImage}
-                          alt="Profile"
-                          className="w-24 h-24 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
-                          <span className="text-gray-500">Upload</span>
-                        </div>
-                      )}
-                    </label>
-                  </div>
-
-                  {/* Buttons */}
-                  <div className="flex justify-end gap-4">
-                    <Button
-                      type="button"
-                      onClick={handleCancel}
-                      variant="secondary"
-                      className="w-24"
-                    >
-                      Cancel
-                    </Button>
-                    <Button type="submit" className="w-24 bg-indigo-600 hover:bg-indigo-700">
-                      {status}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
+            <div className="text-center mb-2">
+              <h1 className="text-3xl font-extrabold text-gray-900 mb-1">Patient Registration</h1>
+              <p className="text-gray-600 text-base">Create your account to access health services</p>
             </div>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Left Column */}
+                  <div className="space-y-5">
+                    {/* Name */}
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700">Name</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input placeholder="Enter your name" {...field} className="pl-10" />
+                              <User className="absolute left-3 top-3 h-5 w-5 text-indigo-400" />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {/* Email */}
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700">Email</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input placeholder="Enter your email" {...field} className="pl-10" />
+                              <Mail className="absolute left-3 top-3 h-5 w-5 text-indigo-400" />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {/* Password */}
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700">Password</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Enter your password"
+                                {...field}
+                                className="pl-10 pr-10"
+                              />
+                              <Lock className="absolute left-3 top-3 h-5 w-5 text-indigo-400" />
+                              <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-2 text-gray-500 hover:text-indigo-600"
+                                tabIndex={-1}
+                              >
+                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                              </button>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {/* Confirm Password */}
+                    <FormField
+                      control={form.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700">Confirm Password</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input
+                                type={showConfirmPassword ? "text" : "password"}
+                                placeholder="Confirm your password"
+                                {...field}
+                                className="pl-10 pr-10"
+                              />
+                              <Lock className="absolute left-3 top-3 h-5 w-5 text-indigo-400" />
+                              <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                className="absolute right-3 top-2 text-gray-500 hover:text-indigo-600"
+                                tabIndex={-1}
+                              >
+                                {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                              </button>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {/* Date of Birth */}
+                    <FormField
+                      control={form.control}
+                      name="dateOfBirth"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700">Date of Birth</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input type="date" placeholder="YYYY-MM-DD" {...field} />
+                              {/* <Calendar className="absolute left-3 top-3 h-5 w-5 text-indigo-400" /> */}
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {/* Gender */}
+                    <FormField
+                      control={form.control}
+                      name="gender"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700">Gender</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select gender" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectGroup>
+                                <SelectItem value="Male">Male</SelectItem>
+                                <SelectItem value="Female">Female</SelectItem>
+                                <SelectItem value="Other">Other</SelectItem>
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  {/* Right Column */}
+                  <div className="space-y-5">
+                    {/* SapID */}
+                    <FormField
+                      control={form.control}
+                      name="sapID"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700">SapID</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Enter your SapID"
+                              {...field}
+                              disabled={form.watch("school") === "Guest"}
+                              className="pl-10"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {/* School */}
+                    <FormField
+                      control={form.control}
+                      name="school"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700">School</FormLabel>
+                          <Select
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              handleSchoolChange(value as keyof typeof programOptions);
+                            }}
+                            value={field.value}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select school" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectGroup>
+                                {Object.keys(programOptions).map((school) => (
+                                  <SelectItem key={school} value={school}>
+                                    {school}
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {/* Program */}
+                    <FormField
+                      control={form.control}
+                      name="program"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700">Program</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                            disabled={!availablePrograms.length}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select program" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectGroup>
+                                {availablePrograms.map((program) => (
+                                  <SelectItem key={program} value={program}>
+                                    {program}
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {/* Phone Number */}
+                    <FormField
+                      control={form.control}
+                      name="phoneNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700">Phone Number</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input placeholder="Enter your phone number" {...field} className="pl-10" />
+                              <Phone className="absolute left-3 top-3 h-5 w-5 text-indigo-400" />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {/* Emergency Contact */}
+                    <FormField
+                      control={form.control}
+                      name="emergencyContact"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700">Emergency Contact</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input placeholder="Enter emergency contact" {...field} className="pl-10" />
+                              <AlertCircle className="absolute left-3 top-3 h-5 w-5 text-indigo-400" />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {/* Blood Group */}
+                    <FormField
+                      control={form.control}
+                      name="bloodGroup"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700">Blood Group</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select blood group" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectGroup>
+                                {bloodGroup.map((group) => (
+                                  <SelectItem key={group} value={group}>
+                                    {group}
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+                {/* Image Upload */}
+                <div className="flex flex-col items-center space-y-3 mt-6">
+                  <Label htmlFor="upload-image" className="text-sm text-gray-700">
+                    Upload Profile Picture
+                  </Label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    id="upload-image"
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="upload-image"
+                    className="cursor-pointer p-2 bg-gray-100 rounded-full hover:bg-indigo-100 border-4 border-indigo-200 shadow-lg transition-all duration-200 flex items-center justify-center"
+                    style={{ width: 110, height: 110 }}
+                  >
+                    {uploadedImage ? (
+                      <img
+                        src={uploadedImage}
+                        alt="Profile"
+                        className="w-24 h-24 rounded-full object-cover border-4 border-indigo-300 shadow-md hover:scale-105 transition-transform duration-200"
+                      />
+                    ) : (
+                      <Camera className="h-24 w-24 text-indigo-400" />
+                    )}
+                  </label>
+                  <span className="text-xs text-gray-500">(JPG/PNG, &lt; 25KB)</span>
+                </div>
+                {/* Buttons */}
+                <div className="flex justify-end gap-4 mt-6">
+                  <Button
+                    type="button"
+                    onClick={handleCancel}
+                    variant="secondary"
+                    className="w-28 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold"
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="w-32 bg-indigo-600 hover:bg-indigo-700 font-bold text-lg flex items-center justify-center">
+                    {status === "Loading..." ? (
+                      <svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+                    ) : null}
+                    {status === "Loading..." ? "Registering..." : status}
+                  </Button>
+                </div>
+              </form>
+            </Form>
           </motion.div>
         </div>
       </motion.div>

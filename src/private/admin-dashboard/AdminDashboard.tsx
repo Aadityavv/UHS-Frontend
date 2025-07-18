@@ -157,7 +157,7 @@ const AdminDashboard = () => {
     {
       title: "Medicine Usage",
       icon: <Pill className="h-5 w-5 text-green-600" />,
-      action: () => navigate("/admin/medicine-usage")
+      action: () => navigate("/admin/medicine-usage", { state: { from: "/admin/medicine-usage" } })
     },
     {
       title: "Backup & Restore",
@@ -283,6 +283,7 @@ const AdminDashboard = () => {
                       {feature.title === "Medicine Usage" && "View medicine usage logs"}
                       {feature.title === "Backup & Restore" && "Manage system data"}
                       {feature.title === "Rejected Appointments" && "View rejected appointments"}
+                      
                     </p>
                   </div>
                 </div>
@@ -606,6 +607,13 @@ const AdminDashboard = () => {
                         icon: <CircleX className="h-5 w-5" />,
                         bg: "bg-red-100 text-red-700",
                         route: "/admin/deleted-appointments"
+                      },
+                                          {
+                        title: "Import students",
+                        subtitle: "Import students from CSV",
+                        icon: <Users className="h-5 w-5" />,
+                        bg: "bg-gray-100 text-gray-600",
+                        route: "/admin/import-students"
                       }
                     ].map((item, idx) => (
                       <motion.div

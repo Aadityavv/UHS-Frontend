@@ -3,6 +3,7 @@ import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiArrowLeft, FiSearch, FiCalendar, FiUser, FiClock } from "react-icons/fi";
 import { Pill } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 
 interface MedicineUsage {
   medicineName: string;
@@ -25,8 +26,9 @@ const parseDosage = (dosage: string): number => {
 const MedicineUsage: React.FC = () => {
   const [medicines, setMedicines] = useState<string[]>([]);
   const [usageDetails, setUsageDetails] = useState<MedicineUsage[]>([]);
-  const [selectedMedicine, setSelectedMedicine] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
+  const { medicineName } = useParams();
 
   useEffect(() => {
     const fetchMedicineNames = async () => {
@@ -46,28 +48,34 @@ const MedicineUsage: React.FC = () => {
     fetchMedicineNames();
   }, []);
 
-  const fetchMedicineUsage = async (medicineName: string) => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/medicine/usage/${medicineName}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true,
+  useEffect(() => {
+    if (medicineName) {
+      const fetchMedicineUsage = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          const response = await axios.get(
+            `https://uhs-backend.onrender.com/api/medicine/usage/${medicineName}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+              withCredentials: true,
+            }
+          );
+          const dataWithQuantity = response.data.map((usage: MedicineUsage) => ({
+            ...usage,
+            totalQuantity: parseDosage(usage.dosage) * parseInt(usage.duration),
+          }));
+          setUsageDetails(dataWithQuantity);
+        } catch (error) {
+          console.error("Failed to fetch medicine usage:", error);
         }
-      );
-      const dataWithQuantity = response.data.map((usage: MedicineUsage) => ({
-        ...usage,
-        totalQuantity: parseDosage(usage.dosage) * parseInt(usage.duration),
-      }));
-      setUsageDetails(dataWithQuantity);
-      setSelectedMedicine(medicineName);
-    } catch (error) {
-      console.error("Failed to fetch medicine usage:", error);
+      };
+      fetchMedicineUsage();
+    } else {
+      setUsageDetails([]);
     }
-  };
+  }, [medicineName]);
 
   const filteredMedicines = medicines.filter(medicine =>
     medicine.toLowerCase().includes(searchTerm.toLowerCase())
@@ -77,7 +85,7 @@ const MedicineUsage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-6">
       <div className="max-w-7xl mx-auto">
         <AnimatePresence mode="wait">
-          {selectedMedicine ? (
+          {medicineName ? (
             <motion.div
               key="details"
               initial={{ opacity: 0, y: 20 }}
@@ -87,7 +95,7 @@ const MedicineUsage: React.FC = () => {
             >
               <div className="p-6 bg-gradient-to-r from-purple-600 to-blue-600 text-white">
                 <button
-                  onClick={() => setSelectedMedicine(null)}
+                  onClick={() => navigate("/admin/medicine-usage")}
                   className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                 >
                   <FiArrowLeft className="text-lg" />
@@ -95,7 +103,7 @@ const MedicineUsage: React.FC = () => {
                 </button>
                 <h1 className="mt-4 text-3xl font-bold flex items-center gap-3 truncate">
                   <Pill className="text-2xl flex-shrink-0" />
-                  <span className="truncate">{selectedMedicine}</span>
+                  <span className="truncate">{medicineName}</span>
                 </h1>
                 <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="bg-white/10 p-4 rounded-xl">
@@ -201,36 +209,26 @@ const MedicineUsage: React.FC = () => {
                   </div>
                 </div>
               </div>
-
               <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredMedicines.map((medicine, index) => (
-                    <motion.div
-                      key={index}
-                      whileHover={{ y: -4 }}
-                      className="group bg-white rounded-xl border border-gray-200 hover:border-purple-200 cursor-pointer transition-all overflow-hidden"
-                      onClick={() => fetchMedicineUsage(medicine)}
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {filteredMedicines.map((medicine) => (
+                    <div
+                      key={medicine}
+                      className="bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl p-4 shadow hover:shadow-lg cursor-pointer transition-shadow flex flex-col items-center"
+                      onClick={() => navigate(`/admin/medicine-usage/${medicine}`)}
                     >
-                      <div className="p-6">
-                        <div className="flex items-center justify-between gap-2">
-                          <h3 className="text-lg font-semibold text-gray-800 group-hover:text-purple-600 transition-colors truncate flex-1">
-                            {medicine}
-                          </h3>
-                          <Pill className="text-xl text-gray-400 group-hover:text-purple-500 transition-colors flex-shrink-0" />
-                        </div>
-                        <div className="mt-4 text-sm text-gray-500 truncate">
-                          Click to view prescription details
-                        </div>
-                      </div>
-                    </motion.div>
+                      <Pill className="h-8 w-8 text-purple-600 mb-2" />
+                      <span className="font-semibold text-lg text-gray-800 truncate w-full text-center">
+                        {medicine}
+                      </span>
+                    </div>
                   ))}
+                  {filteredMedicines.length === 0 && (
+                    <div className="col-span-full text-center text-gray-500 py-8">
+                      No medicines found.
+                    </div>
+                  )}
                 </div>
-                {filteredMedicines.length === 0 && (
-                  <div className="text-center py-12 text-gray-500">
-                    <FiSearch className="mx-auto text-3xl mb-4" />
-                    No medicines found matching your search
-                  </div>
-                )}
               </div>
             </motion.div>
           )}

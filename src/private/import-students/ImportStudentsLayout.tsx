@@ -1,17 +1,15 @@
 import Navbar from "@/components/Navbar";
 import Shared from "@/Shared";
 import React from "react";
-import { useLocation } from "react-router-dom";
 
 const MedicineUsageLayout = ({ children }: { children: React.ReactNode }) => {
-  const location = useLocation();
   const navsetting = {
-    title: "Medicine Usage",
+    title: "Import Patients",
     titleLogo: Shared.Pills,
     additionalLogo: Shared.ArrowLeft,
     menu: false,
     role: localStorage.getItem("roles"),
-    prevRef: location.state?.from || null
+    prevRef:null
   };
   return (
     <div className="h-[100vh] max-lg:min-h-[100svh] overflow-x-hidden">

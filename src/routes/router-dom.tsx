@@ -75,6 +75,8 @@ import ManageDoctorsLayout from "@/private/Manage-Doctors/ManageDoctorsLayout";
 import ManageAssistantsLayout from "@/private/Manage-Assistants/ManageAssistantsLayout";
 import DeletedAppointments from "@/private/Deleted-Appointments/DeletedAppointments";
 import DeletedAppointmentsLayout from "@/private/Deleted-Appointments/DeletedAppointmentsLayout";
+import ImportStudents from "@/private/import-students/importStudents";
+import ImportStudentsLayout from "@/private/import-students/ImportStudentsLayout";
 
 const router = createBrowserRouter([
   // PUBLIC ROUTES
@@ -171,6 +173,22 @@ const router = createBrowserRouter([
           <MedicineUsageLayout>
             <MedicineUsage/>
             </MedicineUsageLayout>
+        )
+      },
+      {
+        path: "/admin/medicine-usage/:medicineName",
+        element: (
+          <MedicineUsageLayout>
+            <MedicineUsage />
+          </MedicineUsageLayout>
+        )
+      },
+                  {
+        path: "/admin/import-students",
+        element: (
+          <ImportStudentsLayout>
+            <ImportStudents/>
+            </ImportStudentsLayout>
         )
       }
       
