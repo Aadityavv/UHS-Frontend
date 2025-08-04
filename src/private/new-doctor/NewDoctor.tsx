@@ -121,203 +121,387 @@ const NewDoctor = () => {
     navigate("/admin-dashboard");
   };
 
+  // return (
+  //   <div 
+  //     className="min-h-screen flex items-center justify-center p-4 lg:p-8"
+  //     style={{ background: "linear-gradient(to right, #24186c, #530962)" }}
+  //   >
+  //     <Toaster />
+  //     <motion.div 
+  //       initial={{ opacity: 0, y: 20 }}
+  //       animate={{ opacity: 1, y: 0 }}
+  //       className="w-full max-w-4xl bg-white/90 backdrop-blur-md rounded-2xl shadow-xl grid grid-cols-1 "
+  //     >
+  //       {/* Animated Branding Section */}
+  //       {/* <div className="hidden lg:flex flex-col items-center justify-center p-6 bg-gradient-to-br from-indigo-900/20 to-purple-900/20 relative overflow-hidden">
+  //         <motion.div
+  //           initial={{ scale: 0 }}
+  //           animate={{ scale: 1 }}
+  //           className="absolute -top-32 -left-32 w-64 h-64 bg-indigo-200/10 rounded-full blur-xl"
+  //         />
+  //         <motion.div
+  //           initial={{ x: -100 }}
+  //           animate={{ x: 0 }}
+  //           className="absolute bottom-20 right-20 w-48 h-48 bg-purple-200/10 rounded-full blur-lg"
+  //         />
+
+  //         <div className="relative z-10 text-center space-y-6">
+  //           <motion.div
+  //             initial={{ scale: 0.8 }}
+  //             animate={{ scale: 1 }}
+  //             transition={{ type: "spring", stiffness: 100 }}
+  //           >
+  //             <img
+  //               src="/upes-logo.jpg"
+  //               alt="UPES Logo"
+  //               className="w-28 mx-auto bg-white rounded-xl p-2 shadow-2xl hover:rotate-3 transition-transform duration-300"
+  //             />
+  //           </motion.div>
+
+  //           <motion.div
+  //             initial={{ opacity: 0, y: 20 }}
+  //             animate={{ opacity: 1, y: 0 }}
+  //             transition={{ delay: 0.2 }}
+  //           >
+  //             <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+  //               UHS Portal
+  //             </h2>
+  //             <p className="text-gray-600 mt-2 text-sm font-medium">
+  //               UPES Health Services
+  //             </p>
+  //           </motion.div>
+  //         </div>
+  //       </div> */}
+
+  //       {/* Form Section */}
+  //       <div className="p-6 lg:p-8">
+  //         <motion.div
+  //           initial={{ opacity: 0 }}
+  //           animate={{ opacity: 1 }}
+  //           transition={{ delay: 0.6 }}
+  //           className="space-y-6"
+  //         >
+  //           <div className="space-y-4">
+  //             <div className="text-center">
+  //               <h1 className="text-2xl font-bold text-gray-900">New Doctor Registration</h1>
+  //               <p className="text-gray-600 text-sm mt-1">Register a new doctor</p>
+  //             </div>
+
+  //             <div className="space-y-3">
+  //               <div>
+  //                 <Label className="text-gray-700 text-sm">Name</Label>
+  //                 <Input
+  //                   type="text"
+  //                   placeholder="Enter name"
+  //                   {...form.register("name")}
+  //                   className="mt-1 h-9 rounded-lg text-sm"
+  //                 />
+  //                 {form.formState.errors.name && (
+  //                   <p className="text-red-500 text-xs mt-1">{form.formState.errors.name.message}</p>
+  //                 )}
+  //               </div>
+
+  //               <div>
+  //                 <Label className="text-gray-700 text-sm">Email</Label>
+  //                 <Input
+  //                   type="email"
+  //                   placeholder="Enter email"
+  //                   {...form.register("doctorEmail")}
+  //                   className="mt-1 h-9 rounded-lg text-sm"
+  //                 />
+  //                 {form.formState.errors.doctorEmail && (
+  //                   <p className="text-red-500 text-xs mt-1">{form.formState.errors.doctorEmail.message}</p>
+  //                 )}
+  //               </div>
+
+  //               <div>
+  //                 <Label className="text-gray-700 text-sm">Password</Label>
+  //                 <div className="relative mt-1">
+  //                   <Input
+  //                     type={showPassword ? "text" : "password"}
+  //                     placeholder="Enter password"
+  //                     {...form.register("password")}
+  //                     className="h-9 rounded-lg text-sm pr-8"
+  //                   />
+  //                   <button
+  //                     type="button"
+  //                     onClick={() => setShowPassword(!showPassword)}
+  //                     className="absolute right-2 top-2 text-gray-500 hover:text-indigo-600"
+  //                   >
+  //                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+  //                   </button>
+  //                 </div>
+  //                 {form.formState.errors.password && (
+  //                   <p className="text-red-500 text-xs mt-1">{form.formState.errors.password.message}</p>
+  //                 )}
+  //               </div>
+
+  //               <div>
+  //                 <Label className="text-gray-700 text-sm">Confirm Password</Label>
+  //                 <div className="relative mt-1">
+  //                   <Input
+  //                     type={showConfirmPassword ? "text" : "password"}
+  //                     placeholder="Confirm password"
+  //                     {...form.register("confirmPassword")}
+  //                     className="h-9 rounded-lg text-sm pr-8"
+  //                   />
+  //                   <button
+  //                     type="button"
+  //                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+  //                     className="absolute right-2 top-2 text-gray-500 hover:text-indigo-600"
+  //                   >
+  //                     {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+  //                   </button>
+  //                 </div>
+  //                 {form.formState.errors.confirmPassword && (
+  //                   <p className="text-red-500 text-xs mt-1">{form.formState.errors.confirmPassword.message}</p>
+  //                 )}
+  //               </div>
+
+  //               <div>
+  //                 <Label className="text-gray-700 text-sm">Designation</Label>
+  //                 <Input
+  //                   type="text"
+  //                   placeholder="Enter designation"
+  //                   {...form.register("designation")}
+  //                   className="mt-1 h-9 rounded-lg text-sm"
+  //                 />
+  //                 {form.formState.errors.designation && (
+  //                   <p className="text-red-500 text-xs mt-1">{form.formState.errors.designation.message}</p>
+  //                 )}
+  //               </div>
+
+  //               <div>
+  //                 <Label className="text-gray-700 text-sm">Gender</Label>
+  //                 <Select
+  //                   {...form.register("gender")}
+  //                   onValueChange={(value) => form.setValue("gender", value)}
+  //                   value={form.watch("gender")}
+  //                 >
+  //                   <SelectTrigger className="mt-1 h-9 rounded-lg text-sm">
+  //                     <SelectValue placeholder="Select gender" />
+  //                   </SelectTrigger>
+  //                   <SelectContent className="rounded-lg text-sm">
+  //                     <SelectGroup>
+  //                       <SelectItem value="Male">Male</SelectItem>
+  //                       <SelectItem value="Female">Female</SelectItem>
+  //                       <SelectItem value="Other">Other</SelectItem>
+  //                     </SelectGroup>
+  //                   </SelectContent>
+  //                 </Select>
+  //                 {form.formState.errors.gender && (
+  //                   <p className="text-red-500 text-xs mt-1">{form.formState.errors.gender.message}</p>
+  //                 )}
+  //               </div>
+  //             </div>
+  //   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+  //             <div className="flex justify-end items-center gap-4 pt-5">
+  //               <Button
+  //                 type="button"
+  //                 onClick={handleCancel}
+  //                 variant="secondary"
+  //                 className="text-red-500 bg-white border border-red-500 w-[6rem]"
+  //               >
+  //                 Cancel
+  //               </Button>
+  //               <Button
+  //                 type="submit"
+  //                 onClick={form.handleSubmit(onSubmit)}
+  //                 className="bg-gradient-to-r from-blue-500 via-blue-700 to-blue-900 w-[6rem] text-white"
+  //               >
+  //                 Submit
+  //               </Button>
+  //             </div>
+  //             </form>
+  //           </div>
+  //         </motion.div>
+  //       </div>
+  //     </motion.div>
+  //   </div>
+  // );
+
   return (
-    <div 
-      className="min-h-screen flex items-center justify-center p-4 lg:p-8"
-      style={{ background: "linear-gradient(to right, #24186c, #530962)" }}
+  <div
+    className="min-h-screen flex items-center justify-center p-4 lg:p-8"
+    style={{ background: "linear-gradient(to right, #24186c, #530962)" }}
+  >
+    <Toaster />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="w-full max-w-4xl bg-white/90 backdrop-blur-md rounded-2xl shadow-xl"
     >
-      <Toaster />
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-4xl bg-white/90 backdrop-blur-md rounded-2xl shadow-xl grid grid-cols-1 "
-      >
-        {/* Animated Branding Section */}
-        {/* <div className="hidden lg:flex flex-col items-center justify-center p-6 bg-gradient-to-br from-indigo-900/20 to-purple-900/20 relative overflow-hidden">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="absolute -top-32 -left-32 w-64 h-64 bg-indigo-200/10 rounded-full blur-xl"
-          />
-          <motion.div
-            initial={{ x: -100 }}
-            animate={{ x: 0 }}
-            className="absolute bottom-20 right-20 w-48 h-48 bg-purple-200/10 rounded-full blur-lg"
-          />
-
-          <div className="relative z-10 text-center space-y-6">
-            <motion.div
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 100 }}
-            >
-              <img
-                src="/upes-logo.jpg"
-                alt="UPES Logo"
-                className="w-28 mx-auto bg-white rounded-xl p-2 shadow-2xl hover:rotate-3 transition-transform duration-300"
-              />
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                UHS Portal
-              </h2>
-              <p className="text-gray-600 mt-2 text-sm font-medium">
-                UPES Health Services
-              </p>
-            </motion.div>
+      <div className="p-6 lg:p-8">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="space-y-6"
+        >
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900">
+              New Doctor Registration
+            </h1>
+            <p className="text-gray-600 text-sm mt-1">
+              Register a new doctor
+            </p>
           </div>
-        </div> */}
 
-        {/* Form Section */}
-        <div className="p-6 lg:p-8">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="space-y-6"
-          >
-            <div className="space-y-4">
-              <div className="text-center">
-                <h1 className="text-2xl font-bold text-gray-900">New Doctor Registration</h1>
-                <p className="text-gray-600 text-sm mt-1">Register a new doctor</p>
+          {/* CHANGED: The <form> tag now wraps all input fields and buttons */}
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="space-y-3">
+              <div>
+                <Label className="text-gray-700 text-sm">Name</Label>
+                <Input
+                  type="text"
+                  placeholder="Enter name"
+                  {...form.register("name")}
+                  className="mt-1 h-9 rounded-lg text-sm"
+                />
+                {form.formState.errors.name && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {form.formState.errors.name.message}
+                  </p>
+                )}
               </div>
 
-              <div className="space-y-3">
-                <div>
-                  <Label className="text-gray-700 text-sm">Name</Label>
+              <div>
+                <Label className="text-gray-700 text-sm">Email</Label>
+                <Input
+                  type="email"
+                  placeholder="Enter email"
+                  {...form.register("doctorEmail")}
+                  className="mt-1 h-9 rounded-lg text-sm"
+                />
+                {form.formState.errors.doctorEmail && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {form.formState.errors.doctorEmail.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label className="text-gray-700 text-sm">Password</Label>
+                <div className="relative mt-1">
                   <Input
-                    type="text"
-                    placeholder="Enter name"
-                    {...form.register("name")}
-                    className="mt-1 h-9 rounded-lg text-sm"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter password"
+                    {...form.register("password")}
+                    className="h-9 rounded-lg text-sm pr-8"
                   />
-                  {form.formState.errors.name && (
-                    <p className="text-red-500 text-xs mt-1">{form.formState.errors.name.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Label className="text-gray-700 text-sm">Email</Label>
-                  <Input
-                    type="email"
-                    placeholder="Enter email"
-                    {...form.register("doctorEmail")}
-                    className="mt-1 h-9 rounded-lg text-sm"
-                  />
-                  {form.formState.errors.doctorEmail && (
-                    <p className="text-red-500 text-xs mt-1">{form.formState.errors.doctorEmail.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Label className="text-gray-700 text-sm">Password</Label>
-                  <div className="relative mt-1">
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter password"
-                      {...form.register("password")}
-                      className="h-9 rounded-lg text-sm pr-8"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-2 top-2 text-gray-500 hover:text-indigo-600"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  {form.formState.errors.password && (
-                    <p className="text-red-500 text-xs mt-1">{form.formState.errors.password.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Label className="text-gray-700 text-sm">Confirm Password</Label>
-                  <div className="relative mt-1">
-                    <Input
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Confirm password"
-                      {...form.register("confirmPassword")}
-                      className="h-9 rounded-lg text-sm pr-8"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-2 top-2 text-gray-500 hover:text-indigo-600"
-                    >
-                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  {form.formState.errors.confirmPassword && (
-                    <p className="text-red-500 text-xs mt-1">{form.formState.errors.confirmPassword.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Label className="text-gray-700 text-sm">Designation</Label>
-                  <Input
-                    type="text"
-                    placeholder="Enter designation"
-                    {...form.register("designation")}
-                    className="mt-1 h-9 rounded-lg text-sm"
-                  />
-                  {form.formState.errors.designation && (
-                    <p className="text-red-500 text-xs mt-1">{form.formState.errors.designation.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Label className="text-gray-700 text-sm">Gender</Label>
-                  <Select
-                    {...form.register("gender")}
-                    onValueChange={(value) => form.setValue("gender", value)}
-                    value={form.watch("gender")}
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2 top-2 text-gray-500 hover:text-indigo-600"
                   >
-                    <SelectTrigger className="mt-1 h-9 rounded-lg text-sm">
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-lg text-sm">
-                      <SelectGroup>
-                        <SelectItem value="Male">Male</SelectItem>
-                        <SelectItem value="Female">Female</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  {form.formState.errors.gender && (
-                    <p className="text-red-500 text-xs mt-1">{form.formState.errors.gender.message}</p>
-                  )}
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
                 </div>
+                {form.formState.errors.password && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {form.formState.errors.password.message}
+                  </p>
+                )}
               </div>
 
-              <div className="flex justify-end items-center gap-4 pt-5">
-                <Button
-                  type="button"
-                  onClick={handleCancel}
-                  variant="secondary"
-                  className="text-red-500 bg-white border border-red-500 w-[6rem]"
+              <div>
+                <Label className="text-gray-700 text-sm">
+                  Confirm Password
+                </Label>
+                <div className="relative mt-1">
+                  <Input
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm password"
+                    {...form.register("confirmPassword")}
+                    className="h-9 rounded-lg text-sm pr-8"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-2 top-2 text-gray-500 hover:text-indigo-600"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                {form.formState.errors.confirmPassword && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {form.formState.errors.confirmPassword.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label className="text-gray-700 text-sm">Designation</Label>
+                <Input
+                  type="text"
+                  placeholder="Enter designation"
+                  {...form.register("designation")}
+                  className="mt-1 h-9 rounded-lg text-sm"
+                />
+                {form.formState.errors.designation && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {form.formState.errors.designation.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label className="text-gray-700 text-sm">Gender</Label>
+                <Select
+                  onValueChange={(value) => form.setValue("gender", value)}
+                  value={form.watch("gender")}
                 >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  onClick={form.handleSubmit(onSubmit)}
-                  className="bg-gradient-to-r from-blue-500 via-blue-700 to-blue-900 w-[6rem] text-white"
-                >
-                  Submit
-                </Button>
+                  <SelectTrigger className="mt-1 h-9 rounded-lg text-sm">
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-lg text-sm">
+                    <SelectGroup>
+                      <SelectItem value="Male">Male</SelectItem>
+                      <SelectItem value="Female">Female</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                {form.formState.errors.gender && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {form.formState.errors.gender.message}
+                  </p>
+                )}
               </div>
             </div>
-          </motion.div>
-        </div>
-      </motion.div>
-    </div>
-  );
+
+            <div className="flex justify-end items-center gap-4 pt-5">
+              <Button
+                type="button"
+                onClick={handleCancel}
+                variant="secondary"
+                className="text-red-500 bg-white border border-red-500 w-[6rem]"
+              >
+                Cancel
+              </Button>
+              {/* CHANGED: Removed the redundant onClick handler from the submit button */}
+              <Button
+                type="submit"
+                className="bg-gradient-to-r from-blue-500 via-blue-700 to-blue-900 w-[6rem] text-white"
+              >
+                Submit
+              </Button>
+            </div>
+          </form>
+        </motion.div>
+      </div>
+    </motion.div>
+  </div>
+);
+
 };
 
 export default NewDoctor;
