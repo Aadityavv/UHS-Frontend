@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { exportStocksAdvanced } from "@/api-utility/Stock-Export";
 import { useToast } from "@/hooks/use-toast";
+import { FilterType } from "@/api-utility/Medical-Logs"; // Import the FilterType
 import { Toaster } from "@/components/ui/toaster";
 import { ToastAction } from "@/components/ui/toast";
 import axios from "axios";
@@ -36,6 +38,7 @@ import {
   Truck,
   Upload
 } from "lucide-react";
+import { exportDailyLogsToExcel } from "@/api-utility/Medical-Logs";
 
 interface Stock {
   id: string;
@@ -111,6 +114,29 @@ const MedicineStock = () => {
   });
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [, setImporting] = useState(false); 
+
+  const [showMedicalLogsModal, setShowMedicalLogsModal] = useState(false);
+
+const [medicalLogsExportData, setMedicalLogsExportData] = useState<{
+  locationId: string;
+  filterType: FilterType;
+}>({
+  locationId: '',
+  filterType: 'week'
+});
+
+const [showAdvancedExportModal, setShowAdvancedExportModal] = useState(false);
+const [advancedExportData, setAdvancedExportData] = useState<{
+  locationId: string;
+  startDate: string;
+  endDate: string;
+  filter: string;
+}>({
+  locationId: '',
+  startDate: '',
+  endDate: '',
+  filter: 'all'
+});
 
   const isMobile = useMobile();
 
@@ -350,6 +376,14 @@ const handleCSVImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
 
   const handleDownloadExcel = async (exportType: string) => {
+      if (exportType === 'medical-logs') {
+    setShowMedicalLogsModal(true);
+    return;
+    }
+      if (exportType === 'advanced') {
+    setShowAdvancedExportModal(true);
+    return;
+    }
     try {
       const token = localStorage.getItem("token");
       let role = localStorage.getItem("roles");
@@ -414,6 +448,134 @@ const handleCSVImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
       }
     });
   };
+const renderAdvancedExportModal = () => (
+  showAdvancedExportModal && (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+        <h2 className="text-xl font-bold mb-4">Advanced Stock Export</h2>
+        
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Location (Optional)
+            </label>
+            <Select
+              value={advancedExportData.locationId || undefined}
+              onValueChange={(value) => setAdvancedExportData({
+                ...advancedExportData,
+                locationId: value || ""
+              })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="All locations" />
+              </SelectTrigger>
+              <SelectContent>
+                {locations.map(location => (
+                  <SelectItem key={location.locId} value={location.locId.toString()}>
+                    {location.locationName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Start Date (Optional)
+              </label>
+              <Input
+                type="date"
+                value={advancedExportData.startDate}
+                onChange={(e) => setAdvancedExportData({
+                  ...advancedExportData,
+                  startDate: e.target.value
+                })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                End Date (Optional)
+              </label>
+              <Input
+                type="date"
+                value={advancedExportData.endDate}
+                onChange={(e) => setAdvancedExportData({
+                  ...advancedExportData,
+                  endDate: e.target.value
+                })}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Stock Filter
+            </label>
+            <Select
+              value={advancedExportData.filter}
+              onValueChange={(value) => setAdvancedExportData({
+                ...advancedExportData,
+                filter: value
+              })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Stocks</SelectItem>
+                <SelectItem value="available">Available Stocks (&gt; 0)</SelectItem>
+                <SelectItem value="low">Low Quantity (&lt; 50)</SelectItem>
+                <SelectItem value="expiring">Expiring Soon (1 month)</SelectItem>
+                <SelectItem value="expired">Expired Stocks</SelectItem>
+                <SelectItem value="out-of-stock">Out of Stock</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* 🔧 ADD THESE BUTTONS - This was missing! */}
+        <div className="flex justify-end gap-3 mt-6">
+          <button
+            onClick={() => setShowAdvancedExportModal(false)}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={async () => {
+              try {
+                await exportStocksAdvanced({
+                  locationId: advancedExportData.locationId || undefined,
+                  startDate: advancedExportData.startDate || undefined,
+                  endDate: advancedExportData.endDate || undefined,
+                  filter: advancedExportData.filter
+                });
+                
+                toast({
+                  title: "Success",
+                  description: "Advanced stock export completed successfully!",
+                });
+                setShowAdvancedExportModal(false);
+              } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+                toast({
+                  title: "Error",
+                  description: "Export failed: " + errorMessage,
+                  variant: "destructive"
+                });
+              }
+            }}
+            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+          >
+            Download Excel
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+);
+
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -639,127 +801,81 @@ const handleCSVImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     });
   };
 
-  const handleTransferSubmit = async () => {
-    if (!transferData.fromStock || !transferData.toLocation || !transferData.quantity) {
-      toast({
-        title: "Error",
-        description: "Please fill all transfer details",
-        variant: "destructive",
-      });
-      return;
+const handleTransferSubmit = async () => {
+  if (!transferData.fromStock || !transferData.toLocation || !transferData.quantity) {
+    toast({
+      title: "Error",
+      description: "Please fill all transfer details",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  const quantity = Number(transferData.quantity);
+  const currentQuantity = Number(transferData.fromStock.quantity);
+
+  if (isNaN(quantity) || quantity <= 0) {
+    toast({
+      title: "Error",
+      description: "Transfer quantity must be greater than 0",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  if (quantity > currentQuantity) {
+    toast({
+      title: "Error",
+      description: "Transfer quantity cannot exceed available stock",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem("token");
+    let role = localStorage.getItem("roles");
+    if (role === "ad") role = role.toUpperCase();
+
+    const toLocation = locations.find(loc => loc.locationName === transferData.toLocation);
+    if (!toLocation) {
+      throw new Error("Invalid destination location");
     }
 
-    const quantity = Number(transferData.quantity);
-    const currentQuantity = Number(transferData.fromStock.quantity);
-
-    if (isNaN(quantity) || quantity <= 1) {
-      toast({
-        title: "Error",
-        description: "Atleast 1 medicine should be left in this location",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (quantity > currentQuantity) {
-      toast({
-        title: "Error",
-        description: "Transfer quantity cannot exceed available stock",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem("token");
-      let role = localStorage.getItem("roles");
-
-      if (role === "ad") role = role.toUpperCase();
-
-      const toLocation = locations.find(loc => loc.locationName === transferData.toLocation);
-      if (!toLocation) {
-        throw new Error("Invalid destination location");
+    // Use the new backend transfer API
+    await axios.post(
+      `https://uhs-backend.onrender.com/api/${role}/stock/transfer`,
+      null,
+      {
+        params: {
+          stockId: transferData.fromStock.id,
+          fromLocationId: transferData.fromStock.location.locId,
+          toLocationId: toLocation.locId,
+          quantity: quantity
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
+    );
 
-      const updatedSourceStock = {
-        ...transferData.fromStock,
-        quantity: currentQuantity - quantity
-      };
-  
-      await axios.post(
-        `https://uhs-backend.onrender.com/api/${role}/stock/editStock`,
-        updatedSourceStock,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "X-Location": transferData.fromStock.location.locId,
-          },
-        }
-      );
-  
-      // Step 2: Find or create stock at destination location
-      const existingDestinationStock = stocks.find(
-        stock => 
-          stock.medicineName === transferData.fromStock?.medicineName &&
-          stock.batchNumber === transferData.fromStock?.batchNumber &&
-          stock.location.locId === toLocation.locId
-      );
-  
-      if (existingDestinationStock) {
-        // Update existing stock at destination
-        const updatedDestinationStock = {
-          ...existingDestinationStock,
-          quantity: Number(existingDestinationStock.quantity) + quantity
-        };
-  
-        await axios.post(
-          `https://uhs-backend.onrender.com/api/${role}/stock/editStock`,
-          updatedDestinationStock,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "X-Location": toLocation.locId,
-            },
-          }
-        );
-      } else {
-        // Create new stock at destination
-        const newDestinationStock = {
-          ...transferData.fromStock,
-          id: "", // Let backend generate new ID
-          quantity: quantity,
-          location: toLocation
-        };
-  
-        await axios.post(
-          `https://uhs-backend.onrender.com/api/${role}/stock/addStock`,
-          newDestinationStock,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "X-Location": toLocation.locId,
-            },
-          }
-        );
-      }
-  
+    toast({
+      title: "Success",
+      description: `Transferred ${quantity} units of ${transferData.fromStock.medicineName} to ${transferData.toLocation}`,
+    });
 
-      toast({
-        title: "Success",
-        description: `Transferred ${quantity} units of ${transferData.fromStock.medicineName} to ${transferData.toLocation}`,
-      });
+    setShowTransferModal(false);
+    fetchStocks();
+  } catch (error: any) {
+    console.error("Error transferring stock:", error);
+    toast({
+      title: "Error",
+      description: error.response?.data?.message || "Failed to transfer stock",
+      variant: "destructive",
+    });
+  }
+};
 
-      setShowTransferModal(false);
-      fetchStocks();
-    } catch (error: any) {
-      console.error("Error transferring stock:", error);
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to transfer stock",
-        variant: "destructive",
-      });
-    }
-  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -1369,6 +1485,114 @@ const handleCSVImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     </div>
   );
 
+  // Medical Logs Export Modal
+// Medical Logs Export Modal
+const renderMedicalLogsModal = () => (
+  showMedicalLogsModal && (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <h2 className="text-xl font-bold mb-4">Export Medical Logs</h2>
+        
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Location
+            </label>
+            <Select
+              value={medicalLogsExportData.locationId}
+              onValueChange={(value) => setMedicalLogsExportData({
+                ...medicalLogsExportData,
+                locationId: value
+              })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select location" />
+              </SelectTrigger>
+              <SelectContent>
+                {locations
+                  .filter(loc => loc.locationName.includes('Campus'))
+                  .map(location => (
+                    <SelectItem key={location.locId} value={location.locId}>
+                      {location.locationName}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Time Period
+            </label>
+            <Select
+              value={medicalLogsExportData.filterType}
+              onValueChange={(value: FilterType) => setMedicalLogsExportData({
+                ...medicalLogsExportData,
+                filterType: value
+              })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="day">Today</SelectItem>
+                <SelectItem value="week">This Week</SelectItem>
+                <SelectItem value="month">This Month</SelectItem>
+                <SelectItem value="year">This Year</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 mt-6">
+          <button
+            onClick={() => setShowMedicalLogsModal(false)}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={async () => {
+              if (!medicalLogsExportData.locationId) {
+                toast({
+                  title: "Error",
+                  description: "Please select a location",
+                  variant: "destructive"
+                });
+                return;
+              }
+
+              try {
+                await exportDailyLogsToExcel(
+                  medicalLogsExportData.locationId,
+                  medicalLogsExportData.filterType
+                );
+                toast({
+                  title: "Success",
+                  description: "Medical logs exported successfully!",
+                });
+                setShowMedicalLogsModal(false);
+              } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+                toast({
+                  title: "Error",
+                  description: "Export failed: " + errorMessage,
+                  variant: "destructive"
+                });
+              }
+            }}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          >
+            Export
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+);
+
+
+
   return (
     <>
       <Toaster />
@@ -1403,6 +1627,10 @@ const handleCSVImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
           <SelectItem value="low">Low Quantity (&lt;50)</SelectItem>
           <SelectItem value="expiring-low">Expiring + Low Quantity</SelectItem>
           <SelectItem value="available">Available Stocks (&gt;0)</SelectItem>
+              <SelectItem value="medical-logs">Medical Logs</SelectItem>
+                  <SelectItem value="advanced">Advanced Export</SelectItem>
+
+
                         </SelectGroup>
                       </SelectContent>
                     </Select>
@@ -1447,6 +1675,9 @@ const handleCSVImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
           <SelectItem value="low">Low Quantity (&lt;50)</SelectItem>
           <SelectItem value="expiring-low">Expiring + Low Quantity</SelectItem>
           <SelectItem value="available">Available Stocks (&gt;0)</SelectItem>
+              <SelectItem value="medical-logs">Medical Logs</SelectItem>
+                  <SelectItem value="advanced">Advanced Export</SelectItem>
+
                       </SelectGroup>
                     </SelectContent>
                   </Select>
@@ -1657,6 +1888,10 @@ const handleCSVImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
           </div>
         </div>
       )}
+
+          {renderMedicalLogsModal()}
+              {renderAdvancedExportModal()}
+
     </>
   );
 };

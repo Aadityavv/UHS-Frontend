@@ -242,8 +242,10 @@ const SignIn = () => {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const resp = await axios.get("https://uhs-backend.onrender.com/api/location");
-      
+        const desiredIds = ["1", "2"];
+        const queryParam = desiredIds.join(",");
+        const resp = await axios.get(`https://uhs-backend.onrender.com/api/location?ids=${queryParam}`);
+        console.log("Locations response:", resp.data);
         const locations: Array<any> = resp.data;
       
         if (resp.status === 200 && locations && locations.length > 0) {
