@@ -215,14 +215,13 @@ export const EditUser = () => {
     }
     
     // Phone number validation
-    if (!formData.phoneNumber.match(/^\d{10}$/)) {
-      newErrors.phoneNumber = "Phone number must be 10 digits";
-    }
-   
+if (!formData.phoneNumber.match(/^[1-9]\d{9}$/)) {
+  newErrors.phoneNumber = "Phone number must be 10 digits starting with 1-9";
+}
     // Emergency contact validation
-    if (!formData.emergencyContact.match(/^\d{10}$/)) {
-      newErrors.emergencyContact = "Emergency contact must be 10 digits";
-    }
+if (!formData.emergencyContact.match(/^[1-9]\d{9}$/)) {
+  newErrors.emergencyContact = "Emergency contact must be 10 digits starting with 1-9";
+}
     
     // Phone and emergency contact should be different
     if (formData.phoneNumber && formData.emergencyContact && 

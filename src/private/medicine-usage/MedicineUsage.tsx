@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiArrowLeft, FiSearch, FiCalendar, FiUser, FiClock } from "react-icons/fi";
@@ -27,6 +27,8 @@ const MedicineUsage: React.FC = () => {
   const [usageDetails, setUsageDetails] = useState<MedicineUsage[]>([]);
   const [selectedMedicine, setSelectedMedicine] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [cameFromDetailView, setCameFromDetailView] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchMedicineNames = async () => {
@@ -46,6 +48,128 @@ const MedicineUsage: React.FC = () => {
     fetchMedicineNames();
   }, []);
 
+  // Handle hardware back button
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (selectedMedicine) {
+        // Coming from detail view to list view
+        event.preventDefault();
+        setSelectedMedicine(null);
+        setCameFromDetailView(true);
+        // Don't push new state here - let the natural history work
+      } else if (cameFromDetailView) {
+        // Coming from list view after being in detail view
+        event.preventDefault();
+        setCameFromDetailView(false);
+        window.history.back(); // Go to dashboard
+      }
+    };
+
+    if (selectedMedicine) {
+      window.history.pushState(null, '', window.location.pathname);
+      window.addEventListener('popstate', handlePopState);
+    } else if (cameFromDetailView) {
+      // When in list view after coming from detail view, listen for back
+      window.addEventListener('popstate', handlePopState);
+    }
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [selectedMedicine, cameFromDetailView]);
+
+  // More aggressive navbar detection
+  useEffect(() => {
+    const handleAllClicks = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      
+      // Log every click for debugging
+      console.log('Click detected:', {
+        tagName: target.tagName,
+        className: target.className,
+        id: target.id,
+        position: target.getBoundingClientRect(),
+        parentElement: target.parentElement?.tagName,
+        selectedMedicine: selectedMedicine
+      });
+      
+      // Check if click is in the top navbar area (first 120px of page)
+      const clickY = target.getBoundingClientRect().top;
+      const isInNavbarArea = clickY < 120;
+      
+      if (isInNavbarArea) {
+        console.log('Click in navbar area detected!');
+        
+        // Very broad detection - any clickable element in navbar area
+        const isClickableInNavbar = 
+          target.tagName === 'BUTTON' ||
+          target.tagName === 'svg' ||
+          target.tagName === 'path' ||
+          target.closest('button') ||
+          target.closest('svg') ||
+          target.onclick !== null ||
+          target.style.cursor === 'pointer' ||
+          target.closest('[role="button"]') ||
+          target.closest('[tabindex]');
+        
+        if (isClickableInNavbar) {
+          console.log('Clickable navbar element detected, intercepting...');
+          event.preventDefault();
+          event.stopPropagation();
+          
+          if (selectedMedicine) {
+            console.log('Going from detail to list view');
+            setSelectedMedicine(null);
+            setCameFromDetailView(true);
+          } else {
+            console.log('Going from list to dashboard');
+            setCameFromDetailView(false);
+            window.history.back();
+          }
+        }
+      }
+    };
+
+    // Add multiple event listeners for better coverage
+    document.addEventListener('click', handleAllClicks, true);
+    document.addEventListener('mousedown', handleAllClicks, true);
+    
+    // Also try to directly override any existing navbar handlers
+    setTimeout(() => {
+      const possibleNavElements = document.querySelectorAll(
+        'nav *, [class*="nav"] *, [class*="header"] *, header *'
+      );
+      
+      possibleNavElements.forEach((element) => {
+        if (element instanceof HTMLElement) {
+          const rect = element.getBoundingClientRect();
+          if (rect.top < 120) { // Only elements in navbar area
+            element.style.pointerEvents = 'none';
+            element.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Direct navbar element clicked');
+              
+              if (selectedMedicine) {
+                setSelectedMedicine(null);
+                setCameFromDetailView(true);
+              } else {
+                setCameFromDetailView(false);
+                window.history.back();
+              }
+            }, true);
+            element.style.pointerEvents = 'auto';
+          }
+        }
+      });
+    }, 100);
+
+    return () => {
+      document.removeEventListener('click', handleAllClicks, true);
+      document.removeEventListener('mousedown', handleAllClicks, true);
+    };
+  }, [selectedMedicine]);
+
   const fetchMedicineUsage = async (medicineName: string) => {
     try {
       const token = localStorage.getItem("token");
@@ -64,9 +188,15 @@ const MedicineUsage: React.FC = () => {
       }));
       setUsageDetails(dataWithQuantity);
       setSelectedMedicine(medicineName);
+      setCameFromDetailView(false); // Reset flag when entering detail view
     } catch (error) {
       console.error("Failed to fetch medicine usage:", error);
     }
+  };
+
+  const handleBackToMedicines = () => {
+    setSelectedMedicine(null);
+    setCameFromDetailView(true);
   };
 
   const filteredMedicines = medicines.filter(medicine =>
@@ -74,7 +204,7 @@ const MedicineUsage: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-6">
+    <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-6">
       <div className="max-w-7xl mx-auto">
         <AnimatePresence mode="wait">
           {selectedMedicine ? (
@@ -87,7 +217,7 @@ const MedicineUsage: React.FC = () => {
             >
               <div className="p-6 bg-gradient-to-r from-purple-600 to-blue-600 text-white">
                 <button
-                  onClick={() => setSelectedMedicine(null)}
+                  onClick={handleBackToMedicines}
                   className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                 >
                   <FiArrowLeft className="text-lg" />
@@ -159,7 +289,7 @@ const MedicineUsage: React.FC = () => {
                           <td className="p-4 text-sm text-gray-600 whitespace-nowrap">
                             {new Date(usage.prescriptionTime).toLocaleDateString('en-GB', {
                               day: 'numeric',
-                              month: 'short',
+              month: 'short',
                               year: 'numeric'
                             })}
                           </td>

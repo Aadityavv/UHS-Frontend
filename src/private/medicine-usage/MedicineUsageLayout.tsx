@@ -9,8 +9,9 @@ const MedicineUsageLayout = ({ children }: { children: React.ReactNode }) => {
     additionalLogo: Shared.ArrowLeft,
     menu: false,
     role: localStorage.getItem("roles"),
-    prevRef:null
+    prevRef: null // Keep as null since we're handling navigation in the component
   };
+
   return (
     <div className="h-[100vh] max-lg:min-h-[100svh] overflow-x-hidden">
       <Navbar props={navsetting} />
