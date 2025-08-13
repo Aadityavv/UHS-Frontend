@@ -135,5 +135,5 @@ Special thanks to the UPES administration and the development team for their sup
 
 ---
 
-For more information, visit the [live application](https://upes-uhs.vercel.app/).
+For more information, visit the [live application](https://uhs.vercel.app/).
 
