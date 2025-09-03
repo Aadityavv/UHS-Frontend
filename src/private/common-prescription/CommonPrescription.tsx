@@ -3,6 +3,11 @@ import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 
@@ -148,6 +153,19 @@ const handleBackendPDFDownload = async () => {
           suggestion: med.suggestion || "",
         }));
 
+        // Convert time to IST if it exists
+        let istTime = data.time || "";
+        if (data.time) {
+          try {
+            // If time is in a format that can be parsed, convert to IST
+            const timeObj = dayjs(data.time).tz("Asia/Kolkata");
+            istTime = timeObj.format("HH:mm:ss");
+          } catch (error) {
+            // If parsing fails, use the original time
+            istTime = data.time;
+          }
+        }
+
         setNdata({
           name: patient.name || "",
           id: patient.sapID || "",
@@ -155,7 +173,7 @@ const handleBackendPDFDownload = async () => {
           school: patient.school || "",
           sex: patient.gender || "",
           date: dayjs(data.date).format("DD/MM/YYYY") || "",
-          time: data.time || "",
+          time: istTime,
           residenceType: data.residenceType || "",
           designation: data.prescription.doctor.designation || "",
           meds: medsData,

@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ToastAction } from "@/components/ui/toast";
 import { motion } from "framer-motion";
 import DiagnosisWordCloud from "@/components/DiagnosisWordCloud";
+import axios from "axios";
 import {
   Stethoscope,
   Pill,
@@ -30,6 +31,51 @@ const AssistantDoctorDashboard = () => {
   const [patientsLeft, setPatientsLeft] = useState(0);
   const [inQueue, setInQueue] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentLocation, setCurrentLocation] = useState("Location Unknown");
+
+  // Fetch current location from API
+  const fetchCurrentLocation = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const latitude = localStorage.getItem("latitude");
+      const longitude = localStorage.getItem("longitude");
+      
+      if (!token || !latitude || !longitude) {
+        console.log("Missing token or location data");
+        setCurrentLocation("Location Unknown");
+        return;
+      }
+
+      console.log("Fetching location with:", { latitude, longitude });
+
+      const response = await axios.get("https://uhs-backend.onrender.com/api/AD/getCurrentLocation", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "X-Latitude": latitude,
+          "X-Longitude": longitude,
+        },
+      });
+
+      console.log("Location API response:", response.data);
+
+      if (response.data && response.data.locationName) {
+        setCurrentLocation(response.data.locationName);
+        localStorage.setItem("locationName", response.data.locationName);
+      } else {
+        console.log("No locationName in response");
+        setCurrentLocation("Location Unknown");
+      }
+    } catch (error) {
+      console.error("Error fetching location:", error);
+      // Fallback to static determination
+      const latitude = localStorage.getItem("latitude");
+      if (latitude && parseFloat(latitude) > 30.3) {
+        setCurrentLocation("Knowledge Acres, Kandoli");
+      } else {
+        setCurrentLocation("Energy Acres, Bidholi");
+      }
+    }
+  };
 
   // Mobile detection
   useEffect(() => {
@@ -96,6 +142,7 @@ const AssistantDoctorDashboard = () => {
 
   useEffect(() => {
     fetchPatientData();
+    fetchCurrentLocation();
     const interval = setInterval(() => {
       fetchPatientData();
     }, 25000);
@@ -158,6 +205,21 @@ const AssistantDoctorDashboard = () => {
                 <div>
                   <p className="text-sm font-medium text-gray-600">Current Time</p>
                   <p className="text-lg font-bold">{formatTime(time)}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-medium text-gray-600">Campus</p>
+                  <div className="flex items-center justify-center gap-2">
+                    <p className="text-sm font-semibold text-indigo-600">
+                      {currentLocation}
+                    </p>
+                    <button
+                      onClick={fetchCurrentLocation}
+                      className="text-xs text-blue-500 hover:text-blue-700"
+                      title="Refresh location"
+                    >
+                      ↻
+                    </button>
+                  </div>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-gray-600">Today's Date</p>
@@ -340,6 +402,22 @@ const AssistantDoctorDashboard = () => {
                       month: "long",
                       day: "numeric",
                     })}
+                  </p>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center">
+                      <div className="h-2 w-2 bg-white rounded-full"></div>
+                    </div>
+                    <h3 className="text-md font-semibold">Current Campus</h3>
+                  </div>
+                  <p className="text-sm font-semibold text-indigo-600">
+                    {localStorage.getItem("locationName")
+                    }
                   </p>
                 </motion.div>
 

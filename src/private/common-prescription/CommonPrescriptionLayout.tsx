@@ -19,8 +19,19 @@ const CommonPrescriptionLayout = ({
   else if (role === "ad") fallbackPath = "/patient-logs";
   else if (role === "patient") fallbackPath = "/patient-dashboard";
   
-  const prevPath = location.state?.prevPath || fallbackPath;
+  // Use the prevPath from location state, but ensure it's valid
+  const prevPath = location.state?.prevPath && location.state.prevPath !== window.location.pathname 
+    ? location.state.prevPath 
+    : fallbackPath;
   
+  const handleBackClick = () => {
+    // If we're coming from patient details, go to doctor dashboard
+    if (location.state?.prevPath === "/patient-details") {
+      navigate("/doctor-dashboard");
+    } else {
+      navigate(prevPath);
+    }
+  };
   
   const navsetting = {
     title: "Prescription",
@@ -29,7 +40,7 @@ const CommonPrescriptionLayout = ({
     menu: false,
     role: localStorage.getItem("roles"),
     prevRef: prevPath, // Use the previous path from location state
-    onBackClick: () => navigate(prevPath) // Explicit back navigation handler
+    onBackClick: handleBackClick // Use the custom back handler
   };
   
   return (

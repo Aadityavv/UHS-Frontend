@@ -25,26 +25,28 @@ import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { ToastAction } from "@/components/ui/toast";
 import { motion } from "framer-motion";
-import { Clock, User, Mail, ClipboardList, Pill, PlusCircle } from "lucide-react";
+import { Clock, User, Mail, ClipboardList, Pill, PlusCircle, Trash2 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useLocation } from "react-router-dom";
 
 
+const medicineSchema = z.object({
+  id: z.string().min(1, "Please select a medicine"),
+  name: z.string().min(1, "Please select a medicine"),
+  quantity: z
+    .number()
+    .min(1, "Quantity must be at least 1")
+    .refine((val) => !isNaN(val), {
+      message: "Quantity must be a number",
+    }),
+});
+
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email"),
   reason: z.string().min(1, "Reason is required"),
-  medicine: z.object({
-    id: z.string(),
-    name: z.string(),
-    quantity: z
-      .number()
-      .min(1, "Quantity must be at least 1")
-      .refine((val) => !isNaN(val), {
-        message: "Quantity must be a number",
-      }),
-  }),
+  medicines: z.array(medicineSchema).min(1, "At least one medicine is required"),
   notes: z.string().optional(),
 });
 
@@ -60,7 +62,7 @@ const AdHocTreatment = () => {
       name: "",
       email: "",
       reason: "",
-      medicine: { id: "", name: "", quantity: 0 },
+      medicines: [{ id: "", name: "", quantity: 1 }],
       notes: "",
     },
   });
@@ -132,14 +134,6 @@ useEffect(() => {
 
   const handleSubmit = async (data: any) => {
     setIsSubmitting(true);
-    const submitData = {
-      name: data.name,
-      patientEmail: data.email,
-      medicine: data.medicine.id,
-      quantity: data.medicine.quantity,
-      reason: data.reason,
-      notes: data.notes,
-    };
 
     try {
       if (
@@ -154,7 +148,32 @@ useEffect(() => {
         return;
       }
 
-      const response = await axios.post(
+      // Validate that at least one medicine is selected
+      const validMedicines = data.medicines.filter(med => med.id && med.name && med.quantity > 0);
+      if (validMedicines.length === 0) {
+        toast({
+          title: "Error",
+          description: "Please select at least one medicine",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Prepare medicines data for single request
+      const medicines = validMedicines.map((medicine: any) => ({
+        medicineId: medicine.id,
+        quantity: medicine.quantity,
+      }));
+
+      const submitData = {
+        name: data.name,
+        patientEmail: data.email,
+        reason: data.reason,
+        notes: data.notes,
+        medicines: medicines,
+      };
+
+      await axios.post(
         "https://uhs-backend.onrender.com/api/AD/submit/adHoc",
         submitData,
         {
@@ -165,15 +184,14 @@ useEffect(() => {
           },
         }
       );
-      if (response.status === 200) {
-        toast({
-          title: "Success",
-          description: "Treatment recorded successfully",
-        });
-        setTimeout(() => {
-          navigate("/ad-dashboard");
-        }, 1000);
-      }
+      
+      toast({
+        title: "Success",
+        description: `Treatment recorded successfully for ${validMedicines.length} medicine(s)`,
+      });
+      setTimeout(() => {
+        navigate("/ad-dashboard");
+      }, 1000);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -202,6 +220,29 @@ useEffect(() => {
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
+  };
+
+  const addMedicine = () => {
+    const currentMedicines = form.getValues("medicines");
+    form.setValue("medicines", [
+      ...currentMedicines,
+      { id: "", name: "", quantity: 1 }
+    ]);
+  };
+
+  const removeMedicine = (index: number) => {
+    const currentMedicines = form.getValues("medicines");
+    if (currentMedicines.length > 1) {
+      const updatedMedicines = currentMedicines.filter((_, i) => i !== index);
+      form.setValue("medicines", updatedMedicines);
+    }
+  };
+
+  const updateMedicine = (index: number, field: string, value: any) => {
+    const currentMedicines = form.getValues("medicines");
+    const updatedMedicines = [...currentMedicines];
+    updatedMedicines[index] = { ...updatedMedicines[index], [field]: value };
+    form.setValue("medicines", updatedMedicines);
   };
 
   // const formatTime = (date: Date) => {
@@ -252,11 +293,13 @@ useEffect(() => {
                             key={medicine.id}
                             className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
                             onClick={() => {
-                              form.setValue("medicine", {
-                                id: medicine.id,
-                                name: medicine.medicineName,
-                                quantity: 1,
-                              });
+                              const currentMedicines = form.getValues("medicines");
+                              const lastMedicineIndex = currentMedicines.length - 1;
+                              if (lastMedicineIndex >= 0) {
+                                updateMedicine(lastMedicineIndex, "id", medicine.id);
+                                updateMedicine(lastMedicineIndex, "name", medicine.medicineName);
+                                updateMedicine(lastMedicineIndex, "quantity", 1);
+                              }
                             }}
                           >
                             <div className="font-medium">{medicine.medicineName}</div>
@@ -389,100 +432,133 @@ useEffect(() => {
 
                   {/* Medicine Selection Section */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                      <Pill className="h-5 w-5 text-purple-500" />
-                      Medicine Prescription
-                    </h3>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="medicine.name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                              <Pill className="h-4 w-4 text-gray-500" />
-                              Medicine
-                            </FormLabel>
-                            <Select
-                              onValueChange={(value) => {
-                                const [id, name] = value.split(":");
-                                field.onChange(name);
-                                form.setValue("medicine", {
-                                  ...form.getValues("medicine"),
-                                  id,
-                                  name,
-                                });
-                              }}
-                            >
-                              <FormControl>
-                                <SelectTrigger className="rounded-xl focus:ring-2 focus:ring-blue-500">
-                                  <SelectValue placeholder="Select a medicine" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent className="rounded-xl">
-                                <div className="p-2">
-                                  <Input
-                                    placeholder="Search medicine..."
-                                    className="rounded-lg"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                  />
-                                </div>
-                                {stock
-                                  .filter((medicine) =>
-                                    medicine.medicineName
-                                      .toLowerCase()
-                                      .includes(searchQuery.toLowerCase())
-                                  )
-                                  .map((medicine) => (
-                                    <SelectItem
-                                      key={medicine.id}
-                                      value={`${medicine.id}:${medicine.medicineName}`}
-                                      className="rounded-lg hover:bg-blue-50"
-                                    >
-                                      <div className="flex flex-col">
-                                        <span className="font-medium">{medicine.medicineName}</span>
-                                        <span className="text-xs text-gray-500">
-                                          Qty: {medicine.quantity} | Exp: {formatDate(medicine.expirationDate)}
-                                        </span>
-                                      </div>
-                                    </SelectItem>
-                                  ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage className="text-red-500 text-xs" />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="medicine.quantity"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                              <Pill className="h-4 w-4 text-gray-500" />
-                              Quantity
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                min="1"
-                                placeholder="Enter quantity"
-                                className="rounded-xl focus:ring-2 focus:ring-blue-500"
-                                value={field.value}
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  field.onChange(value ? parseInt(value, 10) : 0);
-                                }}
-                              />
-                            </FormControl>
-                            <FormMessage className="text-red-500 text-xs" />
-                          </FormItem>
-                        )}
-                      />
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                        <Pill className="h-5 w-5 text-purple-500" />
+                        Medicine Prescription
+                      </h3>
+                      <Button
+                        type="button"
+                        onClick={addMedicine}
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2"
+                      >
+                        <PlusCircle className="h-4 w-4" />
+                        Add Medicine
+                      </Button>
                     </div>
+
+                    {form.watch("medicines").map((medicine, index) => (
+                      <div key={index} className="border rounded-xl p-4 bg-gray-50">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="text-sm font-medium text-gray-700">
+                            Medicine {index + 1}
+                          </h4>
+                          {form.watch("medicines").length > 1 && (
+                            <Button
+                              type="button"
+                              onClick={() => removeMedicine(index)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name={`medicines.${index}.name`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                                  <Pill className="h-4 w-4 text-gray-500" />
+                                  Medicine
+                                </FormLabel>
+                                <Select
+                                  onValueChange={(value) => {
+                                    const [id, name] = value.split(":");
+                                    field.onChange(name);
+                                    updateMedicine(index, "id", id);
+                                    updateMedicine(index, "name", name);
+                                  }}
+                                  value={medicine.id ? `${medicine.id}:${medicine.name}` : ""}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger className="rounded-xl focus:ring-2 focus:ring-blue-500">
+                                      <SelectValue placeholder="Select a medicine" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent className="rounded-xl">
+                                    <div className="p-2">
+                                      <Input
+                                        placeholder="Search medicine..."
+                                        className="rounded-lg"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                      />
+                                    </div>
+                                    {stock
+                                      .filter((stockMedicine) =>
+                                        stockMedicine.medicineName
+                                          .toLowerCase()
+                                          .includes(searchQuery.toLowerCase())
+                                      )
+                                      .map((stockMedicine) => (
+                                        <SelectItem
+                                          key={stockMedicine.id}
+                                          value={`${stockMedicine.id}:${stockMedicine.medicineName}`}
+                                          className="rounded-lg hover:bg-blue-50"
+                                        >
+                                          <div className="flex flex-col">
+                                            <span className="font-medium">{stockMedicine.medicineName}</span>
+                                            <span className="text-xs text-gray-500">
+                                              Qty: {stockMedicine.quantity} | Exp: {formatDate(stockMedicine.expirationDate)}
+                                            </span>
+                                          </div>
+                                        </SelectItem>
+                                      ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage className="text-red-500 text-xs" />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`medicines.${index}.quantity`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                                  <Pill className="h-4 w-4 text-gray-500" />
+                                  Quantity
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    min="1"
+                                    placeholder="Enter quantity"
+                                    className="rounded-xl focus:ring-2 focus:ring-blue-500"
+                                    value={field.value}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      const numValue = value ? parseInt(value, 10) : 1;
+                                      field.onChange(numValue);
+                                      updateMedicine(index, "quantity", numValue);
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage className="text-red-500 text-xs" />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
 
                   {/* Form Actions */}

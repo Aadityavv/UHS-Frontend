@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -64,6 +64,7 @@ const NewDoctor = () => {
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -78,42 +79,41 @@ const NewDoctor = () => {
     },
   });
 
-  const { isValid } = form.formState;
-
   const onSubmit = async (data: any) => {
-    if (isValid) {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          navigate("/admin-portal");
-          return;
-        }
-        const payload = { ...data, status: false };
-        await axios.post(
-          "https://uhs-backend.onrender.com/api/admin/doctor/signup",
-          payload,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        toast({
-          title: "Registration Successful",
-          description: "A verification email has been sent to your email.",
-        });
-        setTimeout(() => {
-          navigate("/admin-dashboard");
-        }, 1000);
-      } catch (error: any) {
-        console.error("Error submitting form: ", error);
-        toast({
-          title: "Registration Failed",
-          description: error?.response?.data?.message || "Registration failed",
-          variant: "destructive",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
-        });
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/admin-portal");
+        return;
       }
+      const payload = { ...data, status: false };
+      await axios.post(
+        "https://uhs-backend.onrender.com/api/admin/doctor/signup",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      toast({
+        title: "Registration Successful",
+        description: "A verification email has been sent to your email.",
+      });
+      setTimeout(() => {
+        navigate("/admin-dashboard");
+      }, 1000);
+    } catch (error: any) {
+      console.error("Error submitting form: ", error);
+      toast({
+        title: "Registration Failed",
+        description: error?.response?.data?.message || "Registration failed",
+        variant: "destructive",
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -484,15 +484,23 @@ const NewDoctor = () => {
                 onClick={handleCancel}
                 variant="secondary"
                 className="text-red-500 bg-white border border-red-500 w-[6rem]"
+                disabled={isSubmitting}
               >
                 Cancel
               </Button>
-              {/* CHANGED: Removed the redundant onClick handler from the submit button */}
               <Button
                 type="submit"
                 className="bg-gradient-to-r from-blue-500 via-blue-700 to-blue-900 w-[6rem] text-white"
+                disabled={isSubmitting}
               >
-                Submit
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit"
+                )}
               </Button>
             </div>
           </form>

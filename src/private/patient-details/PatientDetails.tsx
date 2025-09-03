@@ -305,7 +305,8 @@ const PatientDetails = () => {
         title: "Patient Released",
         description: resp.data.message || "Patient released successfully.",
       });
-      navigate(-1);
+      // Navigate to doctor dashboard instead of previous page
+      navigate("/doctor-dashboard");
     } catch (err: any) {
       toast({
         variant: "destructive",
@@ -348,7 +349,7 @@ const PatientDetails = () => {
       }
   
       navigate(`/prescription?id=${appointmentId}`, {
-        state: { prevPath: window.location.pathname }
+        state: { prevPath: "/patient-details" }
       });
     } catch (error: any) {
       toast({

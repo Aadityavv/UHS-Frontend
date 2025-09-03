@@ -91,7 +91,7 @@ const PatientList = () => {
       if (alreadyExists) {
         toast({
           title: "Appointment already queued",
-          description: "This patient already has an appointment in the queue.",
+          description: "This patient already has an appointment in the queue for this campus.",
           variant: "destructive",
         });
         return;
@@ -101,6 +101,8 @@ const PatientList = () => {
       const token = localStorage.getItem("token");
       const headers = {
         Authorization: `Bearer ${token}`,
+        "X-Latitude": localStorage.getItem("latitude"),
+        "X-Longitude": localStorage.getItem("longitude"),
       };
 
       await axios.post(
@@ -398,7 +400,7 @@ const PatientList = () => {
 
   useEffect(() => {
     fetchAllPatients();
-    const interval = setInterval(fetchAllPatients, 30000);
+    const interval = setInterval(fetchAllPatients, 60000);
     return () => clearInterval(interval);
   }, []);
 
@@ -452,6 +454,11 @@ const PatientList = () => {
             <DialogDescription>
               Add a new patient to the queue manually
             </DialogDescription>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-sm text-blue-800">
+                <strong>Campus:</strong> {localStorage.getItem("locationName") || "Location Unknown"}
+              </p>
+            </div>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -722,7 +729,9 @@ const PatientList = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => navigate(`/appointed-prescription?id=${patient.aptId}`)}
+                              onClick={() => navigate(`/appointed-prescription?id=${patient.aptId}`, {
+                                state: { prevPath: "/patient-list" }
+                              })}
                             >
                               <FileText className="h-4 w-4 mr-2" /> Prescription
                             </Button>
@@ -930,7 +939,9 @@ const PatientList = () => {
                           variant="outline"
                           size="sm"
                           className="flex-1"
-                          onClick={() => navigate(`/appointed-prescription?id=${patient.aptId}`)}
+                          onClick={() => navigate(`/appointed-prescription?id=${patient.aptId}`, {
+                            state: { prevPath: "/patient-list" }
+                          })}
                         >
                           <FileText className="h-4 w-4 mr-2" /> Prescription
                         </Button>

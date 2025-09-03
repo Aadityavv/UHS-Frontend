@@ -12,6 +12,8 @@ interface MedicineUsage {
   patientName: string;
   prescriptionTime: string;
   totalQuantity?: number;
+  campus?: string;
+  prescriptionId?: string;
 }
 
 const parseDosage = (dosage: string): number => {
@@ -262,7 +264,13 @@ const MedicineUsage: React.FC = () => {
                           Total Quantity
                         </th>
                         <th className="p-4 text-left text-sm font-medium text-gray-600">
-                          <FiClock className="inline mr-2" />Time
+                          Campus
+                        </th>
+                        <th className="p-4 text-left text-sm font-medium text-gray-600">
+                          <FiCalendar className="inline mr-2" />Date
+                        </th>
+                        <th className="p-4 text-left text-sm font-medium text-gray-600">
+                          Action
                         </th>
                       </tr>
                     </thead>
@@ -287,11 +295,29 @@ const MedicineUsage: React.FC = () => {
                             {usage.totalQuantity} units
                           </td>
                           <td className="p-4 text-sm text-gray-600 whitespace-nowrap">
+                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded-md">
+                              {usage.campus || 'N/A'}
+                            </span>
+                          </td>
+                          <td className="p-4 text-sm text-gray-600 whitespace-nowrap">
                             {new Date(usage.prescriptionTime).toLocaleDateString('en-GB', {
                               day: 'numeric',
-              month: 'short',
+                              month: 'short',
                               year: 'numeric'
                             })}
+                          </td>
+                          <td className="p-4 text-sm text-gray-600 whitespace-nowrap">
+                            {usage.prescriptionId && (
+                              <button
+                                onClick={() => {
+                                  // Navigate to prescription details
+                                  window.open(`/prescription/${usage.prescriptionId}`, '_blank');
+                                }}
+                                className="text-blue-600 hover:text-blue-800 underline"
+                              >
+                                View Prescription
+                              </button>
+                            )}
                           </td>
                         </tr>
                       ))}
