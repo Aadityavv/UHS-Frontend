@@ -5,6 +5,8 @@ import { FiArrowLeft, FiSearch, FiCalendar, FiUser } from "react-icons/fi";
 import { Pill } from "lucide-react";
 
 interface MedicineUsage {
+  appointmentId: any;
+  location: string;
   medicineName: string;
   dosage: string;
   duration: string;
@@ -296,7 +298,7 @@ const MedicineUsage: React.FC = () => {
                           </td>
                           <td className="p-4 text-sm text-gray-600 whitespace-nowrap">
                             <span className="bg-green-100 text-green-800 px-2 py-1 rounded-md">
-                              {usage.campus || 'N/A'}
+                              {usage.location || 'N/A'}
                             </span>
                           </td>
                           <td className="p-4 text-sm text-gray-600 whitespace-nowrap">
@@ -309,11 +311,8 @@ const MedicineUsage: React.FC = () => {
                           <td className="p-4 text-sm text-gray-600 whitespace-nowrap">
                             {usage.prescriptionId && (
                               <button
-                                onClick={() => {
-                                  // Navigate to prescription details
-                                  window.open(`/prescription/${usage.prescriptionId}`, '_blank');
-                                }}
-                                className="text-blue-600 hover:text-blue-800 underline"
+                                onClick={() => window.open(`/previous-prescription?id=${usage.appointmentId}`, '_blank')}
+                                className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-colors"
                               >
                                 View Prescription
                               </button>
