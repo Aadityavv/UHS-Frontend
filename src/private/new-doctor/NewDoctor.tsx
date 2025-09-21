@@ -51,8 +51,8 @@ const formSchema = z
       }),
     designation: z
       .string()
-      .min(3, "Designation must be at least 3 characters long")
-      .max(50, "Designation must be at most 50 characters long"),
+      .min(3, "Qualification must be at least 3 characters long")
+      .max(50, "Qualification must be at most 50 characters long"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
@@ -439,10 +439,10 @@ const NewDoctor = () => {
               </div>
 
               <div>
-                <Label className="text-gray-700 text-sm">Designation</Label>
+                <Label className="text-gray-700 text-sm">Qualification</Label>
                 <Input
                   type="text"
-                  placeholder="Enter designation"
+                  placeholder="Enter Qualification"
                   {...form.register("designation")}
                   className="mt-1 h-9 rounded-lg text-sm"
                 />

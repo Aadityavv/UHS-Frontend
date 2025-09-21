@@ -296,7 +296,7 @@ const PatientLogs = () => {
                                   </TableHead>
                                   <TableHead>Patient</TableHead>
                                   <TableHead>Date</TableHead>
-                                  <TableHead>Campus</TableHead>
+                                  {/* <TableHead>Campus</TableHead> */}
                                   <TableHead>Location</TableHead>
                                   <TableHead className="text-right">Action</TableHead>
                                 </>
@@ -307,7 +307,7 @@ const PatientLogs = () => {
                                   <TableHead>Medicine</TableHead>
                                   <TableHead>Quantity</TableHead>
                                   <TableHead>Nurse</TableHead>
-                                  <TableHead>Campus</TableHead>
+                                  {/* <TableHead>Campus</TableHead> */}
                                   <TableHead>Date</TableHead>
                                 </>
                               )}
@@ -323,9 +323,9 @@ const PatientLogs = () => {
                                       <TableCell>{item.patientName}</TableCell>
                                       <TableCell>{item.date}</TableCell>
                                       <TableCell>
-                                        <span className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-xs">
+                                        {/* <span className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-xs">
                                           {item.campus || 'N/A'}
-                                        </span>
+                                        </span> */}
                                       </TableCell>
                                       <TableCell>{item.location}</TableCell>
                                       <TableCell className="text-right">
@@ -354,9 +354,9 @@ const PatientLogs = () => {
                                       <TableCell>{item.quantity}</TableCell>
                                       <TableCell>{item.adName}</TableCell>
                                       <TableCell>
-                                        <span className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-xs">
+                                        {/* <span className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-xs">
                                           {item.campus || 'N/A'}
-                                        </span>
+                                        </span> */}
                                       </TableCell>
                                       <TableCell>{item.date}</TableCell>
                                     </>
@@ -407,10 +407,10 @@ const PatientLogs = () => {
                                     <p>{item.date}</p>
                                   </div>
                                   <div>
-                                    <p className="text-gray-500">Campus</p>
+                                    {/* <p className="text-gray-500">Campus</p>
                                     <span className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-xs">
                                       {item.campus || 'N/A'}
-                                    </span>
+                                    </span> */}
                                   </div>
                                   <div className="col-span-2">
                                     <p className="text-gray-500">Location</p>
@@ -427,9 +427,9 @@ const PatientLogs = () => {
                                   </div>
                                   <div className="text-sm text-right">
                                     <p>{item.date}</p>
-                                    <span className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-xs">
+                                    {/* <span className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-xs">
                                       {item.campus || 'N/A'}
-                                    </span>
+                                    </span> */}
                                   </div>
                                 </div>
                                 <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
