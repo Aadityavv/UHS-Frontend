@@ -42,6 +42,8 @@ const medicineSchema = z.object({
     }),
 });
 
+type Medicine = z.infer<typeof medicineSchema>;
+
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email"),
@@ -149,7 +151,7 @@ useEffect(() => {
       }
 
       // Validate that at least one medicine is selected
-      const validMedicines = data.medicines.filter(med => med.id && med.name && med.quantity > 0);
+      const validMedicines = data.medicines.filter((med: Medicine) => med.id && med.name && med.quantity > 0);
       if (validMedicines.length === 0) {
         toast({
           title: "Error",

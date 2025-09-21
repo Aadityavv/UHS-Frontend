@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiArrowLeft, FiSearch, FiCalendar, FiUser, FiClock } from "react-icons/fi";
+import { FiArrowLeft, FiSearch, FiCalendar, FiUser } from "react-icons/fi";
 import { Pill } from "lucide-react";
 
 interface MedicineUsage {

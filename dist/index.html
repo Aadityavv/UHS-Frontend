@@ -2,13 +2,27 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/jpg" href="./dist/upes-logo3.png" />
+    <meta http-equiv="Content-Security-Policy"
+    content="
+      default-src 'self';
+      script-src 'self';
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com;
+      img-src 'self' https://uhs-backend.onrender.com data:;
+      connect-src 'self' https://uhs-backend.onrender.com https://uhs.vercel.app;
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+  ">  
+  
+    <link rel="icon" type="image/jpg" href="/assets/upes-logo3.DwMukxF6.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>UPES UHS</title>
-    <script type="module" crossorigin src="/assets/index-Bdurh082.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-Bwp6MsjO.css">
+    <script type="module" crossorigin src="/assets/index.50DXZ5qE.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index.-ITolGBL.css">
   </head>
+  
   <body>
-    <div id="root"></div>
+    <div id="root"></div>
   </body>
 </html>
