@@ -114,8 +114,18 @@ const MedicineStock = () => {
   });
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [, setImporting] = useState(false); 
+  const [canEditStock, setCanEditStock] = useState(false);
 
   const [showMedicalLogsModal, setShowMedicalLogsModal] = useState(false);
+
+  // Helper to normalize role into correct API path segment
+  const getApiRole = (): "admin" | "doctor" | "AD" => {
+    const raw = (localStorage.getItem("roles") || "").toUpperCase();
+    if (raw.includes("ADMIN")) return "admin";
+    if (raw.includes("DOCTOR")) return "doctor";
+    // Default/fallback to AD if token contains AD or unknown
+    return "AD";
+  };
 
 const [medicalLogsExportData, setMedicalLogsExportData] = useState<{
   locationId: string;
@@ -166,12 +176,10 @@ const [advancedExportData, setAdvancedExportData] = useState<{
     if (editStock) {
       try {
         const token = localStorage.getItem("token");
-        let role = localStorage.getItem("roles");
-
-        if (role === "ad") role = role.toUpperCase();
+        const roleSegment = getApiRole();
 
         await axios.post(
-          `https://uhs-backend.onrender.com/api/${role}/stock/editStock`,
+          `https://uhs-backend.onrender.com/api/${roleSegment}/stock/editStock`,
           editStock,
           {
             headers: {
@@ -231,12 +239,11 @@ const [advancedExportData, setAdvancedExportData] = useState<{
   const fetchStocks = async () => {
     try {
       const token = localStorage.getItem("token");
-      let role = localStorage.getItem("roles");
+      const roleSegment = getApiRole();
 
-      if (role === "ad") role = role.toUpperCase();
-
+      // Fetch stocks
       const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/${role}/stock/`,
+        `https://uhs-backend.onrender.com/api/${roleSegment}/stock/`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -244,11 +251,32 @@ const [advancedExportData, setAdvancedExportData] = useState<{
         }
       );
       setStocks(response.data);
+      
+      // Fetch user profile to check permissions
+      const profileUrl = roleSegment === "admin" 
+        ? "https://uhs-backend.onrender.com/api/admin/profile"
+        : roleSegment === "doctor" 
+          ? "https://uhs-backend.onrender.com/api/doctor/profile" 
+          : "https://uhs-backend.onrender.com/api/AD/profile";
+          
+      const profileResponse = await axios.get(profileUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      // Check if user has permission to edit stock
+      if (profileResponse.data && profileResponse.data.canEditStock !== undefined) {
+        setCanEditStock(Boolean(profileResponse.data.canEditStock));
+      } else {
+        // Default to false if permission not found
+        setCanEditStock(false);
+      }
     } catch (error) {
-      console.error("Error fetching stock data:", error);
+      console.error("Error fetching data:", error);
       toast({
         title: "Error",
-        description: "Failed to fetch stock data. Please try again.",
+        description: "Failed to fetch data. Please try again.",
         variant: "destructive",
         action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
@@ -328,11 +356,10 @@ const handleCSVImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
   setImporting(true);
   try {
     const token = localStorage.getItem("token");
-    let role = localStorage.getItem("roles");
-    if (role === "ad") role = role.toUpperCase();
+    const roleSegment = getApiRole();
 
     const resp = await axios.post(
-      `https://uhs-backend.onrender.com/api/${role}/stocks/import`,
+      `https://uhs-backend.onrender.com/api/${roleSegment}/stocks/import`,
       formData,
       {
         headers: {
@@ -386,12 +413,10 @@ const handleCSVImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     }
     try {
       const token = localStorage.getItem("token");
-      let role = localStorage.getItem("roles");
-  
-      if (role === "ad") role = role.toUpperCase();
+      const roleSegment = getApiRole();
   
       const response = await axios.get(
-        `https://uhs-backend.onrender.com/api/${role}/export?filter=${exportType}`,
+        `https://uhs-backend.onrender.com/api/${roleSegment}/export?filter=${exportType}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -634,9 +659,7 @@ const renderAdvancedExportModal = () => (
     if (newStock) {
       try {
         const token = localStorage.getItem("token");
-        let role = localStorage.getItem("roles");
-  
-        if (role === "ad") role = role.toUpperCase();
+        const roleSegment = getApiRole();
   
         const numericStock = {
           ...newStock,
@@ -648,7 +671,7 @@ const renderAdvancedExportModal = () => (
         };
   
         await axios.post(
-          `https://uhs-backend.onrender.com/api/${role}/stock/addStock`,
+          `https://uhs-backend.onrender.com/api/${roleSegment}/stock/addStock`,
           numericStock,
           {
             headers: {
@@ -679,14 +702,12 @@ const renderAdvancedExportModal = () => (
 
   const handleDelete = async () => {
     const token = localStorage.getItem("token");
-    let role = localStorage.getItem("roles");
-
-    if (role === "ad") role = role.toUpperCase();
+    const roleSegment = getApiRole();
 
     for (const batchNumber of selectedStocks) {
       try {
         await axios.delete(
-          `https://uhs-backend.onrender.com/api/${role}/stock/${batchNumber}`,
+          `https://uhs-backend.onrender.com/api/${roleSegment}/stock/${batchNumber}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -834,8 +855,7 @@ const handleTransferSubmit = async () => {
 
   try {
     const token = localStorage.getItem("token");
-    let role = localStorage.getItem("roles");
-    if (role === "ad") role = role.toUpperCase();
+    const roleSegment = getApiRole();
 
     const toLocation = locations.find(loc => loc.locationName === transferData.toLocation);
     if (!toLocation) {
@@ -844,7 +864,7 @@ const handleTransferSubmit = async () => {
 
     // Use the new backend transfer API
     await axios.post(
-      `https://uhs-backend.onrender.com/api/${role}/stock/transfer`,
+      `https://uhs-backend.onrender.com/api/${roleSegment}/stock/transfer`,
       null,
       {
         params: {
@@ -1048,14 +1068,18 @@ const handleTransferSubmit = async () => {
                 </div>
               ) : (
                 <div className="flex gap-2">
-                  <Pencil
-                    className="h-5 w-5 text-blue-600 cursor-pointer"
-                    onClick={() => handleEdit(stock)}
-                  />
-                  <Truck
-                    className="h-5 w-5 text-purple-600 cursor-pointer"
-                    onClick={() => handleInitiateTransfer(stock)}
-                  />
+                  {canEditStock && (
+                    <>
+                      <Pencil
+                        className="h-5 w-5 text-blue-600 cursor-pointer"
+                        onClick={() => handleEdit(stock)}
+                      />
+                      <Truck
+                        className="h-5 w-5 text-purple-600 cursor-pointer"
+                        onClick={() => handleInitiateTransfer(stock)}
+                      />
+                    </>
+                  )}
                 </div>
               )}
             </TableCell>
@@ -1347,20 +1371,24 @@ const handleTransferSubmit = async () => {
                     </div>
                   </div>
                   <div className="flex justify-end space-x-2 pt-2">
-                    <button
-                      onClick={() => handleEdit(stock)}
-                      className="px-3 py-1 bg-blue-600 text-white text-sm rounded flex items-center"
-                    >
-                      <Pencil className="h-4 w-4 mr-1" />
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleInitiateTransfer(stock)}
-                      className="px-3 py-1 bg-purple-600 text-white text-sm rounded flex items-center"
-                    >
-                      <Truck className="h-4 w-4 mr-1" />
-                      Transfer
-                    </button>
+                    {canEditStock && (
+                      <>
+                        <button
+                          onClick={() => handleEdit(stock)}
+                          className="px-3 py-1 bg-blue-600 text-white text-sm rounded flex items-center"
+                        >
+                          <Pencil className="h-4 w-4 mr-1" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleInitiateTransfer(stock)}
+                          className="px-3 py-1 bg-purple-600 text-white text-sm rounded flex items-center"
+                        >
+                          <Truck className="h-4 w-4 mr-1" />
+                          Transfer
+                        </button>
+                      </>
+                    )}
                   </div>
                 </>
               )}
@@ -1636,27 +1664,29 @@ const renderMedicalLogsModal = () => (
                     </Select>
 
                     {/* CSV Import Button for Mobile */}
-                    <Select 
-                      onValueChange={(value) => {
-                        setLocation(value);
-                        document.getElementById('csvFileInput')?.click();
-                      }}
-                    >
-                      <SelectTrigger className="bg-green-600 text-white px-3 py-1.5 rounded-md flex items-center gap-1 hover:bg-green-700 transition-colors">
-                        <Upload className="h-4 w-4" />
-                        <span className="truncate">Import CSV</span>
-                        <ChevronDown className="h-4 w-4 ml-auto opacity-50" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white">
-                        <SelectGroup>
-                          {locations.map((loc) => (
-                            <SelectItem key={loc.locId} value={loc.locId}>
-                              {loc.locationName}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
+                    {canEditStock && (
+                      <Select 
+                        onValueChange={(value) => {
+                          setLocation(value);
+                          document.getElementById('csvFileInput')?.click();
+                        }}
+                      >
+                        <SelectTrigger className="bg-green-600 text-white px-3 py-1.5 rounded-md flex items-center gap-1 hover:bg-green-700 transition-colors">
+                          <Upload className="h-4 w-4" />
+                          <span className="truncate">Import CSV</span>
+                          <ChevronDown className="h-4 w-4 ml-auto opacity-50" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white">
+                          <SelectGroup>
+                            {locations.map((loc) => (
+                              <SelectItem key={loc.locId} value={loc.locId}>
+                                {loc.locationName}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -1683,27 +1713,29 @@ const renderMedicalLogsModal = () => (
                   </Select>
 
                   {/* CSV Import Button for Desktop */}
-                  <Select 
-                    onValueChange={(value) => {
-                      setLocation(value);
-                      document.getElementById('csvFileInput')?.click();
-                    }}
-                  >
-                    <SelectTrigger className="bg-green-600 text-white px-4 py-2 rounded-md flex items-center gap-2 hover:bg-green-700 transition-colors w-[180px]">
-                      <Upload className="h-5 w-5" />
-                      <span>Import CSV</span>
-                      <ChevronDown className="h-4 w-4 ml-auto opacity-50" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white">
-                      <SelectGroup>
-                        {locations.map((loc) => (
-                          <SelectItem key={loc.locId} value={loc.locId}>
-                            {loc.locationName}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                  {canEditStock && (
+                    <Select 
+                      onValueChange={(value) => {
+                        setLocation(value);
+                        document.getElementById('csvFileInput')?.click();
+                      }}
+                    >
+                      <SelectTrigger className="bg-green-600 text-white px-4 py-2 rounded-md flex items-center gap-2 hover:bg-green-700 transition-colors w-[180px]">
+                        <Upload className="h-5 w-5" />
+                        <span>Import CSV</span>
+                        <ChevronDown className="h-4 w-4 ml-auto opacity-50" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white">
+                        <SelectGroup>
+                          {locations.map((loc) => (
+                            <SelectItem key={loc.locId} value={loc.locId}>
+                              {loc.locationName}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
               )}
 
@@ -1752,7 +1784,7 @@ const renderMedicalLogsModal = () => (
               </Select>
 
               <div className="flex items-center gap-2">
-                {selectedStocks.size > 0 ? (
+                {selectedStocks.size > 0 && canEditStock ? (
                   <button
                     onClick={handleDelete}
                     className="bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-red-700 transition-colors flex-1"
@@ -1761,7 +1793,7 @@ const renderMedicalLogsModal = () => (
                     Delete Selected ({selectedStocks.size})
                   </button>
                 ) : (
-                  !editStock && !newStock && (
+                  !editStock && !newStock && canEditStock && (
                     <button
                       onClick={handleAddNewRow}
                       className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors flex-1"

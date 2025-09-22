@@ -75,6 +75,8 @@ import ManageDoctorsLayout from "@/private/Manage-Doctors/ManageDoctorsLayout";
 import ManageAssistantsLayout from "@/private/Manage-Assistants/ManageAssistantsLayout";
 import DeletedAppointments from "@/private/Deleted-Appointments/DeletedAppointments";
 import DeletedAppointmentsLayout from "@/private/Deleted-Appointments/DeletedAppointmentsLayout";
+import StockPermissions from "@/private/stock-permissions/StockPermissions";
+import StockPermissionsLayout from "@/private/stock-permissions/StockPermissionsLayout";
 
 const router = createBrowserRouter([
   // PUBLIC ROUTES
@@ -171,6 +173,14 @@ const router = createBrowserRouter([
           <MedicineUsageLayout>
             <MedicineUsage/>
             </MedicineUsageLayout>
+        )
+      },
+      {
+        path: "/admin/stock-permissions",
+        element: (
+          <StockPermissionsLayout>
+            <StockPermissions />
+          </StockPermissionsLayout>
         )
       }
       

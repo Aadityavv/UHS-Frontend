@@ -165,6 +165,11 @@ const AdminDashboard = () => {
       action: () => navigate("/admin/backup")
     },
     {
+      title: "Stock Permissions", // Added this option
+      icon: <Shield className="h-5 w-5 text-amber-600" />,
+      action: () => navigate("/admin/stock-permissions")
+    },
+    {
       title: "Rejected Appointments",
       icon: <CircleX className="h-5 w-5 text-red-600" />,
       action: () => navigate("/admin/deleted-appointments")
@@ -174,7 +179,7 @@ const AdminDashboard = () => {
   if (isMobile) {
     return (
       <div className="min-h-screen bg-gray-50 pb-20">
-        {/* Header =*/}
+        {/* Header */}
         <div className="sticky top-0 z-10 bg-white p-4 shadow-sm flex justify-between items-center">
           <div>
             <h1 className="text-xl font-bold text-gray-900">Admin Dashboard</h1>
@@ -198,7 +203,6 @@ const AdminDashboard = () => {
             )}
           </button>
         </div>
-
 
         {/* Stats Grid */}
         <div className="px-4 mb-4">
@@ -282,6 +286,7 @@ const AdminDashboard = () => {
                       {feature.title === "Prescriptions" && "View medical prescriptions"}
                       {feature.title === "Medicine Usage" && "View medicine usage logs"}
                       {feature.title === "Backup & Restore" && "Manage system data"}
+                      {feature.title === "Stock Permissions" && "Manage who can edit stock"}
                       {feature.title === "Rejected Appointments" && "View rejected appointments"}
                     </p>
                   </div>
@@ -564,6 +569,13 @@ const AdminDashboard = () => {
                         icon: <Pill className="h-5 w-5" />,
                         bg: "bg-green-100 text-green-600",
                         route: "/medicine-stock"
+                      },
+                      {
+                        title: "Stock Permissions",
+                        subtitle: "Manage who can edit stock",
+                        icon: <Shield className="h-5 w-5" />,
+                        bg: "bg-amber-100 text-amber-600",
+                        route: "/admin/stock-permissions"
                       },
                       {
                         title: "Manage Doctors",
